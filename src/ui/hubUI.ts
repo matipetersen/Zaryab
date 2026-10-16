@@ -4,6 +4,7 @@ import { QUESTS, type QuestDef } from '../world/quests';
 import { BUILDINGS, RITOS } from '../world/buildings';
 import { ROLES, TRAITS, RITUALS, projection, sermon, recruit, ritual, setRole, type Role, type ActResult } from '../world/followers';
 import { MIRACLES, ABILITIES } from '../engine/abilities';
+import type { InvUI } from './invUI';
 import { FACTIONS, has, built, applyEffect, type Campaign } from '../state';
 
 export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' };
@@ -58,10 +59,11 @@ export class HubUI {
     const c = this.camp;
     return h('div', { class: 'wbar' },
       h('button', { class: 'act', onClick: () => this.openSanctuary() }, '☥ Santuario'),
+      h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),
-      h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`)));
+      h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`), h('span', { class: 'pip free' }, `${c.gold} PO`)));
   }
   // ───────── modales ─────────
   closeModal() { this.modal?.remove(); this.modal = null; }
@@ -81,6 +83,8 @@ export class HubUI {
     if (c.journal.length) { b.append(h('div', { class: 'sec' }, 'Diario')); for (const j of c.journal.slice(-12).reverse()) b.append(h('div', { class: 'small' }, j)); }
     this.openModal('Diario de misiones', b);
   }
+  inv?: InvUI;
+  openInventory(tab = 'equipo') { if (!this.inv) return; this.openModal('Inventario · Equipo y objetos', this.inv.render(this.camp, tab, () => { this.onChange?.(); this.openInventory(this.inv!.tab); })); }
   lastMsg = ''; api?: { advance: (n: number) => void };
   act(r: ActResult, tab: string) { this.lastMsg = r.text; if (r.ok && r.days) this.api?.advance(r.days); this.onChange?.(); this.openSanctuary(tab); }
   openSanctuary(tab = 'seguidores') {

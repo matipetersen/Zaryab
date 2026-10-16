@@ -34,6 +34,7 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
       if (a.save?.cond && a.dmg) s += 2;
       if (a.save?.cond === 'disadvNext') s += 1;
     }
+    if (b.grid.at(from.x, from.y)?.kind === 'hazard' && !u.fly) s -= 4;
     if (a.recharge) s *= 1.15;
     const dmgEst = b.expectedDamage(u, a, t); if (!t.down && dmgEst >= t.hp) s += 12;
     s += (1 - t.hp / t.maxHp) * 3;

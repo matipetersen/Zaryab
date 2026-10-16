@@ -7,12 +7,12 @@ import type { Unit } from './types';
 import type { Grant } from '../state';
 
 import type { Encounter } from '../data/maps';
-export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[] }
+export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[]; equip?: Record<string, string[]>; inv?: Record<string, number> }
 export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts = {}): Battle {
   const enc = ENCOUNTERS[encId]; const map = MAPS[enc.map]; const grid = new Grid(map.rows);
   const units: Unit[] = [];
   partyIds.forEach((id, i) => {
-    const u = makePC(PARTY_BY_ID[id], opts.grants?.[id]); const p = grid.spawns.pc[i]; if (!p) return;
+    const u = makePC(PARTY_BY_ID[id], opts.grants?.[id], opts.equip?.[id]); const p = grid.spawns.pc[i]; if (!p) return;
     u.x = p.x; u.y = p.y; for (const m of opts.miracles ?? []) if (!u.abilities.includes(m)) u.abilities.push(m);
     units.push(u);
   });
@@ -23,7 +23,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
     const base = grid.spawns.pc[Math.min(1, grid.spawns.pc.length - 1)]; let placed = false;
     for (let r = 1; r < 5 && !placed; r++) for (let dy = -r; dy <= r && !placed; dy++) for (let dx = -r; dx <= r && !placed; dx++) { const x = base.x + dx, y = base.y + dy; const t = grid.at(x, y); if (t && !t.blocked && !taken.has(x + ',' + y)) { units.push(makeFoe(id, x, y, '', 'pc')); taken.add(x + ',' + y); placed = true; } }
   }
-  const b = new Battle(grid, units); b.pfPool = opts.pf ?? 0;
+  const b = new Battle(grid, units); b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) };
   if (enc.waves?.length) b.onRound = (bb, round) => {
     for (const w of enc.waves!) {
       if (round < w.round || (w.until && round > w.until) || (w.every ? (round - w.round) % w.every !== 0 : round !== w.round)) continue;

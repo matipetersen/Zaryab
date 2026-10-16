@@ -7,7 +7,7 @@ export const COND_LABEL: Record<CondId, string> = {
   prone: 'Derribado', blinded: 'Cegado', poisoned: 'Envenenado', frightened: 'Aterrado', charmed: 'Hechizado', paralyzed: 'Paralizado',
   stunned: 'Aturdido', restrained: 'Inmovilizado', invisible: 'Invisible', burning: 'En llamas', dodging: 'Esquiva', bless: 'Bendecido',
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
-  enfeebled: 'Debilitado', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
+  enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', faerie: 'Delineado',
   taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche',
 };
@@ -23,8 +23,63 @@ export class Battle {
   grid: Grid; units: Unit[]; order: Unit[] = []; idx = -1; round = 0;
   events: BEvent[] = []; over = false; result?: 'victory' | 'defeat'; nextUid = 1000;
   flags: Record<string, any> = {};
+  inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
   pfPool = 0; pfSpent = 0; onRound?: (b: Battle, round: number) => void;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
+
+  // ---------- terreno destruible / modificable ----------
+  destructible(x: number, y: number) { const t = this.grid.at(x, y); return !!t && t.hp != null && t.hp > 0; }
+  /** Daña una casilla; devuelve true si se destruye. El fuego prende lo inflamable. */
+  damageTile(x: number, y: number, amt: number, type: DmgType, src?: Unit): boolean {
+    const t = this.grid.at(x, y); if (!t || t.hp == null || amt <= 0) return false;
+    if (t.kind === 'wall' && type === 'psychic') return false;
+    t.hp -= amt; this.emit({ t: 'fx', kind: 'debris', x, y });
+    if (t.hp > 0) { if (type === 'fire' && t.flam && t.hp <= t.maxHp! / 2) { this.destroyTile(x, y, type, src); return true; } return false; }
+    this.destroyTile(x, y, type, src); return true;
+  }
+  destroyTile(x: number, y: number, type: DmgType, src?: Unit) {
+    const t = this.grid.at(x, y); if (!t) return; const name = t.ch === 'o' ? 'El barril' : t.kind === 'wall' ? 'El muro' : 'La cobertura';
+    const boom = t.boom, flam = t.flam;
+    if (boom) { this.log(`${name} estalla en una bola de fuego.`, 'dmg'); this.emit({ t: 'tile', kind: 'boom', x, y }); }
+    else this.log(`${name} se hace pedazos.`, 'sys');
+    if (flam && (type === 'fire' || boom)) { this.grid.setTile(x, y, 'f', 3); this.emit({ t: 'tile', kind: 'ignite', x, y }); } else { this.grid.setTile(x, y, ','); this.emit({ t: 'tile', kind: 'break', x, y }); }
+    if (boom) {
+      for (const v of this.units.filter(u => !u.dead && cheb(u, { x, y }) <= 1)) { const ok = this.save(v, 'dex', 12, '(explosión)'); const r = roll('3d6').total; this.damage(v, ok ? Math.floor(r / 2) : r, 'fire', src); }
+      for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) if ((dx || dy) && this.destructible(x + dx, y + dy)) this.damageTile(x + dx, y + dy, 8, 'fire', src);
+    }
+  }
+  /** Efecto de área sobre el terreno (explosiones, golpes sísmicos, aliento…). */
+  hitArea(c: P, radius: number, amt: number, type: DmgType, src?: Unit) {
+    for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) { const x = c.x + dx, y = c.y + dy; if (this.destructible(x, y)) this.damageTile(x, y, amt, type, src); }
+    if (type === 'fire') for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) { const t = this.grid.at(c.x + dx, c.y + dy); if (t && !t.blocked && t.kind === 'floor' && cheb(c, { x: c.x + dx, y: c.y + dy }) <= Math.max(0, radius - 1)) { this.grid.setTile(c.x + dx, c.y + dy, 'f', 3); this.emit({ t: 'tile', kind: 'ignite', x: c.x + dx, y: c.y + dy }); } }
+  }
+  /** Crea cobertura de piedra en línea (muro). */
+  buildWall(from: P, target: P, len = 3, ch = 'C') {
+    const dx = target.x - from.x, dy = target.y - from.y; const vertical = Math.abs(dx) >= Math.abs(dy);
+    const placed: P[] = [];
+    for (let i = -Math.floor(len / 2); i <= Math.floor(len / 2); i++) { const x = target.x + (vertical ? 0 : i), y = target.y + (vertical ? i : 0); const t = this.grid.at(x, y); if (t && !t.blocked && (t.kind === 'floor' || t.kind === 'diff') && !this.unitAt(x, y)) { this.grid.setTile(x, y, ch); this.emit({ t: 'tile', kind: 'build', x, y }); placed.push({ x, y }); } }
+    return placed.length;
+  }
+  /** Fuego: cada ronda se apaga, se propaga a lo inflamable y finalmente deja ceniza. */
+  tickTerrain() {
+    const g = this.grid;
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
+      const t = g.tiles[y][x]; if (t.ch !== 'f') continue;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = g.at(x + dx, y + dy); if (n && n.hp != null && n.flam && d20() >= 11) this.damageTile(x + dx, y + dy, 6, 'fire'); }
+      t.turns = (t.turns ?? 1) - 1; if (t.turns <= 0) { g.setTile(x, y, '.'); this.emit({ t: 'tile', kind: 'burnout', x, y }); }
+    }
+  }
+  /** Ataque a una casilla destructible con un arma (impacto automático). */
+  attackTerrain(u: Unit, w: Weapon, x: number, y: number): Res {
+    if (this.incapacitated(u)) return { ok: false, msg: 'No puedes actuar.' };
+    if (!this.destructible(x, y)) return { ok: false, msg: 'Eso no se puede romper.' };
+    if (cheb(u, { x, y }) > (w.longRange ?? w.range) || (cheb(u, { x, y }) > 1 && !this.grid.los(u, { x, y }).visible)) return { ok: false, msg: 'Fuera de alcance.' };
+    if (w.bonusAction) return { ok: false, msg: 'Usa un arma normal.' };
+    const mid = u.attacksMade > 0 && u.attacksMade < this.maxAttacks(u);
+    if (!mid) { if (!this.spendAction(u)) return { ok: false, msg: 'No te queda acción.' }; u.attacksMade = 0; }
+    const dmg = w.dmg.reduce((s, p) => s + roll(p.dice).total, 0); this.emit({ t: 'fx', kind: w.ranged ? 'arrow' : 'slash', x: u.x, y: u.y, x2: x, y2: y });
+    this.log(`${u.name} golpea el terreno con ${w.name} (${dmg}).`, 'sys'); this.damageTile(x, y, dmg, w.dmg[0].type, u); u.attacksMade++; u.acted = true; return { ok: true };
+  }
 
   // ---------- util ----------
   emit(e: BEvent) { this.events.push(e); }
@@ -63,11 +118,12 @@ export class Battle {
 
   // ---------- flujo de turnos ----------
   start() {
-    for (const u of this.units) u.initiative = d20() + u.mods.dex + (u.traits.includes('dreadInit') ? u.mods.wis - u.mods.dex : 0) + (u.traits.includes('initProf') ? u.prof : 0);
+    for (const u of this.units) u.initiative = d20() + u.mods.dex + (u.traits.includes('dreadInit') ? u.mods.wis - u.mods.dex : 0) + (u.traits.includes('initProf') ? u.prof : 0) + (u.initBonus ?? 0);
     this.order = this.units.filter(u => u.sprite !== 'wall')
       .sort((a, b) => b.initiative - a.initiative || b.mods.dex - a.mods.dex);
     this.round = 1; this.idx = -1;
     for (const u of this.units) if (u.traits.includes('dreadInit') && !this.has(u, 'ambusher')) this.addStatus(u, { id: 'ambusher', turns: -1 }, true);
+    for (const u of this.units) if (u.traits.includes('capaArena')) { this.addStatus(u, { id: 'invisible', turns: 3, src: u.uid }, true); this.log(`${u.name} se camufla con su Capa de Arena Viva.`, 'buff'); }
     this.emit({ t: 'round', n: 1 });
     this.log('— Ronda 1 —', 'round');
     this.nextTurn();
@@ -75,7 +131,7 @@ export class Battle {
   nextTurn(): Unit | undefined {
     for (let guard = 0; guard < 500 && !this.over; guard++) {
       this.idx++;
-      if (this.idx >= this.order.length) { this.idx = 0; this.round++; this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.onRound?.(this, this.round); }
+      if (this.idx >= this.order.length) { this.idx = 0; this.round++; this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
       const u = this.order[this.idx];
       if (u.dead) continue;
       this.startTurn(u);
@@ -97,6 +153,7 @@ export class Battle {
       if (a?.recharge) { const r = Math.floor(rand() * 6) + 1; if (r >= a.recharge) { u.rechargeReady[k] = true; this.log(`${u.name} recupera ${a.name}.`, 'sys'); } }
     }
     if (u.traits.includes('pilonRegen') && !u.dead) { const n = this.units.filter(x => !x.dead && x.traits.includes('pilon')).length; if (n && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, n * 7); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`Los pilones alimentan al Coloso (+${g}).`, 'sys'); } }
+    if (u.traits.includes('smash') && !u.dead) { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && this.destructible(u.x + dx, u.y + dy)) { this.log(`${u.name} aplasta lo que se interpone.`, 'sys'); this.destroyTile(u.x + dx, u.y + dy, 'bludgeoning', u); } }
     if (u.regen && !u.down && u.hp > 0 && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + u.regen); this.float(u, `+${u.regen}`, 'heal'); }
     // daño por turno
     for (const s of [...u.statuses]) if (s.dot && !u.dead) {
@@ -335,6 +392,7 @@ export class Battle {
       if (this.has(u, 'hex') && this.status(u, 'hex')!.val === t.uid) ex.push({ dice: '1d6', type: 'necrotic' });
       if (this.has(u, 'hunterMark') && this.status(u, 'hunterMark')!.val === t.uid) ex.push({ dice: '1d6', type: w.dmg[0].type });
       if (this.has(u, 'hexCurse') && this.status(u, 'hexCurse')!.val === t.uid) ex.push({ dice: String(u.prof), type: w.dmg[0].type });
+      if (this.has(u, 'flameFist') && !ranged) { ex.push({ dice: '2d6', type: 'fire' }); this.removeStatus(u, 'flameFist'); }
       if (this.has(u, 'radiantSoul') && !this.has(u, 'surgeUsed')) { ex.push({ dice: '3', type: 'radiant' }); this.addStatus(u, { id: 'surgeUsed', turns: -1 }, true); }
       if (this.has(u, 'wrathSmite') && !ranged) { ex.push({ dice: '1d6', type: 'psychic' }); this.removeStatus(u, 'wrathSmite'); if (!this.save(t, 'wis', u.spellDC, '(Golpe Iracundo)')) this.addStatus(t, { id: 'frightened', turns: 10, src: u.uid }); }
       if (u.traits.includes('sneak') && !this.has(u, 'sneakUsed') && (w.finesse || ranged)) {
@@ -368,6 +426,7 @@ export class Battle {
     if (ab.slot && !this.slotLevels(u, ab.slot).length) return { ok: false, msg: 'Sin espacios de conjuro.' };
     if (ab.use && (u.res[ab.use] ?? 0) <= 0) return { ok: false, msg: 'Sin usos restantes.' };
     if (ab.pf && this.pfPool < ab.pf) return { ok: false, msg: `Faltan PF (${ab.pf}).` };
+    if (ab.item && (this.inv[ab.item] ?? 0) <= 0) return { ok: false, msg: 'No te quedan.' };
     return { ok: true };
   }
   useAbility(u: Unit, id: string, target: Target, lvl?: number): Res {
@@ -381,6 +440,7 @@ export class Battle {
     if (ab.slot) u.res['slot' + L]--;
     if (ab.use) u.res[ab.use]--;
     if (ab.pf) { this.pfPool -= ab.pf; this.pfSpent += ab.pf; }
+    if (ab.item) { this.inv[ab.item]--; this.itemsUsed[ab.item] = (this.itemsUsed[ab.item] ?? 0) + 1; }
     u.acted = true;
     ab.run(this, u, target as any, L);
     return { ok: true };
@@ -390,6 +450,10 @@ export class Battle {
     const ab = ABILITIES[id]; if (!ab) return [];
     if (ab.target === 'self' || ab.target === 'none') return [u];
     const out: (Unit | P)[] = [];
+    if (ab.target === 'point') {
+      for (let y = 0; y < this.grid.h; y++) for (let x = 0; x < this.grid.w; x++) if (cheb(u, { x, y }) <= ab.range && (x !== u.x || y !== u.y) && (this.grid.los(u, { x, y }).visible || this.destructible(x, y))) { const t = this.grid.at(x, y)!; if (t.kind === 'wall' && !t.hp) continue; out.push({ x, y }); }
+      return out;
+    }
     if (ab.target === 'tile') {
       for (let y = 0; y < this.grid.h; y++) for (let x = 0; x < this.grid.w; x++) { if (cheb(u, { x, y }) <= ab.range && !this.blockedFor(u, x, y) && !this.unitAt(x, y)) out.push({ x, y }); }
       return out;
@@ -436,6 +500,7 @@ export class Battle {
       const victims = a.aoe ? this.units.filter(v => !v.dead && v.side !== u.side && cheb(v, center) <= a.aoe!) : [t as Unit];
       this.emit({ t: 'fx', kind: 'burst', x: center.x, y: center.y });
       this.log(`${u.name} usa ${a.name}.`, 'roll');
+      if (a.dmg && a.aoe) this.hitArea(center, a.aoe, a.dmg.reduce((sum, p) => sum + roll(p.dice).total, 0), a.dmg[0].type, u);
       for (const v of victims) {
         const ok = this.save(v, a.save!.ab, a.save!.dc, `(${a.name})`);
         if (a.dmg) for (const p of this.rollParts(a.dmg, false)) this.damage(v, ok ? (a.half ? Math.floor(p.amt / 2) : 0) : p.amt, p.type, u);

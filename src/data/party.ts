@@ -1,5 +1,7 @@
 import type { Unit, Weapon, Mods } from '../engine/types';
 import type { Grant } from '../state';
+import { ITEM } from './items';
+import { addFlat } from '../engine/dice';
 
 export interface PCDef {
   id: string; name: string; race: string; klass: string; level: number; color: string; glyph: string; portrait: string;
@@ -83,7 +85,12 @@ export const PARTY: PCDef[] = [
 ];
 export const PARTY_BY_ID = Object.fromEntries(PARTY.map(p => [p.id, p]));
 
-export function makePC(def: PCDef, grant?: Grant): Unit {
+export function makePC(def: PCDef, grant?: Grant, equip: string[] = []): Unit {
+  const u = buildPC(def, grant);
+  applyEquip(u, equip);
+  return u;
+}
+function buildPC(def: PCDef, grant?: Grant): Unit {
   const m = def.mods; const prof = 2;
   const saves = { ...m }; for (const k of def.saveProf) saves[k] += prof;
   const sm = def.spellAb ? m[def.spellAb] : 0;
@@ -98,4 +105,22 @@ export function makePC(def: PCDef, grant?: Grant): Unit {
     resist: (def.resist ?? []) as any, immune: [], vuln: [], condImmune: [], traits: [...def.traits, ...(grant?.traits ?? [])], xp: 0, undead: false,
     regen: 0, rechargeReady: {}, turnsTaken: 0, portrait: def.portrait,
   };
+}
+
+/** Aplica el equipo (arma, armadura, talismanes) a una unidad ya construida. */
+export function applyEquip(u: Unit, equip: string[]) {
+  for (const id of equip) {
+    const it = ITEM[id]; if (!it || it.kind !== 'equipo') continue; const b = it.bonus;
+    if (b) {
+      u.ac += b.ac ?? 0; u.maxHp += b.hp ?? 0; u.hp = Math.min(u.maxHp, u.hp + (b.hp ?? 0)); u.speed += b.speed ?? 0; u.initBonus = (u.initBonus ?? 0) + (b.init ?? 0);
+      if (b.saves) for (const k of Object.keys(u.saves) as (keyof typeof u.saves)[]) u.saves[k] += b.saves;
+      if (b.spellDC) { u.spellDC += b.spellDC; u.spellAtk += b.spellDC; }
+      if (b.resist) u.resist.push(...(b.resist as any)); if (b.immune) u.immune.push(...(b.immune as any));
+      for (const w of u.weapons) {
+        const unarmed = w.id.startsWith('fist'); const ok = !b.applies || b.applies === 'all' || (b.applies === 'melee' && !w.ranged) || (b.applies === 'ranged' && w.ranged) || (b.applies === 'unarmed' && unarmed);
+        if (!ok) continue; w.toHit += b.atk ?? 0; if (b.dmg) w.dmg = [{ ...w.dmg[0], dice: addFlat(w.dmg[0].dice, b.dmg) }, ...w.dmg.slice(1)]; if (b.extra) w.dmg = [...w.dmg, ...b.extra];
+      }
+    }
+    if (it.grants) { for (const a of it.grants.abilities ?? []) if (!u.abilities.includes(a)) u.abilities.push(a); for (const [k, v] of Object.entries(it.grants.res ?? {})) { u.res[k] = (u.res[k] ?? 0) + v; u.resMax[k] = (u.resMax[k] ?? 0) + v; } for (const t of it.grants.traits ?? []) u.traits.push(t); }
+  }
 }

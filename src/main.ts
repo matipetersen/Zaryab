@@ -3,6 +3,9 @@ import { h, avatar } from './ui/dom';
 import { StoryUI } from './ui/storyUI';
 import { BattleUI, type BattleResult } from './ui/battleUI';
 import { HubUI } from './ui/hubUI';
+import { lootFor, setMonsterXp, ITEM } from './data/items';
+import { MONSTERS } from './data/monsters';
+import { InvUI } from './ui/invUI';
 import { ENCOUNTERS } from './data/maps';
 import { PARTY, PARTY_BY_ID } from './data/party';
 import { buildBattle } from './engine/setup';
@@ -27,7 +30,7 @@ class App {
     this.menuEl = h('div', { class: 'screen', id: 'menu' }); this.storyEl = h('div', { class: 'screen hidden' }); this.battleEl = h('div', { class: 'screen hidden' }); this.hubEl = h('div', { class: 'screen hidden' });
     this.rootEl = h('div', { id: 'root' }, this.menuEl, this.storyEl, this.hubEl, this.battleEl);
     this.app.append(this.top, this.rootEl);
-    this.story = new StoryUI(this.storyEl); this.hub = new HubUI(this.hubEl);
+    this.story = new StoryUI(this.storyEl); this.hub = new HubUI(this.hubEl); this.hub.inv = new InvUI();
     this.story.battle = (enc, n, foes) => this.runBattle(enc, n, foes); this.story.hud = () => this.renderHud();
     this.hub.onChange = () => { this.renderHud(); saveGame(this.camp); }; this.hub.api = { advance: n => this.advance(n) };
     this.renderHud(); this.showMenu();
@@ -121,11 +124,14 @@ class App {
     const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies });
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
     const won = res.result === 'victory';
-    const overlay = this.resultOverlay(res); this.battleEl.append(overlay);
+    setMonsterXp(Object.fromEntries(Object.values(MONSTERS).map(m => [m.id, m.xp])));
+    for (const [k, n] of Object.entries(res.used)) c.inv[k] = Math.max(0, (c.inv[k] ?? 0) - n);
+    const loot = won ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
+    const overlay = this.resultOverlay(res, loot); this.battleEl.append(overlay);
     await new Promise<void>(r => overlay.querySelector('button')!.addEventListener('click', () => r()));
     ui.destroy(); overlay.remove(); this.battleEl.innerHTML = ''; this.show('story');
     c.pf = Math.max(0, c.pf - res.pfSpent);
@@ -135,11 +141,12 @@ class App {
     }
     this.renderHud(); saveGame(c); return won;
   }
-  resultOverlay(res: BattleResult) {
+  resultOverlay(res: BattleResult, loot?: ReturnType<typeof lootFor> | null) {
     const won = res.result === 'victory'; const names = (ids: string[]) => ids.map(i => PARTY_BY_ID[i].name).join(', ');
     const lines: (string | HTMLElement)[] = [];
     if (won) {
       lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia: `, h('b', {}, String(res.xp)), ' XP'));
+      if (loot) lines.push(h('div', {}, '💰 Botín: ', h('b', {}, `${loot.gold} PO`), loot.mats ? ` · ${loot.mats} materiales` : '', ...Object.entries(loot.items).map(([k, n]) => ` · ${ITEM[k].icon} ${ITEM[k].name} ×${n}`)));
       if (res.pfSpent) lines.push(h('div', {}, `PF gastados en milagros: ${res.pfSpent}`));
       if (res.downed.length) lines.push(h('div', {}, `Caídos que se recuperan: ${names(res.downed.filter(d => !res.dead.includes(d)))}`));
       if (res.dead.length) lines.push(h('div', { style: { color: '#ff9c8f' } }, this.settings.permadeath ? `Han muerto para siempre: ${names(res.dead)}.` : `${names(res.dead)} murió… y el cristal de Zahir lo devuelve. +1 Corrupción, −3 PF.`));
@@ -148,7 +155,7 @@ class App {
     return h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, won ? 'Victoria' : 'Derrota'), h('div', { class: 'res' }, ...lines), h('button', { class: 'btn' }, won ? 'Continuar' : 'Reintentar')));
   }
   async devBattle(enc: string) {
-    this.show('battle'); this.camp = newCampaign(); const e = ENCOUNTERS[enc]; const b = buildBattle(enc, this.camp.party, { pf: 30, miracles: MIRACLES.map(m => m.id) }); const ui = new BattleUI(this.battleEl); (window as any).__ui = ui; (window as any).__b = b;
+    this.show('battle'); this.camp = newCampaign(); const e = ENCOUNTERS[enc]; const b = buildBattle(enc, this.camp.party, { pf: 30, miracles: MIRACLES.map(m => m.id), inv: this.camp.inv, equip: { romain: ['espada_1', 'cota_1'], rabb: ['gema_fuego', 'botas_viento'] } }); const ui = new BattleUI(this.battleEl); (window as any).__ui = ui; (window as any).__b = b;
     await ui.run(b, e.map, e.intro);
   }
 }

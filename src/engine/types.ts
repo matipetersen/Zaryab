@@ -8,7 +8,7 @@ export type CondId =
   | 'prone' | 'blinded' | 'poisoned' | 'frightened' | 'charmed' | 'paralyzed' | 'stunned' | 'restrained' | 'invisible'
   | 'burning' | 'dodging' | 'bless' | 'bane' | 'shieldFaith' | 'hex' | 'hunterMark' | 'hexCurse' | 'enfeebled'
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
-  | 'faerie' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged';
+  | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged';
 
 export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string }
 
@@ -61,10 +61,10 @@ export interface Unit {
   initiative: number; resist: DmgType[]; immune: DmgType[]; vuln: DmgType[]; condImmune: CondId[];
   traits: string[]; xp: number; cr?: string; undead: boolean;
   onDeath?: MonsterDef['onDeath']; regen: number; rechargeReady: Record<string, boolean>;
-  pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean;
+  pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean; initBonus?: number;
 }
 
-export interface Tile { ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean }
+export interface Tile { ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean; hp?: number; maxHp?: number; flam?: boolean; boom?: boolean; turns?: number }
 export interface MapDef {
   id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine' | 'garden' | 'crater' | 'market' | 'ruins' | 'sanctum';
   intro?: string; objective: string; marks?: string[];
@@ -75,5 +75,6 @@ export type BEvent =
   | { t: 'move'; uid: number; path: { x: number; y: number }[] }
   | { t: 'hit'; uid: number } | { t: 'death'; uid: number } | { t: 'spawn'; uid: number }
   | { t: 'fx'; kind: string; x: number; y: number; x2?: number; y2?: number }
+  | { t: 'tile'; kind: 'break' | 'ignite' | 'build' | 'burnout' | 'boom'; x: number; y: number }
   | { t: 'turn'; uid: number } | { t: 'round'; n: number }
   | { t: 'end'; result: 'victory' | 'defeat' };

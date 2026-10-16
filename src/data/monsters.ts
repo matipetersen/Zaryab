@@ -127,7 +127,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
   golem_arena: {
     id: 'golem_arena', name: 'Golem de Arena Defectuoso', type: 'constructo', cr: '3', hp: 60, ac: 16, speed: 20, mods: m(4, -1, 4, -5, -1, -5), prof: 2, immune: ['poison', 'psychic'],
     actions: [{ id: 'golpe', name: 'Golpetear', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '2d8+4', type: 'bludgeoning' }] }],
-    onDeath: { name: 'Desmoronarse', dmg: [{ dice: '3d6', type: 'slashing' }], radius: 1, dc: 14, ab: 'dex' },
+    onDeath: { name: 'Desmoronarse', dmg: [{ dice: '3d6', type: 'slashing' }], radius: 1, dc: 14, ab: 'dex' }, traits: ['smash'],
     xp: 700, color: '#a8744a', glyph: 'Ω', sprite: 'construct', lore: 'Arcilla y runas violetas, moviéndose de forma espasmódica. Roto, enojado, solo.',
   },
   adorador: {
@@ -160,7 +160,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
       { id: 'bola', name: 'Bola de Pinchos', kind: 'melee', toHit: 7, reach: 2, dmg: [{ dice: '2d6+5', type: 'bludgeoning' }] },
       { id: 'barrido', name: 'Barrido de Cadenas', kind: 'save', reach: 3, aoe: 2, dmg: [{ dice: '3d8', type: 'bludgeoning' }], half: true, save: { ab: 'dex', dc: 14, cond: 'prone', turns: -1 }, recharge: 5 },
     ],
-    multiattack: ['bola'], traits: ['boss', 'pilonRegen'], xp: 2900, color: '#c9a227', glyph: 'C', sprite: 'colossus',
+    multiattack: ['bola'], traits: ['boss', 'pilonRegen', 'smash'], xp: 2900, color: '#c9a227', glyph: 'C', sprite: 'colossus',
     lore: 'Hierro bruñido y oro opaco, tan alto como cuatro edificios. Bolas de pinchos por brazos. Sus gemas lloran luz; ahora, luz púrpura.',
   },
   pilon: {

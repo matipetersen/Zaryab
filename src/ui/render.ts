@@ -85,9 +85,15 @@ export class Renderer {
       else if (e.t === 'death') { const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) this.burst(u.x, u.y, '#d8b27a', 18); }
       else if (e.t === 'spawn') { const u = this.b!.byUid(e.uid); if (u) this.vis.set(e.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 1, dead: 0, wobble: 0 }); }
       else if (e.t === 'fx') this.fx(e);
+      else if (e.t === 'tile') this.tileFx(e);
     }
   }
+  tileFx(e: Extract<BEvent, { t: 'tile' }>) {
+    const col = e.kind === 'boom' || e.kind === 'ignite' ? '#ff8a3d' : e.kind === 'build' ? '#b9c4d8' : e.kind === 'burnout' ? '#6a6a6a' : '#b89a6a';
+    this.burst(e.x, e.y, col, e.kind === 'boom' ? 30 : 14); if (e.kind === 'boom') { this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 1.6 }); this.shake = 1; } else if (e.kind === 'break') this.shake = Math.max(this.shake, .4);
+  }
   fx(e: Extract<BEvent, { t: 'fx' }>) {
+    if (e.kind === 'debris') { this.burst(e.x, e.y, '#b89a6a', 6); return; }
     if (e.kind === 'heal') { const c = this.center(e.x, e.y, 20); for (let i = 0; i < 14; i++) this.parts.push({ x: c.x + (Math.random() - .5) * 20, y: c.y, vx: (Math.random() - .5) * 20, vy: -30 - Math.random() * 30, life: 0, max: .9, color: '#f1c40f', size: 2.5, grav: 0 }); }
     else if (e.kind === 'boom') { this.burst(e.x, e.y, '#ff8a3d', 26); this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 2 }); this.shake = 1; }
     else if (e.kind === 'burst') this.rings.push({ x: e.x, y: e.y, t: 0, color: '#e0b84a', max: 2.5 });
@@ -168,13 +174,20 @@ export class Renderer {
     const c = this.ctx;
     if (kind === 'diff') { c.strokeStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(p.x - 10 * s, p.y + 14 * s); c.lineTo(p.x + 6 * s, p.y + 10 * s); c.moveTo(p.x - 4 * s, p.y + 22 * s); c.lineTo(p.x + 12 * s, p.y + 18 * s); c.stroke(); }
     if (kind === 'water') { c.strokeStyle = 'rgba(255,255,255,.28)'; c.beginPath(); const wv = Math.sin(this.time * 2 + x + y) * 2; c.moveTo(p.x - 14 * s, p.y + 16 * s + wv); c.quadraticCurveTo(p.x, p.y + 10 * s + wv, p.x + 14 * s, p.y + 16 * s + wv); c.stroke(); }
-    if (kind === 'hazard') { c.fillStyle = `rgba(255,200,80,${.35 + .2 * Math.sin(this.time * 6 + x)})`; c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 7 * s, p.y + 22 * s); c.lineTo(p.x - 7 * s, p.y + 22 * s); c.fill(); }
+    if (kind === 'hazard' && this.b!.grid.at(x, y)?.ch === 'f') { for (let i = 0; i < 3; i++) { const fx = p.x + (i - 1) * 11 * s, ph = this.time * 7 + i * 2 + x; const h = (8 + Math.sin(ph) * 3 + i % 2 * 4) * s; c.fillStyle = i === 1 ? '#ffd23f' : '#ff7a2a'; c.beginPath(); c.moveTo(fx - 5 * s, p.y + 22 * s); c.quadraticCurveTo(fx, p.y + 22 * s - h * 2.4, fx + 5 * s, p.y + 22 * s); c.fill(); } }
+    else if (kind === 'hazard') { c.fillStyle = `rgba(255,200,80,${.35 + .2 * Math.sin(this.time * 6 + x)})`; c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 7 * s, p.y + 22 * s); c.lineTo(p.x - 7 * s, p.y + 22 * s); c.fill(); }
     if (kind === 'mark') { const pulse = .5 + .3 * Math.sin(this.time * 3 + x); c.strokeStyle = `rgba(142,68,173,${pulse + .3})`; c.lineWidth = 2; c.beginPath(); c.ellipse(p.x, p.y + 16 * s, 20 * s, 10 * s, 0, 0, 6.28); c.stroke(); c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 10 * s, p.y + 16 * s); c.lineTo(p.x, p.y + 26 * s); c.lineTo(p.x - 10 * s, p.y + 16 * s); c.closePath(); c.stroke(); c.lineWidth = 1; }
   }
   drawBlock(x: number, y: number, kind: string, s: number) {
     const P = this.pal; const p = this.proj(x, y, 0);
-    if (kind === 'wall') { const g = this.b!.grid; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; if (rim) { this.box(p.x, p.y, s, RIM, shade(P.wallT, .9), shade(P.wallL, .8), shade(P.wallR, .8)); return; } this.box(p.x, p.y, s, WALL, P.wallT, P.wallL, P.wallR); const c = this.ctx; c.strokeStyle = 'rgba(0,0,0,.18)'; for (let i = 1; i < 3; i++) { const yy = p.y + TH * s - (WALL / 3) * i * s; c.beginPath(); c.moveTo(p.x - TW / 2 * s, yy - TH / 2 * s); c.lineTo(p.x, yy); c.lineTo(p.x + TW / 2 * s, yy - TH / 2 * s); c.stroke(); } }
-    else this.box(p.x, p.y, s, COVER, shade(P.cov, 1.25), shade(P.cov, .75), P.cov);
+    if (kind === 'wall') { const g = this.b!.grid; const brittle = g.at(x, y)!.ch === 'x'; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; if (rim) { this.box(p.x, p.y, s, RIM, shade(P.wallT, .9), shade(P.wallL, .8), shade(P.wallR, .8)); return; } this.box(p.x, p.y, s, WALL, brittle ? shade(P.wallT, .85) : P.wallT, brittle ? shade(P.wallL, .9) : P.wallL, brittle ? shade(P.wallR, .9) : P.wallR); const c = this.ctx; if (brittle) { c.strokeStyle = 'rgba(0,0,0,.65)'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 12 * s, p.y + 4 * s); c.lineTo(p.x - 4 * s, p.y + 14 * s); c.lineTo(p.x - 9 * s, p.y + 24 * s); c.lineTo(p.x + 2 * s, p.y + 34 * s); c.moveTo(p.x + 12 * s, p.y + 8 * s); c.lineTo(p.x + 5 * s, p.y + 20 * s); c.stroke(); } c.strokeStyle = 'rgba(0,0,0,.18)'; for (let i = 1; i < 3; i++) { const yy = p.y + TH * s - (WALL / 3) * i * s; c.beginPath(); c.moveTo(p.x - TW / 2 * s, yy - TH / 2 * s); c.lineTo(p.x, yy); c.lineTo(p.x + TW / 2 * s, yy - TH / 2 * s); c.stroke(); } }
+    else {
+      const t = this.b!.grid.at(x, y)!; const c = this.ctx;
+      if (t.ch === 'o') { this.box(p.x, p.y, s, COVER, '#8a4a2a', '#5a2e18', '#6e3a20'); c.fillStyle = '#c0392b'; c.fillRect(p.x - 9 * s, p.y + 4 * s, 18 * s, 4 * s); c.fillStyle = '#ffd23f'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('🔥', p.x, p.y + 20 * s); }
+      else if (t.ch === 'C') this.box(p.x, p.y, s, COVER + 4, '#d7dbe6', '#8b92a6', '#a6adc2');
+      else this.box(p.x, p.y, s, COVER, shade(P.cov, 1.25), shade(P.cov, .75), P.cov);
+      if (t.hp != null && t.maxHp && t.hp < t.maxHp) { c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p.x - 6 * s, p.y + 4 * s); c.lineTo(p.x + 2 * s, p.y + 14 * s); c.lineTo(p.x - 3 * s, p.y + 22 * s); c.stroke(); }
+    }
   }
   drawOverlay(o: Overlay, s: number) {
     const t = this.b!.grid.at(o.x, o.y); if (!t) return; const p = this.proj(o.x, o.y, t.kind === 'high' ? ELEV : 0);

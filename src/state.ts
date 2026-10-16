@@ -1,11 +1,12 @@
 import type { Weapon } from './engine/types';
+import { START_INV, START_GOLD } from './data/items';
 import { makeFollower, migrate, type Follower } from './world/followers';
 
 export interface Grant { weapons?: Weapon[]; removeWeapons?: string[]; abilities?: string[]; traits?: string[]; res?: Record<string, number> }
 export interface Effect {
   c?: number; d?: number; pf?: number; flags?: string[]; unflag?: string[];
   rep?: Record<string, number>; alert?: number; day?: number; follow?: string[]; build?: string[];
-  grant?: Record<string, Grant>;
+  grant?: Record<string, Grant>; gold?: number; items?: Record<string, number>;
 }
 export type QStatus = 'active' | 'done' | 'failed';
 export interface Campaign {
@@ -17,6 +18,7 @@ export interface Campaign {
   main: number;                                   // índice del próximo capítulo principal
   run: { script: string; idx: number } | null;   // guion en curso (se reanuda al cargar)
   battlesWon: number; xp: number;
+  gold: number; inv: Record<string, number>; equip: Record<string, string[]>;
 }
 export const FACTIONS: Record<string, string> = {
   conclave: 'Conclave de los Siete Vientos', hijos: 'Hijos del Simurg', mercaderes: 'Mercaderes del Zoco',
@@ -28,11 +30,12 @@ export const newCampaign = (): Campaign => ({
   rep: { conclave: 0, hijos: 0, mercaderes: 0, inquisidores: 0, nomadas: 0, dahhak: 0, qilaat: 0 },
   quests: {}, followers: [], buildings: [], food: 6, mats: 0, rumors: 0, ticks: 0, sermonDay: 0, ritualCd: {}, peek: null, grants: {}, oracleSeen: [], journal: [],
   main: 0, run: { script: 'cap1', idx: 0 }, battlesWon: 0, xp: 0,
+  gold: START_GOLD, inv: { ...START_INV }, equip: {},
 });
 const KEY = 'zaryab.save.v3';
 export function saveGame(c: Campaign) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch { /* sin storage */ } }
 export function loadGame(): Campaign | null {
-  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); return c; } catch { return null; }
+  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; return c; } catch { return null; }
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* */ } }
 export const has = (c: Campaign, f: string) => c.flags.includes(f);
@@ -52,6 +55,8 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
   if (e.alert) { c.alert = clamp(c.alert + e.alert); out.push(`${e.alert > 0 ? '+' : ''}${e.alert} Alerta`); }
   for (const f of e.follow ?? []) if (!c.followers.some(x => x.name === f)) { c.followers.push(makeFollower(f, c.day)); out.push(`Se une: ${f}`); }
   for (const b of e.build ?? []) if (!c.buildings.includes(b)) { c.buildings.push(b); out.push(`Construido: ${b}`); }
+  if (e.gold) { c.gold = Math.max(0, c.gold + e.gold); out.push(`${e.gold > 0 ? '+' : ''}${e.gold} PO`); }
+  for (const [k, n] of Object.entries(e.items ?? {})) { c.inv[k] = Math.max(0, (c.inv[k] ?? 0) + n); out.push(`${n > 0 ? '+' : ''}${n} ${k}`); }
   for (const f of e.flags ?? []) if (!c.flags.includes(f)) c.flags.push(f);
   for (const f of e.unflag ?? []) c.flags = c.flags.filter(x => x !== f);
   for (const [pc, g] of Object.entries(e.grant ?? {})) {
@@ -67,6 +72,7 @@ export function previewEffect(e?: Effect): string[] {
   if (!e) return [];
   const o: string[] = [];
   if (e.c) o.push(`${e.c > 0 ? '+' : ''}${e.c} Corrupción`); if (e.d) o.push(`${e.d > 0 ? '+' : ''}${e.d} Devoción`); if (e.pf) o.push(`${e.pf > 0 ? '+' : ''}${e.pf} PF`);
+  if (e.gold) o.push(`${e.gold > 0 ? '+' : ''}${e.gold} PO`);
   if (e.alert) o.push(`${e.alert > 0 ? '+' : ''}${e.alert} Alerta`);
   for (const [k, v] of Object.entries(e.rep ?? {})) o.push(`${v > 0 ? '+' : ''}${v} ${FACTIONS[k] ?? k}`);
   return o;

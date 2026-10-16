@@ -7,12 +7,13 @@ import { cheb } from '../engine/grid';
 import { avg } from '../engine/dice';
 import { MAPS } from '../data/maps';
 import { PARTY_BY_ID } from '../data/party';
+import { ITEM } from '../data/items';
 import { MONSTERS } from '../data/monsters';
 import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
-type Mode = { k: 'idle' } | { k: 'move' } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' };
-export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number }
+type Mode = { k: 'idle' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' };
+export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; kills: string[]; used: Record<string, number> }
 
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
@@ -72,7 +73,7 @@ export class BattleUI {
     await this.flush(); await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
-    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round });
+    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round, kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }
@@ -90,6 +91,7 @@ export class BattleUI {
       else if (e.key === 'm' || e.key === 'M') this.setMode({ k: 'move' });
       else if (e.key === 'a' || e.key === 'A') this.openAttackMenu();
       else if (e.key === 'h' || e.key === 'H') this.openAbilityMenu();
+      else if (e.key === 'i' || e.key === 'I') this.openItemMenu();
       else if (e.key === ' ' || e.key === 'e' || e.key === 'E') { e.preventDefault(); this.endTurn(); }
     };
     window.addEventListener('keydown', this.keyH);
@@ -100,13 +102,14 @@ export class BattleUI {
     if (!u || this.mode.k === 'busy') { if (under) this.select(under); return; }
     const m = this.mode;
     if (m.k === 'move') { const r = this.b.move(u, t.x, t.y); if (r.ok) { this.afterAction(); } else if (under) this.select(under); return; }
+    if (m.k === 'terrain') { const r = this.b.attackTerrain(u, m.w, t.x, t.y); if (!r.ok) this.toast(r.msg!); this.afterAction(true); return; }
     if (m.k === 'weapon') {
       if (under && this.validTarget(u, under, m)) { const r = this.b.weaponAttack(u, m.w, under); if (!r.ok) this.toast(r.msg!); this.afterAction(true); } else if (under) this.select(under); else this.setMode({ k: 'idle' });
       return;
     }
     if (m.k === 'ability') {
       const ab = ABILITIES[m.id]; let target: any = under;
-      if (ab.target === 'tile') target = t;
+      if (ab.target === 'tile' || ab.target === 'point') target = t;
       if (!target || !this.validAbilityTarget(u, m, target)) { if (under) this.select(under); return; }
       const r = this.b.useAbility(u, m.id, target, m.lvl); if (!r.ok) this.toast(r.msg!); this.afterAction(true); return;
     }
@@ -132,6 +135,7 @@ export class BattleUI {
     const u = this.cur, b = this.b; const ov: any[] = []; this.r.overlays = ov; if (!u || this.mode.k === 'busy') return;
     const m = this.mode;
     if (m.k === 'move') for (const v of b.reach(u).values()) if (!v.occ && (v.x !== u.x || v.y !== u.y)) ov.push({ x: v.x, y: v.y, kind: 'move' });
+    if (m.k === 'terrain') { const rg = m.w.longRange ?? m.w.range; for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (b.destructible(x, y) && cheb(u, { x, y }) <= rg) ov.push({ x, y, kind: 'aoe' }); }
     if (m.k === 'weapon') {
       const rg = m.w.longRange ?? m.w.range; for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (cheb(u, { x, y }) <= Math.min(rg, 14) && (x !== u.x || y !== u.y) && b.grid.at(x, y)!.kind !== 'wall') ov.push({ x, y, kind: 'range' });
       for (const t of b.foesOf(u)) if (this.validTarget(u, t, m)) ov.push({ x: t.x, y: t.y, kind: 'atk' });
@@ -190,6 +194,7 @@ export class BattleUI {
     const canAtk = b.hasAction(u) || u.weapons.some(w => w.bonusAction && (!u.bonusUsed || u.res['flurry'] > 0));
     B.append(btn('⚔ Atacar', 'A', () => this.openAttackMenu(), this.mode.k === 'weapon', !canAtk));
     B.append(btn('✦ Habilidades', 'H', () => this.openAbilityMenu(), this.mode.k === 'ability'));
+    B.append(btn('🎒 Objeto', 'I', () => this.openItemMenu(), false, !Object.entries(this.b.inv).some(([id, n]) => n > 0 && Object.values(ABILITIES).some(a => a.item === id))));
     B.append(btn('⏳ Terminar turno', 'Espacio', () => this.endTurn()));
     const left = u.moveLeft;
     B.append(h('div', { class: 'pips' },
@@ -207,6 +212,8 @@ export class BattleUI {
       m.append(h('button', { class: 'mi', disabled: dis, onClick: () => this.setMode({ k: 'weapon', w }), onMouseenter: (e: MouseEvent) => this.tipAt(e, `<b>${w.name}</b><br>${sgn(w.toHit)} al ataque · ${w.dmg.map(d => d.dice + ' ' + d.type).join(' + ')}<br>Alcance ${w.range * 5} ft${w.longRange && w.longRange !== w.range ? ' / ' + w.longRange * 5 : ''}${w.note ? '<br><i>' + w.note + '</i>' : ''}${w.bonusAction ? '<br>Acción adicional' : ''}`), onMouseleave: () => this.tip.classList.add('hidden') },
         h('span', { class: 'nm' }, w.name), h('span', { class: 'cost' }, `${sgn(w.toHit)} · ${w.dmg[0].dice}`)));
     }
+    const canBreak = this.b.hasAction(u) && u.weapons.some(w => !w.bonusAction && [...Array(this.b.grid.h).keys()].some(y => [...Array(this.b.grid.w).keys()].some(x => this.b.destructible(x, y) && cheb(u, { x, y }) <= (w.longRange ?? w.range))));
+    if (canBreak) { const w = u.weapons.find(x => !x.bonusAction)!; m.append(h('h4', {}, 'Terreno'), h('button', { class: 'mi', onClick: () => this.setMode({ k: 'terrain', w }) }, h('span', { class: 'nm' }, '💥 Romper / destruir terreno'), h('span', { class: 'cost' }, 'barriles, muros frágiles, cobertura'))); }
     this.menuEl = m; this.bar.append(m);
   }
   openAbilityMenu() {
@@ -224,6 +231,15 @@ export class BattleUI {
         if (ab.upcast && lv.length > 1) for (const l of lv.slice(1)) row.append(h('button', { class: 'lvl', title: `Lanzar con espacio de nivel ${l}`, onClick: () => this.pickAbility(id, l) }, `▲${l}`));
         m.append(row);
       }
+    }
+    this.menuEl = m; this.bar.append(m);
+  }
+  openItemMenu() {
+    const u = this.cur; if (!u) return; this.clearMenu(); const b = this.b;
+    const m = h('div', { class: 'menu' }, h('h4', {}, 'Mochila de la compañía'));
+    for (const ab of Object.values(ABILITIES).filter(a => a.item && (b.inv[a.item] ?? 0) > 0)) {
+      const can = b.canUse(u, ab.id); const it = ITEM[ab.item!];
+      m.append(h('button', { class: 'mi', disabled: !can.ok, title: can.msg ?? '', onClick: () => this.pickAbility(ab.id, 0), onMouseenter: (e: MouseEvent) => this.tipAt(e, `<b>${it.name}</b><br>${it.desc}`), onMouseleave: () => this.tip.classList.add('hidden') }, h('span', { class: 'nm' }, `${it.icon} ${it.name}`), h('span', { class: 'cost' }, `×${b.inv[ab.item!]} · ${ab.cost === 'bonus' ? 'adicional' : ab.cost === 'action' ? 'acción' : ''}`)));
     }
     this.menuEl = m; this.bar.append(m);
   }
@@ -246,5 +262,5 @@ export class BattleUI {
   }
 }
 const RES: Record<string, string> = { eclipse: 'Eclipse', verdad: 'Una Verdad', slot1: 'Esp. N1', slot2: 'Esp. N2', slot3: 'Esp. N3', channel: 'Canalizar', sw: 'Tomar Aliento', surge: 'Oleada', sd: 'Dados Sup.', soul: 'Alma Radiante', hh: 'Manos Cur.', curse: 'Maldición', faerie: 'Fuego Feérico', ki: 'Ki', flurry: 'Ráfaga' };
-const TERRAIN: Record<string, string> = { floor: 'Suelo llano.', diff: 'Terreno difícil: cuesta el doble de movimiento.', wall: 'Muro: bloquea el paso y la visión.', cover: 'Cobertura: bloquea el paso; +2 CA a quien esté detrás.', hazard: 'Peligroso: 1d6 de fuego al entrar o empezar el turno.', water: 'Agua: terreno difícil.', high: 'Plataforma elevada: terreno difícil.', mark: 'Marca grabada en el suelo.' };
+const TERRAIN: Record<string, string> = { fire: 'Fuego: 1d6 al entrar o empezar el turno. Dura unas rondas y se propaga a lo inflamable.', floor: 'Suelo llano.', diff: 'Terreno difícil: cuesta el doble de movimiento.', wall: 'Muro: bloquea el paso y la visión.', cover: 'Cobertura: bloquea el paso; +2 CA a quien esté detrás.', hazard: 'Peligroso: 1d6 de fuego al entrar o empezar el turno.', water: 'Agua: terreno difícil.', high: 'Plataforma elevada: terreno difícil.', mark: 'Marca grabada en el suelo.' };
 export type { BEvent };
