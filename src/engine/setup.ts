@@ -19,7 +19,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
     u.x = p.x; u.y = p.y; for (const m of opts.miracles ?? []) if (!u.abilities.includes(m)) u.abilities.push(m);
     units.push(u);
   });
-  const sc = (enc.scale || (opts.level ?? 3) > 3) ? levelScale(enc.scale, opts.level ?? 3) : undefined;
+  const sc = (enc.scale || (opts.level ?? 3) !== 3) ? levelScale(enc.scale, opts.level ?? 3) : undefined;
   const scaleFoe = (fu: Unit) => { if (!sc) return; if (sc.hp !== 1) { fu.maxHp = Math.round(fu.maxHp * sc.hp); fu.hp = fu.maxHp; } if (sc.atk) for (const a of fu.actions) if (a.toHit != null) a.toHit += sc.atk; if (sc.dmg) for (const a of fu.actions) if (a.dmg?.length) a.dmg = [{ ...a.dmg[0], dice: addFlat(a.dmg[0].dice, sc.dmg) }, ...a.dmg.slice(1)]; };
   for (const f of opts.foes ?? enc.foes) { const p = grid.spawns.foe[f.slot]; if (!p) throw new Error(`Slot ${f.slot} inexistente en ${map.id}`); const fu = makeFoe(f.id, p.x, p.y, f.suffix ?? ''); scaleFoe(fu); units.push(fu); }
   for (const a of enc.ally ?? []) { const p = grid.spawns.ally[a.slot]; units.push(makeFoe(a.id, p.x, p.y, '', 'pc')); }

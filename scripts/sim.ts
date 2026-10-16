@@ -9,7 +9,7 @@ import { botSetup, botTurn } from './bot';
 
 export async function playBattle(enc: string, seed: number, verbose = false, party = PARTY.map(p => p.id), opts: { pf?: number; allies?: string[] } = {}) {
   setSeed(seed);
-  const LVL = +(process.env.LVL || 3); const prog = LVL > 3 ? Object.fromEntries(party.map(id => [id, progUpTo(id, LVL, 5, 0)])) : undefined;
+  const LVL = +(process.env.LVL || 3); const prog = LVL !== 3 ? Object.fromEntries(party.map(id => [id, progUpTo(id, LVL, 5, 0)])) : undefined;
   const b = buildBattle(enc, party, { allies: opts.allies, pf: opts.pf, level: LVL, prog });
   botSetup(b); b.start();
   const everDown = new Set<string>(); let turns = 0;

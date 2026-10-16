@@ -102,9 +102,15 @@ class App {
     if (this.camp.run) await this.runScript(this.camp.run.script, this.camp.run.idx);
     await this.hubLoop();
   }
+  /** En el prólogo (aún sin mapa) los niveles 2 y 3 se ganan solos: no hay elecciones que tomar. */
+  async prologueLevels() {
+    const c = this.camp; let n = pendingLevel(c), last = 0;
+    for (; n && n <= 3; n = pendingLevel(c)) { c.lvl = n; last = n; }
+    if (last) { c.journal.push(`Día ${c.day}: la compañía alcanza el nivel ${last}.`); saveGame(c); await this.runScript('lvl', 0, [{ t: 'fx', e: {}, note: `¡Subís al nivel ${last}! ${last === 2 ? 'Ganáis Canalizar Divinidad, Oleada de Acción, Ki y Acción Astuta.' : 'Cada personaje recibe su arquetipo.'}` }]); }
+  }
   async hubLoop() {
-    if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) await this.runScript('cap0');
-    if (!has(this.camp, 'cap1_done')) await this.runScript('cap1');
+    if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) { await this.runScript('cap0'); await this.prologueLevels(); }
+    if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); }
     if (!has(this.camp, 'cap2_done')) await this.runScript('cap2');
     for (;;) {
       const due = this.camp.ecos.findIndex(x => x.due <= this.camp.day);

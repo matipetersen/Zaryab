@@ -178,7 +178,7 @@ export class BattleUI {
   renderRight() {
     const b = this.b; const u = b.byUid(this.selUid) ?? b.cur; const R = this.right; R.innerHTML = ''; if (!u) return;
     const def = u.pcId ? PARTY_BY_ID[u.pcId] : undefined;
-    R.append(h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, avatar(u.glyph, u.color, undefined, 44), h('div', {}, h('div', { style: { fontFamily: 'var(--f-head)', fontSize: '17px', color: 'var(--secondary)' } }, u.name), h('div', { class: 'small' }, def ? `${def.race} · ${def.klass}` : (b.byUid(u.uid) && u.cr ? `FP ${u.cr}` : '')))));
+    R.append(h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, avatar(u.glyph, u.color, undefined, 44), h('div', {}, h('div', { style: { fontFamily: 'var(--f-head)', fontSize: '17px', color: 'var(--secondary)' } }, u.name), h('div', { class: 'small' }, def ? `${def.race} · ${def.klass} ${u.level}` : (b.byUid(u.uid) && u.cr ? `FP ${u.cr}` : '')))));
     R.append(h('div', { class: 'stats' }, ...(['str', 'dex', 'con', 'int', 'wis', 'cha'] as Ab[]).map(k => h('div', {}, ABN[k], h('b', {}, sgn(u.mods[k]))))));
     R.append(h('div', {}, h('span', { class: 'tag' }, `CA ${b.ac(u)}`), h('span', { class: 'tag' }, `PG ${u.hp}/${u.maxHp}${u.temp ? ` (+${u.temp})` : ''}`), h('span', { class: 'tag' }, `Vel ${u.speed * 5} ft`), u.fly ? h('span', { class: 'tag good' }, 'Vuela') : null));
     const resTags = Object.keys(u.resMax).filter(k => u.resMax[k] > 0 && k !== 'flurry').map(k => h('span', { class: 'tag mag' }, `${RES[k] ?? k}: ${u.res[k]}/${u.resMax[k]}`)); if (resTags.length) R.append(h('div', { class: 'sec' }, 'Recursos'), h('div', {}, ...resTags));

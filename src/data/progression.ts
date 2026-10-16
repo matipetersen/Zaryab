@@ -1,4 +1,4 @@
-// Sistema de niveles (3→15) y evolución de arquetipos para los seis personajes, basado en D&D 5e.
+// Sistema de niveles (1→15) y evolución de arquetipos para los seis personajes, basado en D&D 5e.
 import type { Mods, Unit, DmgPart } from '../engine/types';
 import type { PCDef } from './party';
 import { addFlat } from '../engine/dice';
@@ -20,11 +20,11 @@ export interface Track {
 }
 
 // ───── experiencia ─────
-export const XP_TABLE: Record<number, number> = { 3: 0, 4: 600, 5: 2500, 6: 8000, 7: 12000, 8: 16000, 9: 20500, 10: 25000, 11: 29000, 12: 33000, 13: 37500, 14: 42000, 15: 47000 };
+export const XP_TABLE: Record<number, number> = { 1: 0, 2: 120, 3: 400, 4: 1100, 5: 2500, 6: 8000, 7: 12000, 8: 16000, 9: 20500, 10: 25000, 11: 29000, 12: 33000, 13: 37500, 14: 42000, 15: 47000 };
 export const MAX_LEVEL = 15;
 /** Tope de nivel por acto (como en Tactics Ogre: la historia marca el ritmo). */
-export function levelCap(flags: string[]): number { const h = (f: string) => flags.includes(f); return h('cap10_done') ? 15 : h('cap5_done') ? 10 : 5; }
-export function levelForXp(xp: number): number { let l = 3; for (let k = 4; k <= MAX_LEVEL; k++) if (xp >= XP_TABLE[k]) l = k; return l; }
+export function levelCap(flags: string[]): number { const h = (f: string) => flags.includes(f); return h('cap10_done') ? 15 : h('cap5_done') ? 10 : h('cap2_done') ? 5 : h('cap1_done') ? 3 : h('cap0_done') ? 2 : 1; }
+export function levelForXp(xp: number): number { let l = 1; for (let k = 2; k <= MAX_LEVEL; k++) if (xp >= XP_TABLE[k]) l = k; return l; }
 export const profBonus = (level: number) => 2 + Math.floor((level - 1) / 4);
 
 const F = (id: string, name: string, desc: string, patch?: Patch): Feat => ({ id, name, desc, patch });
@@ -238,8 +238,18 @@ export function pendingChoices(pc: string, level: number): { asi: boolean; tier?
 }
 export function optionAvailable(o: Option, d: number, c: number): boolean { return !o.need || ((o.need.d ?? 0) <= d && (o.need.c ?? 0) <= c); }
 /** Rasgos y opciones obtenidos hasta cierto nivel (para la hoja de personaje). */
+/** Rasgos que ganan los niveles 2 y 3 (los ya incluidos en la ficha canónica de nivel 3). */
+const EARLY: Record<string, Record<number, [string, string][]>> = {
+  romain: { 2: [['Canalizar Divinidad', 'Expulsar no-muertos y Sendero a la Tumba (1 uso).'], ['Más conjuros', 'Un tercer espacio de 1.er nivel.']], 3: [['Conjuros de 2.º nivel', 'Ayuda, Restablecimiento menor y Rayo de debilitamiento.']] },
+  pact: { 2: [['Oleada de Acción', 'Una acción adicional por descanso.']], 3: [['Maestro de Batalla', 'Dados de superioridad y Reagrupar.'], ['Alma Radiante', 'Revelación celestial del aasimar.']] },
+  rabb: { 2: [['Más espacios de pacto', 'Un segundo espacio de conjuro.']], 3: [['Espacios de 2.º nivel', 'Tus espacios de pacto suben de nivel.']] },
+  joren: { 2: [['Lanzamiento de conjuros', 'Marca del Cazador y Curar heridas (2 espacios).']], 3: [['Acechador de la Penumbra', 'Emboscador terrible: iniciativa y ataque extra en la primera ronda.']] },
+  zyrthar: { 2: [['Acción Astuta', 'Correr o esconderte como acción adicional.']], 3: [['Asesino', 'Ventaja contra quien aún no actuó; furtivo 2d6.'], ['Magia drow', 'Fuego feérico.']] },
+  panchi: { 2: [['Ki y Ráfaga de golpes', 'Ki, Defensa paciente y Paso del viento. +10 pies de movimiento.']], 3: [['Tradición monástica', 'Un punto de ki más.']] },
+};
 export function featuresUpTo(pc: string, prog: Prog): { level: number; name: string; desc: string; kind: 'auto' | 'path' | 'asi' | 'feat' }[] {
   const t = TRACKS[pc]; const out: { level: number; name: string; desc: string; kind: 'auto' | 'path' | 'asi' | 'feat' }[] = [];
+  for (let l = 2; l <= Math.min(3, prog.level); l++) for (const [name, desc] of EARLY[pc]?.[l] ?? []) out.push({ level: l, name, desc, kind: 'auto' });
   for (let l = 4; l <= prog.level; l++) {
     for (const f of t.auto[l] ?? []) out.push({ level: l, name: f.name, desc: f.desc, kind: 'auto' });
     const a = getPick(prog.picks, 'asi', l); if (a) { if (a.startsWith('feat:')) { const f = FEATS.find(x => x.id === a.slice(5)); if (f) out.push({ level: l, name: f.name, desc: f.desc, kind: 'feat' }); } else out.push({ level: l, name: 'Mejora de característica', desc: a.replace(/\+/g, ' +').toUpperCase().replace('STR', 'FUE').replace('DEX', 'DES').replace('WIS', 'SAB').replace('CHA', 'CAR'), kind: 'asi' }); }
@@ -273,10 +283,28 @@ export function collectPatch(pc: string, prog: Prog): Patch & { extra?: NonNulla
   return { ...(acc as any), asiMods };
 }
 
+/** Fichas de nivel 1 y 2: la ficha canónica es de nivel 3, así que se le quitan PG, recursos y rasgos que aún no tiene. */
+const LOW: Record<string, Record<1 | 2, { res: Record<string, number>; drop: string[]; dropTraits?: string[]; speed?: number }>> = {
+  romain: { 1: { res: { slot1: 2 }, drop: ['lesser_restoration', 'aid', 'ray_of_enfeeblement', 'turn_undead', 'path_to_grave'] }, 2: { res: { slot1: 3, channel: 1 }, drop: ['lesser_restoration', 'aid', 'ray_of_enfeeblement'] } },
+  pact: { 1: { res: { sw: 1, hh: 1 }, drop: ['action_surge', 'rally', 'radiant_soul'] }, 2: { res: { sw: 1, surge: 1, hh: 1 }, drop: ['rally', 'radiant_soul'] } },
+  rabb: { 1: { res: { slot1: 1, curse: 1 }, drop: [] }, 2: { res: { slot1: 2, curse: 1 }, drop: [] } },
+  joren: { 1: { res: {}, drop: ['hunters_mark', 'cure_wounds'], dropTraits: ['dreadInit'] }, 2: { res: { slot1: 2 }, drop: [], dropTraits: ['dreadInit'] } },
+  zyrthar: { 1: { res: {}, drop: ['cunning_dash', 'faerie_fire'], dropTraits: ['assassinate'] }, 2: { res: {}, drop: ['faerie_fire'], dropTraits: ['assassinate'] } },
+  panchi: { 1: { res: { ki: 0 }, drop: ['flurry', 'patient_defense', 'step_of_wind'], speed: 5 }, 2: { res: { ki: 2 }, drop: [], speed: 7 } },
+};
+function applyLow(u: Unit, def: PCDef, L: 1 | 2) {
+  const t = TRACKS[def.id]; const lo = LOW[def.id][L];
+  u.level = L; u.maxHp = u.hp = def.hp - (3 - L) * (Math.floor(t.hitDie / 2) + 1 + def.mods.con);
+  u.res = { ...lo.res }; u.resMax = { ...lo.res };
+  u.abilities = u.abilities.filter(a => !lo.drop.includes(a)); u.traits = u.traits.filter(x => !(lo.dropTraits ?? []).includes(x));
+  if (lo.speed) u.speed = lo.speed;
+}
+
 /** Aplica el nivel y las elecciones a una unidad construida con la ficha de nivel 3. */
 export function applyProgression(u: Unit, def: PCDef, prog: Prog) {
-  const t = TRACKS[def.id]; const L = Math.max(3, Math.min(MAX_LEVEL, prog.level));
-  if (L <= 3 && !prog.picks.length) return;
+  const t = TRACKS[def.id]; const L = Math.max(1, Math.min(MAX_LEVEL, prog.level));
+  if (L < 3) { applyLow(u, def, L as 1 | 2); return; }
+  if (L === 3 && !prog.picks.length) return;
   const p = collectPatch(def.id, { level: L, picks: prog.picks }) as Patch & { extra?: NonNullable<Patch['extraDmg']>[]; asiMods: Partial<Mods> };
   const prof = profBonus(L); const dProf = prof - 2;
   // ── características: +2 de puntuación ≈ +1 al modificador (las fichas guardan modificadores)
@@ -337,6 +365,6 @@ export function progUpTo(pc: string, level: number, d = 5, c = 0): Prog { const 
 const ENV = (globalThis as any).process?.env ?? {};
 export function levelScale(scale: { hp?: number; atk?: number } | undefined, level: number): { hp: number; atk: number; dmg: number } {
   const hp0 = scale?.hp ?? 1, atk0 = scale?.atk ?? 0; const e = +(ENV.HPEXP ?? 2.2), cap = +(ENV.HPCAP ?? 4), slope = +(ENV.ATKSLOPE ?? 1), ds = +(ENV.DMGSLOPE ?? 0.9);
-  const k = Math.pow(Math.max(3, level) / 3, e);
+  const k = level >= 3 ? Math.pow(level / 3, e) : (+(ENV.LOW1 ?? 1.2) + (level - 1) * (+(ENV.LOW2 ?? 1.4) - +(ENV.LOW1 ?? 1.2)));
   return { dmg: scale && level > 3 ? Math.floor((level - 3) * ds) : 0, hp: Math.min(Math.max(cap, hp0), hp0 * k), atk: atk0 > 0 ? atk0 : Math.min(+(ENV.ATKMAX ?? 3), Math.round(atk0 + (level - 3) * slope)) };
 }

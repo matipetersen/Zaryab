@@ -1,6 +1,8 @@
 # Auditoría: game loop, historia y rango de niveles 1–9 (v0.4)
 
-Estado: **el juego NO respeta aún el rango 1–9**. Todo lo demás (loop e historia) funciona, con las debilidades de abajo.
+> **Actualización:** se decidió **empezar en el nivel 1 y llegar al 15** (no 1–9). Hecho: fichas de nivel 1 y 2, XP desde 1, topes por hito, rasgos de los niveles 2 y 3, y prólogo con subida automática. Las secciones 1 y 2 de abajo describen el análisis previo (rango 1–9) y quedan como referencia; lo vigente para niveles está en `docs/NIVELES.md`.
+
+Estado: loop e historia funcionan, con las debilidades de abajo.
 
 ## 1. Niveles: lo que hay vs. lo que pediste (1–9)
 

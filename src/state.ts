@@ -40,13 +40,13 @@ export const newCampaign = (): Campaign => ({
   rep: { conclave: 0, hijos: 0, mercaderes: 0, inquisidores: 0, nomadas: 0, dahhak: 0, qilaat: 0 },
   quests: {}, followers: [], buildings: [], food: 6, mats: 0, rumors: 0, ticks: 0, sermonDay: 0, ritualCd: {}, peek: null, grants: {}, oracleSeen: [], journal: [],
   main: 0, run: { script: 'cap0', idx: 0 }, battlesWon: 0, xp: 0,
-  lvl: 3, picks: {}, squad: [], ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
+  lvl: 1, picks: {}, squad: [], ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
   phase: 0, eclipseDay: 0, found: [], bond: {}, poiCd: {}, front: {}, frontTick: 0, roamers: [], roamerTick: 0,
 });
 const KEY = 'zaryab.save.v3';
 export function saveGame(c: Campaign) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch { /* sin storage */ } }
 export function loadGame(): Campaign | null {
-  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 3; c.picks ??= {}; c.squad ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; c.found ??= []; c.bond ??= {}; c.poiCd ??= {}; c.front ??= {}; c.roamers ??= []; c.phase ??= 0; return c; } catch { return null; }
+  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 1; c.picks ??= {}; c.squad ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; c.found ??= []; c.bond ??= {}; c.poiCd ??= {}; c.front ??= {}; c.roamers ??= []; c.phase ??= 0; return c; } catch { return null; }
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* */ } }
 export const has = (c: Campaign, f: string) => c.flags.includes(f);

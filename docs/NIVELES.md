@@ -1,10 +1,11 @@
 # Niveles y evolución de arquetipos (v0.4)
 
-Sistema de progresión 3 → 15 basado en D&D 5e. Datos en `src/data/progression.ts`; habilidades nuevas en `src/engine/abilities2.ts`; pantalla en `src/ui/levelUI.ts`.
+Sistema de progresión 1 → 15 basado en D&D 5e. Datos en `src/data/progression.ts`; habilidades nuevas en `src/engine/abilities2.ts`; pantalla en `src/ui/levelUI.ts`.
 
 ## Cómo se sube de nivel
-- **XP del grupo** (compartido). Umbrales propios de la campaña (no los de la tabla 5e, porque el XP de los monstruos aquí es distinto): 4: 600 · 5: 2 500 · 6: 8 000 · 7: 12 000 · 8: 16 000 · 9: 20 500 · 10: 25 000 · 11: 29 000 · 12: 33 000 · 13: 37 500 · 14: 42 000 · 15: 47 000.
-- **Tope por acto** (como en Tactics Ogre, la historia marca el ritmo): Acto I ≤ 5; Acto II (tras el Cap. V) ≤ 10; Acto III (tras el Cap. X) ≤ 15.
+- **XP del grupo** (compartido). Umbrales propios de la campaña (no los de la tabla 5e, porque el XP de los monstruos aquí es distinto): 2: 120 · 3: 400 · 4: 1 100 · 5: 2 500 · 6: 8 000 · 7: 12 000 · 8: 16 000 · 9: 20 500 · 10: 25 000 · 11: 29 000 · 12: 33 000 · 13: 37 500 · 14: 42 000 · 15: 47 000.
+- **Se empieza en el nivel 1.** Las fichas canónicas son de nivel 3, así que los niveles 1 y 2 se obtienen *recortando* la ficha (PG, espacios y recursos, rasgos de subclase): Romain 9 PG, Pact 12, Rabb 11, Joren 11, Zyr'thar 9, Panchi 11 a nivel 1. Los niveles 2 y 3 del prólogo se ganan solos (no hay elecciones); a partir del 4 se eligen en el mapa.
+- **Tope por hito:** nivel 1 hasta la emboscada del prólogo · 2 hasta el Juicio · 3 hasta las Casas · Acto I ≤ 5 · tras el Cap. V ≤ 10 · tras el Cap. X ≤ 15.
 - El botón **⬆ Subir a nivel N** aparece en el mapa. «Automático» elige por ti (atributo principal y camino según Devoción/Corrupción).
 
 ## Qué te da cada nivel
@@ -39,7 +40,7 @@ Las decisiones morales de la campaña deciden qué caminos puedes tomar. Se pued
 - **Panchi:** ki = nivel, Ataque Extra y Golpe Aturdidor (5), Plenitud Corporal (6), Evasión (7), Pureza Corporal (10), dado marcial d8/d10 (5/11), Alma de Diamante (14), Palma Vibrante (15).
 
 ## Escalado de encuentros por nivel
-Las escalas de `maps.ts` están calibradas para nivel 3. En `levelScale()` (progression.ts) los enemigos crecen con el nivel del grupo (PG ×(nivel/3)^2.2, ataque +1/nivel, daño +0,9/nivel). Resultados del simulador con el bot, **en el nivel de diseño de cada capítulo** (sin aliados ni objetos): jefes ≈ 63–100 %, combates normales ≈ 100 % con 0,1–0,9 muertes. Es una primera calibración: hay que revisarla jugando.
+Las escalas de `maps.ts` están calibradas para nivel 3; en niveles 1 y 2 los enemigos usan un factor fijo (×1,2 y ×1,4 sobre su escala; variables `LOW1`/`LOW2` del simulador). En `levelScale()` (progression.ts) los enemigos crecen con el nivel del grupo (PG ×(nivel/3)^2.2, ataque +1/nivel, daño +0,9/nivel). Resultados del simulador con el bot, **en el nivel de diseño de cada capítulo** (sin aliados ni objetos): jefes ≈ 63–100 %, combates normales ≈ 100 % con 0,1–0,9 muertes. Es una primera calibración: hay que revisarla jugando.
 
 ## Aproximaciones (honestas)
 - Armadura de Maleficios (Rabb) se reduce a +1 CA; Mente de Hierro y Alma de Diamante dan competencia de salvación, no repetición.

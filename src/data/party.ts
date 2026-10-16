@@ -15,7 +15,7 @@ const w = (o: Weapon) => o;
 
 export const PARTY: PCDef[] = [
   {
-    id: 'romain', name: 'Romain', race: 'Tiefling', klass: 'Clérigo (Dominio de la Tumba) 3', level: 3, color: '#c9b458', glyph: '☥', portrait: 'romain',
+    id: 'romain', name: 'Romain', race: 'Tiefling', klass: 'Clérigo (Dominio de la Tumba)', level: 3, color: '#c9b458', glyph: '☥', portrait: 'romain',
     mods: { str: 1, dex: 0, con: 1, int: 0, wis: 3, cha: 2 }, saveProf: ['wis', 'cha'], hp: 21, ac: 10, speed: 30,
     weapons: [w({ id: 'staff', name: 'Bastón', range: 1, toHit: 3, dmg: [{ dice: '1d6+1', type: 'bludgeoning' }] })],
     abilities: ['cure_wounds', 'healing_word', 'bless', 'bane', 'guiding_bolt', 'inflict_wounds', 'shield_of_faith', 'word_of_radiance', 'spare_the_dying', 'turn_undead', 'path_to_grave', 'lesser_restoration', 'aid', 'ray_of_enfeeblement'],
@@ -25,7 +25,7 @@ export const PARTY: PCDef[] = [
     statusNote: 'Ficha: CA 10 sin armadura (21 PG).',
   },
   {
-    id: 'pact', name: 'Pact Risen', race: 'Aasimar', klass: 'Guerrero (Maestro de Batalla) 3', level: 3, color: '#e8e0b0', glyph: '✦', portrait: 'pact',
+    id: 'pact', name: 'Pact Risen', race: 'Aasimar', klass: 'Guerrero (Maestro de Batalla)', level: 3, color: '#e8e0b0', glyph: '✦', portrait: 'pact',
     mods: { str: 2, dex: 1, con: 2, int: 1, wis: 3, cha: 3 }, saveProf: ['str', 'con'], hp: 28, ac: 16, speed: 30,
     weapons: [
       w({ id: 'greatsword', name: 'Mandoble', range: 1, toHit: 4, dmg: [{ dice: '2d6+2', type: 'slashing' }] }),
@@ -38,7 +38,7 @@ export const PARTY: PCDef[] = [
     statusNote: 'La ficha muestra CA 11; aquí usa la cota de mallas de su inventario (CA 16).',
   },
   {
-    id: 'rabb', name: 'Rabb Locke', race: 'Humano', klass: 'Brujo (Hexblade) 3', level: 3, color: '#7a5cc9', glyph: '⚔', portrait: 'rabb',
+    id: 'rabb', name: 'Rabb Locke', race: 'Humano', klass: 'Brujo (Hexblade)', level: 3, color: '#7a5cc9', glyph: '⚔', portrait: 'rabb',
     mods: { str: 0, dex: 2, con: 3, int: 0, wis: 0, cha: 3 }, saveProf: ['wis', 'cha'], hp: 27, ac: 15, speed: 30,
     weapons: [w({ id: 'pact', name: 'Espada de Pacto +1', range: 1, toHit: 6, dmg: [{ dice: '1d8+4', type: 'slashing' }], magic: true })],
     abilities: ['eldritch_blast', 'hex', 'wrathful_smite', 'hexblades_curse'],
@@ -47,7 +47,7 @@ export const PARTY: PCDef[] = [
     quest: 'Descubrir quién le robó la memoria y qué pacto selló.', sheet: 'pdf',
   },
   {
-    id: 'joren', name: 'Joren Hell', race: 'Humano', klass: 'Explorador (Acechador de la Penumbra) 3', level: 3, color: '#4f8a5b', glyph: '➶', portrait: 'joren',
+    id: 'joren', name: 'Joren Hell', race: 'Humano', klass: 'Explorador (Acechador de la Penumbra)', level: 3, color: '#4f8a5b', glyph: '➶', portrait: 'joren',
     mods: { str: 1, dex: 3, con: 1, int: 0, wis: 2, cha: -1 }, saveProf: ['str', 'dex'], hp: 25, ac: 15, speed: 30,
     weapons: [
       w({ id: 'longbow', name: 'Arco largo', range: 30, longRange: 30, toHit: 5, dmg: [{ dice: '1d8+3', type: 'piercing' }], ranged: true, sharp: false }),
@@ -60,7 +60,7 @@ export const PARTY: PCDef[] = [
     statusNote: 'PG estimados (la ficha no los muestra).',
   },
   {
-    id: 'zyrthar', name: "Zyr'thar", race: 'Drow', klass: 'Pícaro (Asesino) 3', level: 3, color: '#6b5b95', glyph: '🗡', portrait: 'zyrthar',
+    id: 'zyrthar', name: "Zyr'thar", race: 'Drow', klass: 'Pícaro (Asesino)', level: 3, color: '#6b5b95', glyph: '🗡', portrait: 'zyrthar',
     mods: { str: 0, dex: 4, con: 1, int: 2, wis: 1, cha: 1 }, saveProf: ['dex', 'int'], hp: 21, ac: 15, speed: 30,
     weapons: [
       w({ id: 'shortsword', name: 'Espada corta', range: 1, toHit: 6, dmg: [{ dice: '1d6+4', type: 'piercing' }], finesse: true }),
@@ -72,7 +72,7 @@ export const PARTY: PCDef[] = [
     statusNote: 'Sin ficha en los archivos: stats estimados de un Pícaro Asesino nv3.',
   },
   {
-    id: 'panchi', name: 'Panchi', race: 'Enano', klass: 'Monje 3', level: 3, color: '#c26b3a', glyph: '✊', portrait: 'panchi',
+    id: 'panchi', name: 'Panchi', race: 'Enano', klass: 'Monje', level: 3, color: '#c26b3a', glyph: '✊', portrait: 'panchi',
     mods: { str: 1, dex: 3, con: 3, int: 0, wis: 2, cha: -1 }, saveProf: ['str', 'dex'], hp: 27, ac: 15, speed: 35,
     weapons: [
       w({ id: 'fist', name: 'Golpe desarmado', range: 1, toHit: 5, dmg: [{ dice: '1d6+3', type: 'bludgeoning' }], finesse: true }),
