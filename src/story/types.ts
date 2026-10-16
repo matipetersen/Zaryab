@@ -10,7 +10,7 @@ export type Node =
   | { t: 'narr'; text: string }
   | { t: 'say'; who: string; text: string; tone?: string }
   | { t: 'choice'; prompt?: string; options: Opt[] }
-  | { t: 'battle'; enc: string; foeCount?: number; title?: string }
+  | { t: 'battle'; enc: string; foeCount?: number; title?: string; soft?: boolean }
   | { t: 'puzzle'; id: 'marks' }
   | { t: 'fx'; e: Effect; note?: string }
   | { t: 'if'; flag: string; then: Node[]; else?: Node[] }

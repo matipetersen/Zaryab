@@ -122,7 +122,7 @@ class App {
 
   // ───────── combate ─────────
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
-    const e = ENCOUNTERS[enc]; const c = this.camp; const party = c.party.filter(p => !c.dead.includes(p));
+    const e = ENCOUNTERS[enc]; const c = this.camp; const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : c.party.filter(p => !c.dead.includes(p));
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
     const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
@@ -130,15 +130,16 @@ class App {
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
-    const won = res.result === 'victory';
+    const duel = !!e.duel; const won = res.result === 'victory' || duel;
+    if (duel) { const pct = res.foeHpPct ?? 1; if (pct <= 0.55) applyEffect(c, { flags: ['torneo_digno'] }); }
     setMonsterXp(Object.fromEntries(Object.values(MONSTERS).map(m => [m.id, m.xp])));
     for (const [k, n] of Object.entries(res.used)) c.inv[k] = Math.max(0, (c.inv[k] ?? 0) - n);
-    const loot = won ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
-    const overlay = this.resultOverlay(res, loot); this.battleEl.append(overlay);
+    const loot = won && !duel ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
+    const overlay = duel ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, res.result === 'victory' ? 'Ganas el combate' : 'Panchi cae'), h('div', { class: 'res' }, h('div', {}, `Rondas: ${res.rounds}. Sifra ${Math.round((res.foeHpPct ?? 1) * 100)} % en pie.`)), h('button', { class: 'btn' }, 'Continuar'))) : this.resultOverlay(res, loot); this.battleEl.append(overlay);
     await new Promise<void>(r => overlay.querySelector('button')!.addEventListener('click', () => r()));
     ui.destroy(); overlay.remove(); this.battleEl.innerHTML = ''; this.show('story');
     c.pf = Math.max(0, c.pf - res.pfSpent);
-    if (won) {
+    if (won && !duel) {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
       for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }

@@ -6,7 +6,7 @@ export interface Grant { weapons?: Weapon[]; removeWeapons?: string[]; abilities
 export interface Effect {
   c?: number; d?: number; pf?: number; flags?: string[]; unflag?: string[];
   rep?: Record<string, number>; alert?: number; day?: number; follow?: string[]; build?: string[];
-  grant?: Record<string, Grant>; gold?: number; food?: number; items?: Record<string, number>; recruits?: number;
+  grant?: Record<string, Grant>; gold?: number; food?: number; items?: Record<string, number>; recruits?: number; ruta?: Record<string, number>;
   /** Eco diferido: un evento (EVENTS[id]) que estalla dentro de `in` días como consecuencia de una decisión. */
   echo?: { id: string; in: number }[]; /** Huella: línea del legado moral que verán el epílogo y el Diario. */ huella?: string;
 }
@@ -20,7 +20,7 @@ export interface Campaign {
   main: number;                                   // índice del próximo capítulo principal
   run: { script: string; idx: number } | null;   // guion en curso (se reanuda al cargar)
   battlesWon: number; xp: number;
-  ecos: { id: string; due: number }[]; huellas: string[];
+  ruta: Record<string, number>; ecos: { id: string; due: number }[]; huellas: string[];
   gold: number; inv: Record<string, number>; equip: Record<string, string[]>;
 }
 export const FACTIONS: Record<string, string> = {
@@ -33,12 +33,12 @@ export const newCampaign = (): Campaign => ({
   rep: { conclave: 0, hijos: 0, mercaderes: 0, inquisidores: 0, nomadas: 0, dahhak: 0, qilaat: 0 },
   quests: {}, followers: [], buildings: [], food: 6, mats: 0, rumors: 0, ticks: 0, sermonDay: 0, ritualCd: {}, peek: null, grants: {}, oracleSeen: [], journal: [],
   main: 0, run: { script: 'cap0', idx: 0 }, battlesWon: 0, xp: 0,
-  ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
+  ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
 });
 const KEY = 'zaryab.save.v3';
 export function saveGame(c: Campaign) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch { /* sin storage */ } }
 export function loadGame(): Campaign | null {
-  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.huellas ??= []; return c; } catch { return null; }
+  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; return c; } catch { return null; }
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* */ } }
 export const has = (c: Campaign, f: string) => c.flags.includes(f);
@@ -61,6 +61,7 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
   if (e.gold) { c.gold = Math.max(0, c.gold + e.gold); out.push(`${e.gold > 0 ? '+' : ''}${e.gold} PO`); }
   for (const [k, n] of Object.entries(e.items ?? {})) { c.inv[k] = Math.max(0, (c.inv[k] ?? 0) + n); out.push(`${n > 0 ? '+' : ''}${n} ${k}`); }
   if (e.food) { c.food = Math.max(0, c.food + e.food); out.push(`${e.food > 0 ? '+' : ''}${e.food} víveres`); }
+  for (const [k, v] of Object.entries(e.ruta ?? {})) c.ruta[k] = (c.ruta[k] ?? 0) + v;
   if (e.recruits) { for (let i = 0; i < e.recruits; i++) c.followers.push(randomRecruit(c.day)); out.push(`+${e.recruits} seguidores`); }
   for (const x of e.echo ?? []) c.ecos.push({ id: x.id, due: c.day + x.in });
   if (e.huella && !c.huellas.includes(e.huella)) c.huellas.push(e.huella);

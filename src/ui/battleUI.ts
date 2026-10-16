@@ -13,7 +13,7 @@ import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
 type Mode = { k: 'idle' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' };
-export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; kills: string[]; used: Record<string, number> }
+export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; foeHpPct?: number; kills: string[]; used: Record<string, number> }
 
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
@@ -73,7 +73,7 @@ export class BattleUI {
     await this.flush(); await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
-    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round, kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
+    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }

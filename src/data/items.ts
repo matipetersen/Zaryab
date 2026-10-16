@@ -51,6 +51,7 @@ export const ITEMS: ItemDef[] = [
   I({ id: 'cristal_serpiente', name: 'Cristal de serpiente', icon: '💠', kind: 'material', rarity: 'comun', desc: 'Material de taller.' }),
   I({ id: 'nucleo_golem', name: 'Núcleo de golem', icon: '⚙', kind: 'material', rarity: 'poco', desc: 'Núcleo de energía rúnica.' }),
   I({ id: 'llave_bronce', name: 'Llave de bronce de la mazmorra', icon: '🗝', kind: 'clave', rarity: 'unico', desc: 'Abre las mazmorras de la Ciudadela.' }),
+  I({ id: 'venda_ellie', name: 'Venda de Ellie', icon: '🩹', kind: 'clave', rarity: 'unico', desc: '«Tráelo o no vengas.» Una venda de lino con un nudo que sólo Panchi sabe deshacer.' }),
   I({ id: 'fragmento', name: 'Fragmento del meteorito', icon: '☄', kind: 'clave', rarity: 'unico', desc: 'Hierro del cielo. Pulsa cuando miras a Zahir.' }),
 ];
 export const ITEM: Record<string, ItemDef> = Object.fromEntries(ITEMS.map(i => [i.id, i]));

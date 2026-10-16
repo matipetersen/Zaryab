@@ -8,6 +8,7 @@ import { PARTY_BY_ID } from '../data/party';
 const BG: Record<string, string> = {
   prison: 'radial-gradient(ellipse at 50% 90%, #3a2a1a 0%, #140e0a 60%, #060404 100%)',
   coliseo: 'radial-gradient(ellipse at 50% 20%, #8a4a7a 0%, #3a1a40 40%, #0d0716 100%)',
+  medinat: 'radial-gradient(ellipse at 50% 60%, #c98a4a 0%, #7a3f5a 40%, #1d0f2a 100%)',
   dunas: 'radial-gradient(ellipse at 50% 70%, #d9d6e6 0%, #8d87a8 30%, #3b3258 65%, #120d1f 100%)',
   tormenta: 'linear-gradient(180deg, #8a7a66 0%, #b59d7b 40%, #5d4c3a 100%)',
   limbo: 'radial-gradient(ellipse at 50% 40%, #f2eee4 0%, #b9b2d6 35%, #3b3260 80%, #120d24 100%)',
@@ -86,7 +87,7 @@ export class StoryUI {
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }
       case 'if': { const ok = has(this.camp, n.flag); await this.play(ok ? n.then : n.else ?? []); return; }
       case 'choice': return this.choice(n.prompt, n.options);
-      case 'battle': { let won = false; while (!won) won = await this.battle(n.enc, n.foeCount); return; }
+      case 'battle': { let won = false; while (!won) { won = await this.battle(n.enc, n.foeCount); if (n.soft) break; } return; }
       case 'puzzle': return this.marksPuzzle();
       case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); const b = h('button', { class: 'btn', style: { position: 'absolute', bottom: '14%', left: '50%', transform: 'translateX(-50%)' } }, 'Volver al mapa de Zaryab'); this.el.append(b); await new Promise<void>(r => b.addEventListener('click', () => r())); t.remove(); b.remove(); } return;
     }

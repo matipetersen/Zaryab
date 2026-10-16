@@ -98,6 +98,27 @@ Object.assign(MAPS, {
       P(7, 12, '1'), P(8, 12, '2'), P(9, 12, '3'), P(10, 12, '4'), P(11, 12, '5'), P(12, 12, '6'),
     ]),
   },
+  medinat: {
+    id: 'medinat', name: 'Medinat al-Rih · Plaza de los Olvidados', theme: 'market',
+    objective: 'Sofoca la revuelta. Las barricadas y los puestos se pueden romper.',
+    rows: paint(22, 16, [
+      ['fill', '.'],
+      R(1, 1, 4, 3, '#'), R(17, 1, 20, 3, '#'), R(8, 1, 13, 2, '#'), R(1, 12, 3, 14, '#'), R(18, 12, 20, 14, '#'),
+      R(6, 6, 7, 6, 'c'), R(14, 6, 15, 6, 'c'), R(10, 8, 11, 8, 'C'), P(4, 8, 'o'), P(17, 8, 'o'), P(9, 5, 'c'), P(12, 5, 'c'),
+      R(8, 10, 13, 10, ','), P(2, 7, ','), P(19, 7, ','), R(9, 12, 12, 12, '~'),
+      P(5, 4, 'e'), P(8, 4, 'e'), P(13, 4, 'e'), P(16, 4, 'e'), P(10, 3, 'e'), P(11, 3, 'e'), P(3, 6, 'e'), P(18, 6, 'e'),
+      P(7, 14, '1'), P(8, 14, '2'), P(9, 14, '3'), P(12, 14, '4'), P(13, 14, '5'), P(14, 14, '6'),
+    ]),
+  },
+  arena: {
+    id: 'arena', name: 'Torneo de los Puños Cerrados', theme: 'sanctum',
+    objective: 'Un solo luchador por bando. Sifra no pelea a muerte: pelea hasta que cae uno. Resiste lo que puedas.',
+    rows: paint(12, 10, [
+      ['fill', '.'],
+      R(5, 4, 6, 5, '*'), P(2, 2, 'C'), P(9, 2, 'C'), P(2, 7, 'C'), P(9, 7, 'C'),
+      P(6, 2, 'e'), P(5, 7, '1'), P(4, 7, '2'), P(6, 7, '3'), P(3, 8, '4'), P(7, 8, '5'), P(5, 8, '6'),
+    ]),
+  },
   jardin: {
     id: 'jardin', name: 'Jardín de los Suspiros', theme: 'garden',
     objective: 'Cruza el laberinto de cipreses. Las rosas translúcidas tienen hambre.',
@@ -149,7 +170,7 @@ Object.assign(MAPS, {
 });
 
 export interface Wave { round: number; every?: number; until?: number; foes: string[]; note?: string }
-export interface Encounter { defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
+export interface Encounter { duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
   noche: { scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele vuestra comida desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
@@ -199,6 +220,14 @@ export const ENCOUNTERS: Record<string, Encounter> = {
     foes: [{ id: 'ghul_mutado', slot: 2 }, { id: 'ghul_swarmer', slot: 0 }, { id: 'ghul_swarmer', slot: 1 }, { id: 'ghul_swarmer', slot: 4 }, { id: 'ghul_swarmer', slot: 5 }] },
   motin: { scale: { hp: 0.6, atk: -1 }, map: 'templo', intro: 'Las mazmorras de la Ciudadela huelen a hierro y a miedo. Los golems de basalto abren los ojos de piedra: cada cadena rota resuena como una campana.',
     foes: [{ id: 'golem_arena', slot: 0 }, { id: 'golem_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }, { id: 'guardia_arena', slot: 3 }] },
+  revuelta_orden: { scale: { hp: 1.6, atk: 1 }, map: 'medinat', intro: 'Los Nasnas han alzado barricadas con los puestos del mercado. Vienen escoltados por los Qilaat y los vecinos os miran como a otro soldado del Vizir: «¡Sicarios de Razul!»',
+    foes: [{ id: 'nasnas', slot: 0 }, { id: 'nasnas', slot: 1 }, { id: 'nasnas', slot: 2 }, { id: 'nasnas', slot: 3 }, { id: 'nasnas', slot: 4 }, { id: 'nasnas', slot: 5 }, { id: 'nasnas', slot: 6 }] },
+  revuelta_pueblo: { scale: { hp: 0.35, atk: -2 }, map: 'medinat', intro: 'Los refugiados de Zaryab entran por las puertas del este. Los Qilaat de Razul les cierran el paso con sus escudos de obsidiana: «Protocolo de contención.»',
+    foes: [{ id: 'qilaat', slot: 4 }, { id: 'guardia_arena', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }, { id: 'guardia_arena', slot: 3 }] },
+  revuelta_sombra: { scale: { hp: 0.5, atk: -2 }, map: 'medinat', intro: 'Nadie os conoce aquí y nadie os debe nada. Los mercenarios de Dahhak aprovechan el desorden para probar a los recién llegados.',
+    foes: [{ id: 'mercenario_zoco', slot: 0 }, { id: 'mercenario_zoco', slot: 1 }, { id: 'mercenario_zoco', slot: 2 }, { id: 'nasnas', slot: 3 }, { id: 'nasnas', slot: 4 }, { id: 'nasnas', slot: 5 }] },
+  torneo: { duel: { rounds: 6, party: ['panchi'] }, map: 'arena', intro: 'La arena huele a sudor, a aceite y a sangre vieja. Frente a Panchi, una mujer encapuchada que no ha dicho una palabra desde que entró.',
+    foes: [{ id: 'sifra', slot: 0 }] },
   coloso: { scale: { hp: 1.1, atk: 0 }, defense: true, map: 'plaza', intro: 'Las columnas del Capitolio se abren como pétalos y emerge un coloso de hierro y oro. Dahhak trepa por su espalda, le susurra algo hueco… y las gemas se encienden en púrpura enfermizo. «¿Querían un dios? Les traje uno.»',
     foes: [{ id: 'coloso', slot: 0 }, { id: 'dahhak', slot: 1 }, { id: 'pilon', slot: 2 }, { id: 'pilon', slot: 3 }, { id: 'pilon', slot: 4 }],
     waves: [{ round: 3, every: 3, until: 9, foes: ['nasnas'], note: 'Los Nasnas de Dahhak cruzan las barricadas.' }] },

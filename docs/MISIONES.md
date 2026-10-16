@@ -47,3 +47,16 @@ Estado de las 31 misiones secundarias del documento «Expansión: misiones secun
 - **Huellas** (`Effect.huella`): frases de legado que acumula la campaña y que se muestran en el Diario; base del epílogo.
 - **Irreversibles**: Marid (pierdes un recuerdo), djinn usado, niño muerto, guardia colgado, niños enfermos: no hay vuelta atrás ni «recargar» en el juego.
 - **Economía**: `gold` (PO), tienda de EaNassr (−15 % con Mercaderes ≥ 2, +25 % con ≤ −2), taller de Aisha (materiales), botín por enemigo.
+
+## Acto II · Capítulo VI (v0.4): La Guerra Civil — Medinat al-Rih
+Se abre al terminar el Cap. V. Guion en `src/story/cap6.ts`.
+
+| Escena | Qué hace |
+|---|---|
+| Llegada | Tres entradas según la **Postura** del Cap. V (Orden con escolta de Qilaat; Pueblo con los refugiados; Sombra solo y comprado) |
+| La revuelta | Un combate distinto por Postura: `revuelta_orden` (Nasnas), `revuelta_pueblo` (Qilaat y guardias), `revuelta_sombra` (mercenarios de Dahhak). Existe una cuarta opción que cambia de bando y tiene un precio |
+| Joren | Reencuentro con «el Muerto que Respira»: dejarlo hablar, interrogarlo (Intimidar CD 14) o matarlo (huella) |
+| Torneo | Panchi contra Sifra la Silente (Ellie). **Panchi pierde siempre** (duelo de 6 rondas; 0 victorias en 60 simulaciones). Si deja a Sifra por debajo del 55 % de PG, Ellie la reconoce |
+| Cierre | Venda de Ellie (objeto clave), `conoce_ellie`, pista de que Ellie sabe romper pactos. Pact queda para el Cap. VII (Prueba de Azuran) |
+
+**Sistemas nuevos:** contador de **Ruta** (`orden`/`pueblo`/`sombra`, `Campaign.ruta`) que suma cada decisión del Acto II y se calculará al final del Cap. VIII; regla de **duelo** (`Encounter.duel`: límite de rondas, grupo restringido, derrota sin penalización); combate «blando» (`battle.soft`) que no se reintenta.

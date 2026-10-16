@@ -64,6 +64,11 @@ export const MONSTERS: Record<string, MonsterDef> = {
     actions: [{ id: 'garra', name: 'Zarpazo torcido', kind: 'melee', toHit: 3, reach: 1, dmg: [{ dice: '1d6+1', type: 'slashing' }] }],
     xp: 50, color: '#7a4e3a', glyph: 'n', sprite: 'beast', lore: 'Medio cuerpo que salta: seguidor del culto de Dahhak.',
   },
+  sifra: {
+    id: 'sifra', name: 'Sifra la Silente', type: 'humanoide', cr: '4', hp: 80, ac: 16, speed: 40, mods: m(2, 4, 2, 1, 3, 0), prof: 2,
+    actions: [{ id: 'puno', name: 'Puño cerrado', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '1d8+4', type: 'bludgeoning' }] }],
+    multiattack: ['puno', 'puno'], xp: 700, color: '#8a8aa0', glyph: 'S', sprite: 'humanoid', lore: 'Nunca ha dicho una palabra en el ring. Quien la vence no se acuerda de cómo.',
+  },
   inquisidor: {
     id: 'inquisidor', name: 'Inquisidor Radiante', type: 'humanoide', cr: '3', hp: 39, ac: 16, speed: 30, mods: m(1, 2, 2, 3, 4, 3), prof: 3,
     actions: [
