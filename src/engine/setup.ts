@@ -23,7 +23,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
     const base = grid.spawns.pc[Math.min(1, grid.spawns.pc.length - 1)]; let placed = false;
     for (let r = 1; r < 5 && !placed; r++) for (let dy = -r; dy <= r && !placed; dy++) for (let dx = -r; dx <= r && !placed; dx++) { const x = base.x + dx, y = base.y + dy; const t = grid.at(x, y); if (t && !t.blocked && !taken.has(x + ',' + y)) { units.push(makeFoe(id, x, y, '', 'pc')); taken.add(x + ',' + y); placed = true; } }
   }
-  const b = new Battle(grid, units); b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0;
+  const b = new Battle(grid, units); b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
   if (enc.waves?.length) b.onRound = (bb, round) => {
     for (const w of enc.waves!) {
       if (round < w.round || (w.until && round > w.until) || (w.every ? (round - w.round) % w.every !== 0 : round !== w.round)) continue;

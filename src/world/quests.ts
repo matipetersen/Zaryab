@@ -3,6 +3,8 @@ import type { Campaign, Effect } from '../state';
 import { has } from '../state';
 import { MORALES } from './morales';
 import { CAP6 } from '../story/cap6';
+import { CAP7, CAP8, CAP9, CAP10, CAP11, CAP12, CAP13 } from '../story/acts';
+import { ACT2 } from './act2quests';
 import { CAP0, CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
 
 export type QKind = 'main' | 'side' | 'personal' | 'faction';
@@ -210,7 +212,13 @@ export const QUESTS: QuestDef[] = [
   { id: 'm_cap4', title: 'El Reflejo se Rompe', kind: 'main', district: 'plaza', giver: 'Zahir', blurb: 'Zahir está furioso: hablasteis con Razul y con Dahhak. Debéis robar el meteorito del Cubo de los Mil Reflejos.', when: c => has(c, 'cap3_done') && (c.day >= 8 || Object.values(c.quests).filter(s => s === 'done').length >= 2), days: 3, script: CAP4, reward: 'Fragmento 3 · Pista de Ellie', next: 'm_cap5' },
   { id: 'm_cap5', title: 'La Caída del Capitolio', kind: 'main', district: 'plaza', giver: 'Dahhak', blurb: 'El Coloso corrupto de Dahhak avanza sobre la plaza. Jefe del Acto I y primera gran decisión.', when: done('cap4_done'), days: 2, script: CAP5, reward: 'Postura: Orden / Pueblo / Sombra' },
   { id: 'm_cap6', title: 'La Guerra Civil: Medinat al-Rih', kind: 'main', district: 'medinat', giver: 'Joren · Panchi', blurb: 'La revuelta de los Nasnas, el reencuentro de Joren y el Torneo de los Puños Cerrados. Tu Postura decide cómo te recibe la ciudad.', when: done('cap5_done'), days: 4, script: CAP6, reward: 'Venda de Ellie · pista a Ellie · aliados de Medinat' },
-  { id: 'm_cap7', title: 'La Iglesia del Simurg', kind: 'main', district: 'iglesia', giver: 'Las Si\'lats', blurb: 'El cubil de Dahhak y la Prueba de Azuran. (Próximamente.)', when: () => false, days: 3, script: [], reward: '—', planned: true },
+  { id: 'm_cap7', title: 'La Iglesia del Simurg', kind: 'main', district: 'iglesia', giver: "Las Si'lats", blurb: 'El cubil de Dahhak y la Prueba de Azuran. Primer falso dios: el Portador de Cuellos.', when: done('cap6_done'), days: 3, script: CAP7, reward: 'Fragmento de Dahhak · Prueba de Azuran' },
+  { id: 'm_cap8', title: 'La Visita del Vizir', kind: 'main', district: 'santuario', giver: 'Las campanas', blurb: 'Razul baja a la biblioteca. Defender, evacuar o negociar. Aquí se fija vuestra Ruta.', when: done('cap7_done'), days: 1, script: CAP8, reward: 'Ruta calculada' },
+  { id: 'm_cap9', title: 'El Jardín de los Suspiros', kind: 'main', district: 'jardin', giver: 'Lady Nafisa', blurb: 'La fiesta de máscaras y el Marid que custodia un fragmento. Segundo falso dios.', when: done('cap8_done'), days: 3, script: CAP9, reward: 'Fragmento del Marid · Sombra de Zyr\'thar' },
+  { id: 'm_cap10', title: 'El Hijo del Lago', kind: 'main', district: 'bajo', giver: 'Farid', blurb: 'Farid canta con el Lich. La Balanza de Romain. Tercer falso dios: Al-Mazhar.', when: done('cap9_done'), days: 3, script: CAP10, reward: 'Fragmento de Al-Mazhar · Pacto de Rabb' },
+  { id: 'm_cap11', title: 'La Veta Maldita', kind: 'main', district: 'mina', giver: 'Capitana Samira', blurb: 'Mina de Alabastro: cuatro niveles, huida y Gul-Amarat. Cuarto falso dios.', when: done('cap10_done'), days: 4, script: CAP11, reward: 'Fragmento de Gul-Amarat o el Sacrificio' },
+  { id: 'm_cap12', title: 'La Ciudadela de los Susurros', kind: 'main', district: 'ciudadela', giver: 'Joren', blurb: 'Infiltración y Razul ibn Tameer. Verdadero Culpable de Joren.', when: done('cap11_done'), days: 3, script: CAP12, reward: 'Fragmento de Razul' },
+  { id: 'm_cap13', title: 'El Ritual del Eclipse', kind: 'main', district: 'catacumbas', giver: 'Zahir', blurb: 'Los Huesos del Pacto. Jefe final y destino de Zaryab.', when: done('cap12_done'), days: 2, script: CAP13, reward: 'Final' },
 
   { id: 's_lago', title: 'El Precio de la Salvación', kind: 'side', district: 'pozo', giver: 'Aisha', blurb: 'Los túneles de los Hijos del Simurg, Shib moribundo y la rama del Conclave en el Lago. Purificar, quemar o llevar como prueba.', when: done('cap2_done'), days: 2, script: S_LAGO, reward: 'Seguidores · Hijos del Simurg · remedio' },
   { id: 's_espejo', title: 'El Espejo de Almas', kind: 'side', district: 'zoco', giver: 'EaNassr', blurb: 'Recuperar un Espejo de Almas del puesto de Madam Shub, en el Mercado de las Sombras.', when: done('cap3_done'), days: 1, alert: 0, script: S_ESPEJO, reward: 'Mercaderes · Espejo del Alma' },
@@ -226,6 +234,6 @@ export const QUESTS: QuestDef[] = [
   { id: 'p_joren', title: 'El Manifiesto de La Marca', kind: 'personal', pc: 'joren', district: 'zoco', giver: 'Joren', blurb: 'Un sello de su vieja célula en el Zoco. Parte del cargamento fue a Medinat al-Rih.', when: done('cap3_done'), days: 1, alert: 1, script: P_JOREN, reward: 'Gancho: Medinat al-Rih' },
   { id: 'p_zyr', title: "Los Cuchillos de Vel'Shara", kind: 'personal', pc: 'zyrthar', district: 'zoco', giver: "Zyr'thar", blurb: 'Un espía de la Casa Vel\'Shara lo ha reconocido en el Zoco.', when: done('cap3_done'), days: 1, script: P_ZYR, reward: 'Información · tiempo' },
 ];
-QUESTS.push(...MORALES);
+QUESTS.push(...MORALES, ...ACT2);
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
 export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap0: CAP0, cap1: CAP1, cap2: CAP2 };

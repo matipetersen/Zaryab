@@ -6,7 +6,7 @@ export interface Grant { weapons?: Weapon[]; removeWeapons?: string[]; abilities
 export interface Effect {
   c?: number; d?: number; pf?: number; flags?: string[]; unflag?: string[];
   rep?: Record<string, number>; alert?: number; day?: number; follow?: string[]; build?: string[];
-  grant?: Record<string, Grant>; gold?: number; food?: number; items?: Record<string, number>; recruits?: number; ruta?: Record<string, number>;
+  grant?: Record<string, Grant>; gold?: number; food?: number; items?: Record<string, number>; recruits?: number; dead?: string[]; ruta?: Record<string, number>;
   /** Eco diferido: un evento (EVENTS[id]) que estalla dentro de `in` días como consecuencia de una decisión. */
   echo?: { id: string; in: number }[]; /** Huella: línea del legado moral que verán el epílogo y el Diario. */ huella?: string;
 }
@@ -62,6 +62,7 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
   for (const [k, n] of Object.entries(e.items ?? {})) { c.inv[k] = Math.max(0, (c.inv[k] ?? 0) + n); out.push(`${n > 0 ? '+' : ''}${n} ${k}`); }
   if (e.food) { c.food = Math.max(0, c.food + e.food); out.push(`${e.food > 0 ? '+' : ''}${e.food} víveres`); }
   for (const [k, v] of Object.entries(e.ruta ?? {})) c.ruta[k] = (c.ruta[k] ?? 0) + v;
+  for (const d of e.dead ?? []) if (!c.dead.includes(d)) { c.dead.push(d); out.push(`Muere para siempre: ${d}`); }
   if (e.recruits) { for (let i = 0; i < e.recruits; i++) c.followers.push(randomRecruit(c.day)); out.push(`+${e.recruits} seguidores`); }
   for (const x of e.echo ?? []) c.ecos.push({ id: x.id, due: c.day + x.in });
   if (e.huella && !c.huellas.includes(e.huella)) c.huellas.push(e.huella);

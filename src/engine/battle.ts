@@ -31,7 +31,7 @@ export class Battle {
   grid: Grid; units: Unit[]; order: Unit[] = []; idx = -1; round = 0;
   events: BEvent[] = []; over = false; result?: 'victory' | 'defeat'; nextUid = 1000;
   flags: Record<string, any> = {};
-  maxRounds = 0; inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
+  maxRounds = 0; surviveRounds = 0; inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
   pfPool = 0; pfSpent = 0; onRound?: (b: Battle, round: number) => void;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
 
@@ -139,7 +139,7 @@ export class Battle {
   nextTurn(): Unit | undefined {
     for (let guard = 0; guard < 500 && !this.over; guard++) {
       this.idx++;
-      if (this.idx >= this.order.length) { this.idx = 0; this.round++; if (this.maxRounds && this.round > this.maxRounds && !this.over) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); return; } this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
+      if (this.idx >= this.order.length) { this.idx = 0; this.round++; if (this.surviveRounds && this.round > this.surviveRounds && !this.over) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); return; } if (this.maxRounds && this.round > this.maxRounds && !this.over) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); return; } this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
       const u = this.order[this.idx];
       if (u.dead) continue;
       this.startTurn(u);

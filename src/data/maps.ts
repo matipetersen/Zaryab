@@ -255,7 +255,7 @@ Object.assign(MAPS, {
 });
 
 export interface Wave { round: number; every?: number; until?: number; foes: string[]; note?: string }
-export interface Encounter { duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
+export interface Encounter { survive?: number; duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
   noche: { scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele vuestra comida desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
@@ -332,6 +332,9 @@ export const ENCOUNTERS: Record<string, Encounter> = {
   eclipse: { scale: { hp: 0.3, atk: -5 }, map: 'eclipse', intro: 'El cielo de las catacumbas se vuelve negro. Zahir abre las alas: son de fuego y de mentira. «Yo soy el Simurg. Todos los demás sólo fueron pájaros.»',
     foes: [{ id: 'simurg_eclipse', slot: 0 }],
     waves: [{ round: 3, every: 3, until: 12, foes: ['sombra_arena', 'sombra_arena'], note: 'El eclipse levanta dos sombras de arena.' }] },
+  huida_mina: { survive: 8, scale: { hp: 0.5, atk: -2 }, map: 'mina', intro: 'El suelo tiembla. Cada temblor cambia las galerías. Hay que subir cuatro niveles antes de que el silencio os alcance: sobrevivid hasta que se abra la salida.',
+    foes: [{ id: 'ghul_mutado', slot: 0 }, { id: 'ghul_mutado', slot: 1 }, { id: 'brazo_gusano', slot: 2 }, { id: 'brazo_gusano', slot: 3 }],
+    waves: [{ round: 2, every: 2, until: 8, foes: ['ghul_swarmer', 'ghul_swarmer'], note: 'Los ghuls de la mina se agolpan en las galerías.' }] },
   coloso: { scale: { hp: 1.1, atk: 0 }, defense: true, map: 'plaza', intro: 'Las columnas del Capitolio se abren como pétalos y emerge un coloso de hierro y oro. Dahhak trepa por su espalda, le susurra algo hueco… y las gemas se encienden en púrpura enfermizo. «¿Querían un dios? Les traje uno.»',
     foes: [{ id: 'coloso', slot: 0 }, { id: 'dahhak', slot: 1 }, { id: 'pilon', slot: 2 }, { id: 'pilon', slot: 3 }, { id: 'pilon', slot: 4 }],
     waves: [{ round: 3, every: 3, until: 9, foes: ['nasnas'], note: 'Los Nasnas de Dahhak cruzan las barricadas.' }] },

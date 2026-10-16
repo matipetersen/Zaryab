@@ -14,6 +14,7 @@ import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, ty
 import { CHAPTER_SCRIPTS, QUEST_BY_ID, QUESTS } from './world/quests';
 import { EVENTS, pendingEvent } from './world/events';
 import { D100, ZONES, drawOracle, eventScript, type OEv } from './world/oracle';
+import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
 import type { Node } from './story/types';
@@ -99,7 +100,8 @@ class App {
       if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
       if (a.t === 'rest') { this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansáis en la biblioteca.`); saveGame(this.camp); continue; }
       if (a.t === 'quest') {
-        const q = QUEST_BY_ID[a.id]; await this.runScript('q:' + a.id);
+        const q = QUEST_BY_ID[a.id]; if (a.id === 'm_cap13') applyEffect(this.camp, { flags: finalFlags(this.camp) }); await this.runScript('q:' + a.id);
+        if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: vuestra Ruta es el ${RUTA_LABEL[r]}.`); }
         this.camp.quests[q.id] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
         if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
         this.advance(q.days); let nx = q.next;
@@ -126,6 +128,7 @@ class App {
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
     const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
+    if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
