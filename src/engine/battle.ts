@@ -23,7 +23,7 @@ export class Battle {
   grid: Grid; units: Unit[]; order: Unit[] = []; idx = -1; round = 0;
   events: BEvent[] = []; over = false; result?: 'victory' | 'defeat'; nextUid = 1000;
   flags: Record<string, any> = {};
-  pfPool = 0; pfSpent = 0;
+  pfPool = 0; pfSpent = 0; onRound?: (b: Battle, round: number) => void;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
 
   // ---------- util ----------
@@ -75,7 +75,7 @@ export class Battle {
   nextTurn(): Unit | undefined {
     for (let guard = 0; guard < 500 && !this.over; guard++) {
       this.idx++;
-      if (this.idx >= this.order.length) { this.idx = 0; this.round++; this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); }
+      if (this.idx >= this.order.length) { this.idx = 0; this.round++; this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.onRound?.(this, this.round); }
       const u = this.order[this.idx];
       if (u.dead) continue;
       this.startTurn(u);
@@ -96,6 +96,7 @@ export class Battle {
       const a = u.actions.find(x => x.id === k);
       if (a?.recharge) { const r = Math.floor(rand() * 6) + 1; if (r >= a.recharge) { u.rechargeReady[k] = true; this.log(`${u.name} recupera ${a.name}.`, 'sys'); } }
     }
+    if (u.traits.includes('pilonRegen') && !u.dead) { const n = this.units.filter(x => !x.dead && x.traits.includes('pilon')).length; if (n && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, n * 7); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`Los pilones alimentan al Coloso (+${g}).`, 'sys'); } }
     if (u.regen && !u.down && u.hp > 0 && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + u.regen); this.float(u, `+${u.regen}`, 'heal'); }
     // daño por turno
     for (const s of [...u.statuses]) if (s.dot && !u.dead) {
@@ -243,7 +244,8 @@ export class Battle {
         this.breakConc(t);
         this.checkEnd();
       } else this.kill(t, src);
-    } else if (t.conc && a > 0 && before > 0) {
+    } else if (t.traits.includes('flees50') && t.hp <= t.maxHp / 2) { this.flee(t); }
+    else if (t.conc && a > 0 && before > 0) {
       const dc = Math.max(10, Math.floor(a / 2));
       let n = d20() + t.mods.con; if (this.has(t, 'bless')) n += 2;
       this.log(`${t.name} concentración: ${n} vs CD ${dc}.`, 'roll');
@@ -257,6 +259,8 @@ export class Battle {
     this.emit({ t: 'death', uid: t.uid });
     this.log(`${t.name} cae${t.side === 'pc' ? ' y muere' : ''}.`, 'dmg');
     this.breakConc(t);
+    if (t.traits.includes('pilon')) for (const co of this.units.filter(x => !x.dead && x.traits.includes('pilonRegen'))) { this.log(`El pilón estalla y el Coloso recibe la sacudida.`, 'dmg'); this.damage(co, 18, 'force', src); }
+    if (t.traits.includes('boss')) for (const f of this.units.filter(x => !x.dead && x.traits.includes('flees50'))) this.flee(f);
     if (src) { const hc = this.status(src, 'hexCurse'); if (hc && hc.val === t.uid) { const h = src.mods.cha + 3; this.heal(src, h, src, true); this.log(`${src.name} se cura ${h} (Maldición Hexblade).`, 'heal'); } }
     if (t.onDeath) {
       const od = t.onDeath; this.log(`¡${t.name} — ${od.name}!`, 'dmg'); this.emit({ t: 'fx', kind: 'boom', x: t.x, y: t.y });
@@ -267,6 +271,10 @@ export class Battle {
       }
     }
     this.checkEnd();
+  }
+  flee(t: Unit) {
+    if (t.dead) return; t.dead = true; t.fled = true; t.hp = 0; this.emit({ t: 'death', uid: t.uid });
+    this.log(`${t.name} huye herido hacia el oeste, hacia la Iglesia del Simurg.`, 'sys'); this.flags['fled_' + t.id] = true; this.checkEnd();
   }
   heal(t: Unit, amt: number, src?: Unit, quiet = false): number {
     if (t.dead || amt <= 0) return 0;
@@ -279,7 +287,8 @@ export class Battle {
   }
   checkEnd() {
     if (this.over) return;
-    const foes = this.units.filter(u => u.side === 'foe' && !u.dead && !u.summoned && u.sprite !== 'wall' && !u.traits.includes('objective-ignore'));
+    const bosses = this.units.filter(u => u.traits.includes('boss'));
+    const foes = bosses.length ? bosses.filter(u => !u.dead) : this.units.filter(u => u.side === 'foe' && !u.dead && !u.summoned && u.sprite !== 'wall' && !u.traits.includes('objective-ignore'));
     const pcs = this.units.filter(u => !!u.pcId && !u.dead && !u.down);
     if (!foes.length) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
     else if (!pcs.length) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); }
@@ -441,7 +450,9 @@ export class Battle {
     u.acted = true;
     return { ok: true };
   }
-  xpValue() { return this.units.filter(u => u.side === 'foe' && u.dead && !u.summoned).reduce((s, u) => s + u.xp, 0); }
+  xpValue() { return this.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).reduce((s, u) => s + u.xp, 0); }
+  /** Refuerzo: entra al final del orden de iniciativa. */
+  reinforce(u: Unit, p: P) { u.initiative = -1; this.spawn(u, p); this.order.push(u); this.log(`¡Llegan refuerzos: ${u.name}!`, 'sys'); }
   /** Invoca una criatura aliada controlada por la IA; entra en el orden de iniciativa justo después del invocador. */
   summon(u: Unit, owner: Unit, p: P) {
     u.side = owner.side; u.ai = true; u.summoned = true; u.initiative = owner.initiative - 0.5; this.spawn(u, p);

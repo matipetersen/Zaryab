@@ -1,11 +1,12 @@
 import { h } from './dom';
 import { DISTRICTS, ROADS, DISTRICT_BY_ID, type District } from '../world/districts';
 import { QUESTS, type QuestDef } from '../world/quests';
-import { BUILDINGS, FOLLOWER_INFO, RITOS } from '../world/buildings';
+import { BUILDINGS, RITOS } from '../world/buildings';
+import { ROLES, TRAITS, RITUALS, projection, sermon, recruit, ritual, setRole, type Role, type ActResult } from '../world/followers';
 import { MIRACLES, ABILITIES } from '../engine/abilities';
 import { FACTIONS, has, built, applyEffect, type Campaign } from '../state';
 
-export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'rest' } | { t: 'menu' };
+export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' };
 const KIND_LABEL: Record<string, string> = { main: '★ Principal', side: 'Secundaria', personal: 'Personal', faction: 'Facción' };
 
 export class HubUI {
@@ -50,7 +51,7 @@ export class HubUI {
         st === 'available' ? h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'quest', id: q.id }) }, q.kind === 'main' ? `Iniciar (${q.days} días)` : `Aceptar (${q.days} día${q.days > 1 ? 's' : ''})`) : st === 'done' ? h('div', { class: 'tag good' }, '✔ Completada') : h('div', { class: 'tag' }, 'Próximamente')));
     }
     const free = built(c, 'alfombra');
-    p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name)));
+    p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name), c.rumors >= 2 && !(c.peek && c.peek.district === d.id) ? h('button', { class: 'btn sm ghost', onClick: () => this.pick({ t: 'peek', district: d.id }) }, '👁 Preguntar a los espías (−2 rumores)') : null, c.peek && c.peek.district === d.id ? h('div', { class: 'tag good' }, 'Los espías ya saben qué os espera aquí.') : null));
     return p;
   }
   bottom(): HTMLElement {
@@ -80,21 +81,40 @@ export class HubUI {
     if (c.journal.length) { b.append(h('div', { class: 'sec' }, 'Diario')); for (const j of c.journal.slice(-12).reverse()) b.append(h('div', { class: 'small' }, j)); }
     this.openModal('Diario de misiones', b);
   }
-  openSanctuary() {
+  lastMsg = ''; api?: { advance: (n: number) => void };
+  act(r: ActResult, tab: string) { this.lastMsg = r.text; if (r.ok && r.days) this.api?.advance(r.days); this.onChange?.(); this.openSanctuary(tab); }
+  openSanctuary(tab = 'seguidores') {
     const c = this.camp; const b = h('div', { class: 'res' });
-    const stats = h('div', {}, h('span', { class: 'tag' }, `PF ${c.pf}`), h('span', { class: 'tag' }, `Seguidores ${c.followers.length}`), h('span', { class: 'tag' }, `Día ${c.day}`), built(c, 'biblioteca') ? h('span', { class: 'tag bad' }, `Sello del Simurg ${Math.min(100, c.seal)}/100`) : h('span', { class: 'tag' }, 'Sello del Simurg: ??? (la Biblioteca lo revelaría)'));
-    b.append(stats, h('div', { class: 'sec' }, 'Edificios y objetos'));
-    for (const bd of BUILDINGS) {
-      const own = built(c, bd.id); const canBuy = !own && c.pf >= bd.pf;
-      b.append(h('div', { class: 'jq' }, h('span', {}, bd.icon + ' '), h('b', {}, bd.name), h('div', { class: 'small' }, bd.effect), h('div', { class: 'small lore' }, bd.blurb),
-        own ? h('span', { class: 'tag good' }, '✔ construido') : h('button', { class: 'btn sm', disabled: !canBuy, onClick: () => { c.pf -= bd.pf; c.buildings.push(bd.id); if (bd.id === 'collar') applyEffect(c, { c: 3 }); this.onChange?.(); this.openSanctuary(); } }, `Construir · ${bd.pf} PF`)));
+    const tabs = h('div', { class: 'tabs' }, ...[['seguidores', '👥 Seguidores'], ['rituales', '🕯 Rituales'], ['edificios', '🏛 Edificios'], ['milagros', '✦ Milagros']].map(([id, lb]) => h('button', { class: `tabbtn ${tab === id ? 'on' : ''}`, onClick: () => this.openSanctuary(id) }, lb)));
+    const stats = h('div', {}, h('span', { class: 'tag' }, `PF ${c.pf}`), h('span', { class: 'tag' }, `🥖 Víveres ${c.food}`), h('span', { class: 'tag' }, `🧱 Materiales ${c.mats}`), h('span', { class: 'tag' }, `👁 Rumores ${c.rumors}`), h('span', { class: 'tag' }, `Seguidores ${c.followers.length}`), built(c, 'biblioteca') ? h('span', { class: 'tag bad' }, `Sello del Simurg ${Math.min(100, c.seal)}/100`) : h('span', { class: 'tag' }, 'Sello del Simurg: ???'));
+    b.append(tabs, stats); if (this.lastMsg) b.append(h('div', { class: 'msg' }, this.lastMsg));
+    if (tab === 'seguidores') {
+      const p = projection(c);
+      b.append(h('div', { class: 'small', style: { margin: '6px 0' } }, `Cada 3 días: ${[`+${p.pf} PF`, `+${p.food} víveres`, `+${p.mats} materiales`, `+${p.rumors} rumores`].join(' · ')} · el culto come ${p.need} víveres.${c.food < p.need ? ' ⚠ Faltan víveres.' : ''}`),
+        h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'fe'), tab) }, 'Sermón de Fe (1 día)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'hierro'), tab) }, 'Sermón de Hierro (1 día, +1 Corrupción)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(recruit(c), tab) }, 'Predicar y reclutar (1 día)')));
+      if (!c.followers.length) b.append(h('div', { class: 'small', style: { marginTop: '10px' } }, 'Aún no tenéis seguidores. Predicad en el Bajo Zaryab.'));
+      for (const f of c.followers) {
+        const sel = h('select', { onChange: (e: Event) => { setRole(c, f.id, (e.target as HTMLSelectElement).value as Role); this.onChange?.(); this.openSanctuary(tab); } }, ...f.apt.map(r => h('option', { value: r, selected: r === f.role }, `${ROLES[r].icon} ${ROLES[r].label}`)));
+        b.append(h('div', { class: `fcard ${f.sick ? 'sick' : ''}` }, h('div', { class: 'fh' }, h('b', {}, f.name), f.trait ? h('span', { class: 'tag mag', title: TRAITS[f.trait].desc }, TRAITS[f.trait].label) : null, f.sick ? h('span', { class: 'tag bad' }, 'enfermo') : null, f.prov ? h('span', { class: 'tag', title: 'El canon sólo da el nombre: oficio provisional.' }, 'oficio provisional') : null),
+          h('div', { class: 'fe' }, ...Array.from({ length: 10 }, (_, i) => h('i', { class: i < f.fe ? 'on' : '' }))), h('div', { class: 'small lore' }, f.blurb), h('div', { class: 'frow' }, sel, h('span', { class: 'small' }, ROLES[f.role].out))));
+      }
+    } else if (tab === 'rituales') {
+      for (const r of RITUALS) {
+        const asc = r.id === 'ascension';
+        b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, r.desc), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, r.cost),
+          asc ? h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'ascender'), tab) }, 'Ascender'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'reliquia'), tab) }, 'Convertir en reliquia')) : h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id), tab) }, 'Celebrar')));
+      }
+      b.append(h('div', { class: 'small lore', style: { marginTop: '8px' } }, RITOS));
+    } else if (tab === 'edificios') {
+      for (const bd of BUILDINGS) {
+        const own = built(c, bd.id); const mats = Math.min(c.mats, Math.floor(bd.pf / 2)); const need = bd.pf - mats * 2; const canBuy = !own && c.pf >= need;
+        b.append(h('div', { class: 'jq' }, h('span', {}, bd.icon + ' '), h('b', {}, bd.name), h('div', { class: 'small' }, bd.effect), h('div', { class: 'small lore' }, bd.blurb),
+          own ? h('span', { class: 'tag good' }, '✔ construido') : h('button', { class: 'btn sm', disabled: !canBuy, onClick: () => { c.pf -= need; c.mats -= mats; c.buildings.push(bd.id); if (bd.id === 'collar') applyEffect(c, { c: 3 }); this.lastMsg = `${bd.name} construido.`; this.onChange?.(); this.openSanctuary(tab); } }, `Construir · ${need} PF${mats ? ` + ${mats} materiales` : ''}`)));
+      }
+    } else {
+      b.append(h('div', { class: 'small' }, 'Los Milagros se gastan en combate con PF. Los lanza cualquier portador del cristal de Zahir.'));
+      for (const m of MIRACLES) { const ab = ABILITIES[m.id]; const val = m.need === 'd' ? c.d : c.c; const ok = val >= m.min; b.append(h('div', { class: 'jq' }, h('span', { class: `tag ${ok ? 'good' : ''}` }, ok ? '✔' : '🔒'), h('b', {}, ' ' + ab.name), h('div', { class: 'small' }, `${ab.desc} · requiere ${m.need === 'd' ? 'Devoción' : 'Corrupción'} ≥ ${m.min}`))); }
     }
-    b.append(h('div', { class: 'sec' }, 'Milagros (se gastan PF en combate)'));
-    for (const m of MIRACLES) { const ab = ABILITIES[m.id]; const val = m.need === 'd' ? c.d : c.c; const ok = val >= m.min; b.append(h('div', { class: 'jq' }, h('span', { class: `tag ${ok ? 'good' : ''}` }, ok ? '✔' : '🔒'), h('b', {}, ' ' + ab.name), h('div', { class: 'small' }, `${ab.desc} · requiere ${m.need === 'd' ? 'Devoción' : 'Corrupción'} ≥ ${m.min}`))); }
-    b.append(h('div', { class: 'sec' }, 'Seguidores'));
-    if (!c.followers.length) b.append(h('div', { class: 'small' }, 'Aún no tenéis seguidores.'));
-    for (const f of c.followers) b.append(h('div', { class: 'jq' }, h('b', {}, f), h('div', { class: 'small' }, FOLLOWER_INFO[f] ?? 'Se unió al culto.')));
-    b.append(h('div', { class: 'small lore', style: { marginTop: '8px' } }, RITOS));
     this.openModal('Santuario · La Biblioteca', b);
   }
 }

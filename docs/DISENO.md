@@ -28,7 +28,7 @@ Nivel D&D entre paréntesis. «★» = capítulo principal (obligatorio, desbloq
 | — | *El mapa se abre* | Tras el Cap. II aparece el **Mapa de Zaryab**: tiempo libre, misiones secundarias, oráculo, santuario | — | — | **Hecho (v0.2)** |
 | III ★ | Los Pecados Bajo el Agua | EaNassr, Al-Khush, los tres djinns, acueducto, fragmento 2, Si'lats (Azuran) | Ghuls mutados; huida con alfombra | Estafar / matar al Efrit / (pelear) | **Hecho** |
 | IV ★ | El Reflejo se Rompe | Zahir furioso, Cubo de los Mil Reflejos, fragmento 3, estatuas de dioses falsos | Reflejos corruptos | Seis marcas | **Hecho** |
-| V ★ | La Caída del Capitolio | Dahhak ataca la plaza; el Vizir despierta a los Qilaat y al Coloso | **Jefe: Coloso corrupto + Dahhak (huye)** | **Primera bifurcación**: defender el Capitolio / proteger al pueblo / dejar caer al Vizir | Especificado |
+| V ★ | La Caída del Capitolio | Dahhak ataca la plaza; el Vizir despierta a los Qilaat y al Coloso | **Jefe: Coloso corrupto + pilones + Dahhak (huye)** | **Primera bifurcación**: defender el Capitolio / proteger al pueblo / dejar caer al Vizir | **Hecho (v0.3)** |
 
 **Fin del Acto I:** guerra civil. Dahhak escapa hacia la Iglesia del Simurg. El culto entra en crisis (Zahir ya no controla todo). La decisión del Cap. V marca la *Postura*: **Orden** (con Razul), **Pueblo** (con los Hijos del Simurg y los Nasnas), o **Sombra** (se deja que caiga y se negocia con lo que quede).
 
@@ -131,7 +131,28 @@ En el Acto I sólo están abiertos Bajo Zaryab, Zoco, Acueductos, Pozo, Plaza y 
 | Eclipse de Zahir | Corrupción | Corr ≥ 6 | 15 PF | Ciega a todos a 6 casillas (VOL 15) |
 Los PF gastados en combate se descuentan al terminar. Mantienen la relación *poder rápido ↔ precio* del canon.
 
-### 4.4 Reputación y seguidores
+### 4.4 Seguidores (estilo Cult of the Lamb)
+
+Cada seguidor es una persona con **oficio**, **fe (0–10)**, **rasgo** y necesidades. Cada 3 días ocurre un *ciclo*: producen, comen, enferman, discuten o desertan.
+
+| Oficio | Qué hace |
+|---|---|
+| Predicador | +PF por ciclo (más con más fe) y sube la fe de los demás |
+| Cocinero | Víveres (el culto come ⌈n/2⌉ por ciclo; sin comida baja la fe) |
+| Espía | Rumores; baja la Alerta (cada 2 ciclos, cada ciclo con 3 espías); permite «preguntar a los espías» qué evento espera en un distrito |
+| Artesano | Materiales: abaratan edificios (hasta la mitad del coste) |
+| Curandero | Cura enfermos; la muerte de un PJ cuesta 1 PF menos |
+| Guardia | **Combate a vuestro lado** en defensas (patrulla, asalto, Coloso), máx. 3 |
+| Mercader | PF y rumores |
+| Visionario | Rumores; revela la verdad tras el augurio del Oráculo |
+
+**Rasgos:** Fanático (el doble de fe con sermones; sube con la Corrupción), Escéptico (pierde fe si la Corrupción es alta), Glotón (come el doble), Soñador (+rumores), Leal (nunca deserta), Valiente (guardia con +10 PG).
+**Acciones del santuario:** Sermón de Fe / Sermón de Hierro (+Corrupción), *predicar y reclutar*, y **rituales**: el Dab de Zaryab, banquete de pan de arena, casamiento de telas blancas (canon), Ofrenda de Huesos (sacrificio) y Ascensión (fe 10: ascender o convertir en reliquia).
+**Deserción:** con fe ≤ 2 un seguidor puede irse; con fe 0 os denuncia (+1 Alerta).
+**Seguidores canon:** Aisha, Farid, Shib, Al-Khush, y los conversos Ranma, Cabernet y Apu (el canon sólo da el nombre: su oficio es **provisional**).
+
+### 4.4b Reputación
+
 **Facciones** (canon): Conclave de los Siete Vientos, Hijos del Simurg, Mercaderes del Zoco, Inquisidores de la Arena, Nómadas del Vacío; y desde el Acto I también **Culto de Dahhak** y **Qilaat** (la guardia de bronce, que sólo obedece a Razul). La reputación va de −5 a +5 y abre/cierra misiones, precios y la ruta.
 **Seguidores:** los NPC convertidos (canon: Aisha, Shib, Ranma, Cabernet, Apu) y los que se suman por misiones. Cada uno da un beneficio pasivo y reacciona a las decisiones del culto (rituales incluidos: *dabbing* y casamientos con telas blancas, canon).
 
@@ -235,6 +256,8 @@ Tipos: **S** secundaria · **P** personal (arco) · **F** de facción. Estado: �
 | Sistema | v0.1 | v0.2 (esta entrega) | Siguiente |
 |---|---|---|---|
 | Combate 5e | ✔ | + Milagros con PF, invocaciones | Jefes con fases, escenarios con objetivo |
+| Jefes, oleadas, regla de victoria por jefe, Coloso | — | v0.3 ✔ (Cap. V) | Dahhak (Iglesia), Al-Mazhar |
+| Seguidores con oficios, fe y rituales | — | v0.3 ✔ | Eventos del culto, disidencia, Ascensión con efectos de combate |
 | Historia Cap. I–IV | ✔ | Reorganizada alrededor del mapa | Cap. V (Coloso) |
 | Mapa del mundo / tiempo / Alerta | — | ✔ | Frentes de guerra civil |
 | Misiones secundarias y personales | — | ✔ 10 | El resto del catálogo |
@@ -242,3 +265,19 @@ Tipos: **S** secundaria · **P** personal (arco) · **F** de facción. Estado: �
 | Santuario, edificios, seguidores | — | ✔ | Eventos del culto (rituales) |
 | Reputación de facciones | — | ✔ | Efectos de ruta |
 | Rutas y finales | — | Especificados | Implementación del Acto II–III |
+
+
+---
+
+## 9. Balance (v0.3)
+
+Metodología: `scripts/sim.ts` juega cada encuentro N veces con un **bot de jugador competente** (`scripts/bot.ts`: usa curaciones, Bendecir, Rayo Guía, Maleficio, Marca del Cazador, Oleada de Acción, Ráfaga de Golpes, Ocultarse…). Se mide *victorias*, *caídos* (PJ que llegan a 0 PG) y *muertes* (fallan las tres salvaciones). Cada encuentro tiene una `scale` (PG y bono de ataque de los enemigos) ajustada a su nivel de dificultad.
+
+| Nivel | Objetivo (bot) | Encuentros |
+|---|---|---|
+| Escaramuza | ≥ 99 % · ≤ 0,2 muertes | Linyera, Niños y Escorpiones, Ghul vendedor, Reflejo de Azuran, Golem de Panchi |
+| Normal | ≥ 98 % · 0,2–0,45 muertes | Acueducto, Cubo, Lago, Té, Espejo, Zyr, Joren, Romain, Infiltrado, Patrulla |
+| Difícil | ≈ 100 % · ≈ 1,5 muertes (con 0 guardias) | Asalto al santuario |
+| Jefe | 62 % sin guardias · 90 % con 2 · 98 % con 3 | Coloso + Dahhak |
+
+Los **guardias del culto** (seguidores) son el principal modificador de dificultad: invertir en seguidores reduce las muertes en el asalto y en el jefe.

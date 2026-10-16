@@ -45,7 +45,7 @@ export interface MonsterDef {
   regen?: number; undead?: boolean; size?: 1 | 2 | 3;
   lore?: string;
 }
-export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental' | 'djinn' | 'mirror' | 'colossus' | 'swarm' | 'wall';
+export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental' | 'djinn' | 'mirror' | 'colossus' | 'swarm' | 'wall' | 'pylon' | 'serpent';
 
 export interface Unit {
   uid: number; id: string; name: string; side: Side; ai: boolean; color: string; glyph: string; sprite: Sprite;
@@ -61,7 +61,7 @@ export interface Unit {
   initiative: number; resist: DmgType[]; immune: DmgType[]; vuln: DmgType[]; condImmune: CondId[];
   traits: string[]; xp: number; cr?: string; undead: boolean;
   onDeath?: MonsterDef['onDeath']; regen: number; rechargeReady: Record<string, boolean>;
-  pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string;
+  pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean;
 }
 
 export interface Tile { ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean }

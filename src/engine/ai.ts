@@ -4,6 +4,7 @@ import { cheb, key, P } from './grid';
 import { avg } from './dice';
 
 type Pause = (ms?: number) => Promise<void>;
+export type Bias = (t: Unit) => number;
 const sleep0: Pause = async () => {};
 
 interface Option { score: number; tile: P; action?: MAction; target?: Unit | P; why: string }
@@ -14,7 +15,7 @@ function candidateTargets(b: Battle, u: Unit): Unit[] {
 }
 function actionRange(a: MAction) { return a.reach; }
 
-function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[]): number {
+function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[], bias?: Bias): number {
   const saveX = u.x, saveY = u.y; u.x = from.x; u.y = from.y;
   try {
     const dist = cheb(from, t);
@@ -37,17 +38,18 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
     const dmgEst = b.expectedDamage(u, a, t); if (!t.down && dmgEst >= t.hp) s += 12;
     s += (1 - t.hp / t.maxHp) * 3;
     if (t.mods.wis >= 3 && t.abilities.some(x => x === 'cure_wounds')) s += 1.5; // curanderos
+    if (bias) s += bias(t);
     return s;
   } finally { u.x = saveX; u.y = saveY; }
 }
 
-function bestOption(b: Battle, u: Unit, acts: MAction[], tiles: P[]): Option | undefined {
+function bestOption(b: Battle, u: Unit, acts: MAction[], tiles: P[], bias?: Bias): Option | undefined {
   const fs = candidateTargets(b, u); let best: Option | undefined;
   for (const tile of tiles) for (const a of acts) {
     if (a.kind === 'heal' || a.kind === 'buff' || a.kind === 'summon') continue;
     if (a.recharge && !u.rechargeReady[a.id]) continue;
     for (const t of fs) {
-      const sc = scoreAction(b, u, a, tile, t, fs); if (sc < 0) continue;
+      const sc = scoreAction(b, u, a, tile, t, fs, bias); if (sc < 0) continue;
       const trav = cheb(tile, u) * 0.01; const here = tile.x === u.x && tile.y === u.y ? 0.05 : 0;
       const total = sc - trav + here;
       if (!best || total > best.score) best = { score: total, tile, action: a, target: a.aoe && !a.aoeSelf ? { x: t.x, y: t.y } : t, why: a.name };
@@ -67,7 +69,7 @@ function fleeTile(b: Battle, u: Unit, src: Unit | undefined): P | undefined {
 }
 
 /** Turno completo de una unidad controlada por IA. */
-export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0): Promise<void> {
+export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bias): Promise<void> {
   if (u.dead || u.down) return;
   if (b.has(u, 'frightened')) {
     const s = b.status(u, 'frightened')!; const src = s.src ? b.byUid(s.src) : undefined;
@@ -85,7 +87,7 @@ export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0): Promise<
     // opciones con la acción principal (o la siguiente del multiataque)
     const pool = seq.length && u.attacksMade > 0 ? [seq[u.attacksMade]] : (seq.length ? [...u.actions.filter(a => !seq.includes(a)), seq[0]] : u.actions);
     void acts;
-    const opt = bestOption(b, u, pool, seq.length && u.attacksMade > 0 ? [{ x: u.x, y: u.y }] : tiles);
+    const opt = bestOption(b, u, pool, seq.length && u.attacksMade > 0 ? [{ x: u.x, y: u.y }] : tiles, bias);
     if (!opt) break;
     await doMove(b, u, opt.tile, pause);
     if (!opt.action || !opt.target) break;

@@ -21,7 +21,7 @@ for (let i = 0; i < 12000; i++) {
   if (st.overlay) { await page.click('.overlay .btn'); await page.waitForTimeout(250); continue; }
   if (st.endBtn) { endSeen = true; await page.screenshot({ path: `${dir}/story_end.png` }); await page.click('text=Volver al mapa de Zaryab'); await page.waitForTimeout(300); continue; }
   if (st.battle) {
-    const key = await page.evaluate(() => { const b = window.__b, ui = window.__ui; if (!b || b.__auto) return null; b.__auto = true; for (const u of b.units) if (u.pcId) { u.ai = true; u.actions = u.weapons.filter(w => !w.bonusAction && w.id !== 'longbow_ss').map(w => ({ id: w.id, name: w.name, kind: w.ranged ? 'ranged' : 'melee', toHit: w.toHit, reach: w.range, dmg: w.dmg })); } ui.endTurn(); return b.grid.w + 'x' + b.grid.h + ':' + b.units.length; });
+    const key = await page.evaluate(() => { const b = window.__b, ui = window.__ui; if (!b || b.__auto) return null; b.__auto = true; const boss = b.units.some(x => x.traits.includes('boss')); for (const u of b.units) if (u.pcId) { if (boss) { u.maxHp = u.hp = 400; u.ac = 25; } u.ai = true; u.actions = u.weapons.filter(w => !w.bonusAction && w.id !== 'longbow_ss').map(w => ({ id: w.id, name: w.name, kind: w.ranged ? 'ranged' : 'melee', toHit: w.toHit, reach: w.range, dmg: w.dmg })); } ui.endTurn(); return b.grid.w + 'x' + b.grid.h + ':' + b.units.length; });
     if (key) { battles.add(key + '@' + i); if (shots < 4) { await page.waitForTimeout(1200); await page.screenshot({ path: `${dir}/story_battle${shots++}.png` }); } }
     await page.waitForTimeout(600); continue;
   }
@@ -30,7 +30,7 @@ for (let i = 0; i < 12000; i++) {
   if (st.hub) {
     hubSteps++;
     const act = await page.evaluate(() => { const app = window.__app, Q = window.__quests, hub = app.hub, c = app.camp; const av = Q.filter(q => hub.questStatus(q) === 'available'); const order = { main: 0, personal: 1, side: 2, faction: 3 }; av.sort((a, b) => order[a.kind] - order[b.kind]);
-      return { q: av[0]?.id ?? null, day: c.day, alert: c.alert, done: Object.keys(c.quests), cap4: c.flags.includes('cap4_done') }; });
+      return { q: av[0]?.id ?? null, day: c.day, alert: c.alert, done: Object.keys(c.quests), cap4: c.flags.includes('cap5_done') }; });
     if (act.q) { doneQuests = act.done; await page.evaluate(id => window.__app.hub.pick({ t: 'quest', id }), act.q); await page.waitForTimeout(200); continue; }
     if (act.cap4 && oracles >= 8) break;
     if (oracles < 8 || !act.cap4) { oracles++; const zones = ['bajo', 'zoco', 'plaza', 'pozo', 'acueductos', 'santuario', 'jardin']; await page.evaluate(z => window.__app.hub.pick({ t: 'oracle', district: z }), zones[oracles % zones.length]); await page.waitForTimeout(200); continue; }

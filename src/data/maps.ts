@@ -59,6 +59,21 @@ export const MAPS: Record<string, MapDef> = {
 };
 
 Object.assign(MAPS, {
+  plaza: {
+    id: 'plaza', name: 'Plaza Central de Zaryab', theme: 'plaza',
+    objective: 'Derriba al Coloso. Los tres pilones púrpura lo alimentan: rómpelos. Dahhak no puede ser detenido, sólo herido.',
+    rows: paint(24, 18, [
+      ['fill', '.'],
+      R(7, 1, 16, 3, '#'), R(10, 4, 13, 4, '='), P(11, 3, '.'), P(12, 3, '.'),
+      R(1, 1, 3, 5, '#'), R(20, 1, 22, 5, '#'),
+      R(4, 8, 5, 8, 'c'), R(18, 8, 19, 8, 'c'), R(8, 10, 9, 10, 'c'), R(14, 10, 15, 10, 'c'), P(11, 7, 'c'), P(12, 7, 'c'), P(6, 5, 'c'), P(17, 5, 'c'),
+      R(18, 12, 21, 14, '^'), R(2, 12, 4, 13, ','), P(10, 12, ','), P(13, 12, ','),
+      P(12, 5, 'e'), P(11, 4, 'e'), P(6, 6, 'e'), P(17, 6, 'e'), P(11, 9, 'e'), P(5, 3, 'e'), P(18, 3, 'e'),
+      P(1, 8, 'w'), P(22, 8, 'w'), P(1, 10, 'w'), P(22, 10, 'w'),
+      P(8, 15, '1'), P(10, 15, '2'), P(12, 15, '3'), P(14, 15, '4'), P(9, 16, '5'), P(13, 16, '6'),
+    ]),
+  },
+
   pozo: {
     id: 'pozo', name: 'Lago de los Silencios', theme: 'crater',
     objective: 'Despeja la cueva del lago. La Lengua Muerta —la rama negra— espera en el centro.',
@@ -121,14 +136,15 @@ Object.assign(MAPS, {
   },
 });
 
-export interface Encounter { map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
+export interface Wave { round: number; every?: number; until?: number; foes: string[]; note?: string }
+export interface Encounter { defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
-  linyera: {
+  linyera: { scale: { hp: 0.75, atk: -1 },
     map: 'callejon', intro: 'El viejo linyera se arranca la máscara de mendigo. Sus dientes son demasiado blancos. Silba, y el callejón se llena de armaduras de bronce.',
     foes: [{ id: 'linyera', slot: 2 }, { id: 'guardia_arena', slot: 0, suffix: ' I' }, { id: 'guardia_arena', slot: 1, suffix: ' II' }, { id: 'escorpion_obsidiana', slot: 4 }, { id: 'escorpion_obsidiana', slot: 5 }],
   },
-  acueducto: {
+  acueducto: { scale: { hp: 1.3, atk: 1 },
     map: 'acueducto', intro: 'Al tocar el fragmento sellado en la cerradura, las piletas rotas escupen ghuls. Los espectros se multiplican a su alrededor.',
     foes: [{ id: 'ghul_mutado', slot: 0 }, { id: 'ghul_mutado', slot: 1 }, { id: 'ghul_swarmer', slot: 2 }, { id: 'ghul_swarmer', slot: 3 }, { id: 'ghul_swarmer', slot: 4 }, { id: 'ghul_swarmer', slot: 5 }],
   },
@@ -137,30 +153,33 @@ export const ENCOUNTERS: Record<string, Encounter> = {
     foes: [{ id: 'reflejo', slot: 0, suffix: ' de Pact' }, { id: 'reflejo', slot: 1, suffix: ' de Rabb' }, { id: 'reflejo', slot: 2, suffix: ' de Joren' }],
   },
 
-  lago: { map: 'pozo', intro: 'Los túneles de los Hijos del Simurg desembocan en una caverna de cristal negro. El agua refleja el cielo al revés. Algo se mueve bajo la piel de la arena.',
+  lago: { scale: { hp: 1.6, atk: 1 }, map: 'pozo', intro: 'Los túneles de los Hijos del Simurg desembocan en una caverna de cristal negro. El agua refleja el cielo al revés. Algo se mueve bajo la piel de la arena.',
     foes: [{ id: 'guardia_arena', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'ghul_catacumbas', slot: 2 }, { id: 'hormiga_arena', slot: 3 }, { id: 'hormiga_arena', slot: 4 }, { id: 'hormiga_arena', slot: 5 }] },
-  espejo: { map: 'zoco', intro: 'El Mercado de las Sombras huele a aceite violeta. En el puesto de Madam Shub, el Espejo de Almas devuelve rostros que no son los vuestros.',
+  espejo: { scale: { hp: 0.75, atk: -1 }, map: 'zoco', intro: 'El Mercado de las Sombras huele a aceite violeta. En el puesto de Madam Shub, el Espejo de Almas devuelve rostros que no son los vuestros.',
     foes: [{ id: 'mercenario_zoco', slot: 0 }, { id: 'mercenario_zoco', slot: 1 }, { id: 'serpiente_cristal', slot: 2 }, { id: 'serpiente_cristal', slot: 3 }] },
-  te: { map: 'jardin', intro: 'Cipreses podados como manos gigantes. Rosas translúcidas que sangran néctar. Todo el mundo lleva máscara; las flores, no.',
+  te: { scale: { hp: 2, atk: 2 }, map: 'jardin', intro: 'Cipreses podados como manos gigantes. Rosas translúcidas que sangran néctar. Todo el mundo lleva máscara; las flores, no.',
     foes: [{ id: 'flor_carnivora', slot: 0 }, { id: 'flor_carnivora', slot: 1 }, { id: 'flor_carnivora', slot: 2 }, { id: 'guardia_arena', slot: 3 }, { id: 'guardia_arena', slot: 4 }] },
-  zyr: { map: 'zoco', intro: "«La Casa Vel'Shara no olvida, Zyr'thar. No olvida. No perdona. No muere.»",
+  zyr: { scale: { hp: 0.75, atk: -1 }, map: 'zoco', intro: "«La Casa Vel'Shara no olvida, Zyr'thar. No olvida. No perdona. No muere.»",
     foes: [{ id: 'drow_espia', slot: 0 }, { id: 'serpiente_cristal', slot: 2 }, { id: 'serpiente_cristal', slot: 3 }, { id: 'drow_espia', slot: 1, suffix: ' (hermana)' }] },
   joren: { map: 'zoco', intro: 'Un sello quemado en cuero: un círculo partido con un diente dentro. Los hombres de La Marca no esperaban visitas.',
     foes: [{ id: 'mercenario_zoco', slot: 0, suffix: ' (La Marca)' }, { id: 'mercenario_zoco', slot: 1, suffix: ' (La Marca)' }, { id: 'serpiente_cristal', slot: 2 }] },
   romain: { map: 'templo', intro: 'Cenizas, vigas negras y, grabado en una piedra: el sello del Conclave. Quien incendió este templo vuelve a por lo que olvidó.',
     foes: [{ id: 'inquisidor', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }, { id: 'perro_arena', slot: 3 }] },
-  panchi: { map: 'santuario', intro: 'Entre los estantes, algo golpea las paredes: un golem defectuoso, roto, enojado, solo. Como alguien que conoces.',
+  panchi: { scale: { hp: 1.6, atk: 2 }, map: 'santuario', intro: 'Entre los estantes, algo golpea las paredes: un golem defectuoso, roto, enojado, solo. Como alguien que conoces.',
     foes: [{ id: 'golem_arena', slot: 1 }] },
-  pact: { map: 'cubo', intro: 'Tu reflejo lleva una corona de fuego invertido. Es lo que fuiste. Es lo que podrías volver a ser.',
+  pact: { scale: { hp: 2.5, atk: 3 }, map: 'cubo', intro: 'Tu reflejo lleva una corona de fuego invertido. Es lo que fuiste. Es lo que podrías volver a ser.',
     foes: [{ id: 'reflejo', slot: 0, suffix: ' — Eco de Azuran' }] },
-  patrulla: { map: 'callejon', intro: 'Una patrulla del Conclave rastrea a uno de vuestros seguidores. Un perro de arena ya os ha olido.',
+  patrulla: { scale: { hp: 1.3, atk: 1 }, defense: true, map: 'callejon', intro: 'Una patrulla del Conclave rastrea a uno de vuestros seguidores. Un perro de arena ya os ha olido.',
     foes: [{ id: 'guardia_arena', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }, { id: 'perro_arena', slot: 4 }] },
-  asalto: { map: 'santuario', intro: 'Las campanas del Conclave suenan sobre la biblioteca. Los Inquisidores han venido por el cristal, por el altar y por vosotros.',
+  asalto: { scale: { hp: 0.85, atk: -1 }, defense: true, map: 'santuario', intro: 'Las campanas del Conclave suenan sobre la biblioteca. Los Inquisidores han venido por el cristal, por el altar y por vosotros.',
     foes: [{ id: 'inquisidor', slot: 0 }, { id: 'inquisidor', slot: 1 }, { id: 'guardia_arena', slot: 2 }, { id: 'guardia_arena', slot: 3 }, { id: 'guardia_arena', slot: 4 }, { id: 'perro_arena', slot: 5 }] },
-  ninos: { map: 'callejon', intro: 'Los niños del barrio juegan con sus escorpiones domesticados cuando llegan los guardias «a cobrar impuestos». Los escorpiones ya han decidido de qué lado están.',
+  ninos: { scale: { hp: 1.6, atk: 2 }, map: 'callejon', intro: 'Los niños del barrio juegan con sus escorpiones domesticados cuando llegan los guardias «a cobrar impuestos». Los escorpiones ya han decidido de qué lado están.',
     foes: [{ id: 'guardia_arena', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }], ally: [{ id: 'escorpion_obsidiana', slot: 0 }, { id: 'escorpion_obsidiana', slot: 1 }] },
-  infiltrado: { map: 'zoco', intro: 'Un anillo brilla en el dedo del «comerciante»: detecta la magia de Zahir. Os ha reconocido por el cristal.',
+  infiltrado: { scale: { hp: 1.3, atk: 1 }, map: 'zoco', intro: 'Un anillo brilla en el dedo del «comerciante»: detecta la magia de Zahir. Os ha reconocido por el cristal.',
     foes: [{ id: 'inquisidor', slot: 0 }, { id: 'perro_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }] },
-  ghul_vendedor: { map: 'callejon', intro: '«Carne fresca, forastero, carne fresca…» El vendedor sonríe con demasiados dientes.',
+  ghul_vendedor: { scale: { hp: 1.6, atk: 1 }, map: 'callejon', intro: '«Carne fresca, forastero, carne fresca…» El vendedor sonríe con demasiados dientes.',
     foes: [{ id: 'ghul_catacumbas', slot: 0 }, { id: 'ghul_swarmer', slot: 1 }, { id: 'ghul_swarmer', slot: 2 }] },
+  coloso: { scale: { hp: 1.1, atk: 0 }, defense: true, map: 'plaza', intro: 'Las columnas del Capitolio se abren como pétalos y emerge un coloso de hierro y oro. Dahhak trepa por su espalda, le susurra algo hueco… y las gemas se encienden en púrpura enfermizo. «¿Querían un dios? Les traje uno.»',
+    foes: [{ id: 'coloso', slot: 0 }, { id: 'dahhak', slot: 1 }, { id: 'pilon', slot: 2 }, { id: 'pilon', slot: 3 }, { id: 'pilon', slot: 4 }],
+    waves: [{ round: 3, every: 3, until: 9, foes: ['nasnas'], note: 'Los Nasnas de Dahhak cruzan las barricadas.' }] },
 };

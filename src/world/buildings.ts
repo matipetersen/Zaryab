@@ -9,14 +9,4 @@ export const BUILDINGS: Building[] = [
   { id: 'pozo_vis', name: 'Pozo de Visiones', pf: 50, icon: '◉', effect: 'El Oráculo deja de mentir: el augurio muestra el evento real.', blurb: 'Ver eventos futuros una vez por semana (70% preciso).' },
   { id: 'collar', name: 'Collar de Sumisión', pf: 45, icon: '⛓', effect: '+3 Corrupción. Declara Corrupción alta y atrae a la Cacería.', blurb: 'Controla a un humanoide. Oscuro.' },
 ];
-export const FOLLOWER_INFO: Record<string, string> = {
-  Aisha: 'Pan de arena. Teje y conoce los túneles. Madre de Farid.',
-  Farid: 'Niño profético. Su sombra no coincide con sus movimientos.',
-  Shib: 'Hijo del Simurg. Espía: conoce los túneles secretos.',
-  'Al-Khush': 'Artesano sordomudo. Repara alfombras mágicas.',
-  'Perro callejero': 'Un perro flaco. Duerme en la biblioteca.',
-  'Los niños del barrio': 'Dibujan el ojo del Simurg en las paredes.',
-  'Un nuevo adepto': 'Quería ser un latido más en el cristal.',
-  'Un médico agradecido': 'Cura a los seguidores.',
-};
 export const RITOS = 'Ritos del culto: dabbing, casamientos con telas blancas en la mano y gritos de alegría.';

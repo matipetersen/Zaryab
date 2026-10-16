@@ -186,7 +186,7 @@ export class Renderer {
     const c = this.ctx; const t = this.b!.grid.at(Math.round(v.x), Math.round(v.y)); const el = (t?.kind === 'high' ? ELEV : 0) + (u.fly && !u.dead ? 10 + Math.sin(this.time * 3) * 2 : 0);
     const bob = u.fly || u.sprite === 'djinn' ? Math.sin(this.time * 2 + v.wobble) * 2 : 0;
     const P = this.center(v.x, v.y, el); const sx = P.x + (v.shake ? (Math.random() - .5) * 6 * v.shake : 0), sy = P.y - bob * s;
-    const k = s * US * (u.size > 1 ? 1.4 : 1); c.globalAlpha = v.alpha * (this.b!.has(u, 'invisible') ? .4 : 1);
+    const k = s * US * (1 + (u.size - 1) * 0.55); c.globalAlpha = v.alpha * (this.b!.has(u, 'invisible') ? .4 : 1);
     // sombra y anillo de turno
     c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 17 * k, 7 * k, 0, 0, 6.28); c.fill();
     if (u.uid === this.activeUid) { c.strokeStyle = `rgba(255,215,90,${.65 + .3 * Math.sin(this.time * 5)})`; c.lineWidth = 3; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 21 * k, 9.5 * k, 0, 0, 6.28); c.stroke(); }
@@ -259,6 +259,24 @@ export class Renderer {
         c.fillStyle = g; c.beginPath(); c.moveTo(-9, 0); c.lineTo(9, 0); c.lineTo(7, -24); c.lineTo(-7, -24); c.closePath(); c.fill();
         c.beginPath(); c.arc(0, -31, 7, 0, 6.28); c.fill(); c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-5, -34); c.lineTo(-1, -40); c.moveTo(-8, -10); c.lineTo(-4, -20); c.stroke();
         c.fillStyle = '#6a3a9a'; c.fillRect(-3, -32, 2, 2); c.fillRect(2, -32, 2, 2); break; }
+      case 'colossus': {
+        c.fillStyle = '#2a2418'; c.fillRect(-13, -4, 10, 8); c.fillRect(3, -4, 10, 8);
+        c.fillStyle = dark; c.fillRect(-15, -36, 30, 34); c.fillStyle = col; c.fillRect(-13, -36, 26, 30);
+        c.fillStyle = light; c.fillRect(-13, -36, 26, 5);
+        for (const [gx, gy] of [[-8, -26], [8, -26], [0, -16]] as const) { c.fillStyle = '#b04ad8'; c.beginPath(); c.arc(gx, gy, 3.4, 0, 6.28); c.fill(); c.fillStyle = 'rgba(255,255,255,.8)'; c.fillRect(gx - 1, gy - 2, 1.5, 1.5); }
+        c.fillStyle = dark; c.fillRect(-8, -46, 16, 12); c.fillStyle = '#111'; c.fillRect(-6, -43, 12, 4);
+        c.strokeStyle = '#6b6b78'; c.lineWidth = 2.5; for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(sx * 15, -30); c.lineTo(sx * 24, -18); c.stroke(); c.fillStyle = '#444'; c.beginPath(); c.arc(sx * 24, -16, 6, 0, 6.28); c.fill(); c.fillStyle = '#999'; for (let a = 0; a < 6.28; a += 1.05) { c.beginPath(); c.arc(sx * 24 + Math.cos(a) * 6, -16 + Math.sin(a) * 6, 1.6, 0, 6.28); c.fill(); } }
+        break; }
+      case 'pylon': {
+        const g = c.createLinearGradient(0, -40, 0, 0); g.addColorStop(0, '#e6a8ff'); g.addColorStop(1, '#5a1f78');
+        c.fillStyle = '#2b2236'; c.fillRect(-9, -4, 18, 5); c.fillStyle = g; c.beginPath(); c.moveTo(0, -42); c.lineTo(9, -22); c.lineTo(5, -4); c.lineTo(-5, -4); c.lineTo(-9, -22); c.closePath(); c.fill();
+        c.strokeStyle = `rgba(230,170,255,${.5 + .3 * Math.sin(this.time * 4)})`; c.lineWidth = 2; c.stroke(); break; }
+      case 'serpent': {
+        c.fillStyle = dark; c.beginPath(); c.moveTo(-12, 0); c.lineTo(12, 0); c.lineTo(8, -24); c.lineTo(-8, -24); c.closePath(); c.fill();
+        c.fillStyle = col; c.beginPath(); c.moveTo(-9, -3); c.lineTo(9, -3); c.lineTo(6, -24); c.lineTo(-6, -24); c.closePath(); c.fill();
+        c.fillStyle = '#d9c9a0'; c.beginPath(); c.arc(0, -30, 7, 0, 6.28); c.fill(); c.fillStyle = '#111'; c.fillRect(-3, -31, 2, 2); c.fillRect(2, -31, 2, 2);
+        c.strokeStyle = '#3d5a2a'; c.lineWidth = 3; for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(sx * 7, -26); c.quadraticCurveTo(sx * 20, -34 + Math.sin(this.time * 3 + sx) * 3, sx * 13, -46); c.stroke(); c.fillStyle = '#3d5a2a'; c.beginPath(); c.arc(sx * 13, -46, 2.6, 0, 6.28); c.fill(); }
+        break; }
       case 'wall': { c.fillStyle = 'rgba(160,220,255,.65)'; c.fillRect(-14, -30, 28, 30); c.strokeStyle = '#fff'; c.strokeRect(-14, -30, 28, 30); break; }
       default: { c.fillStyle = col; c.beginPath(); c.arc(0, -16, 12, 0, 6.28); c.fill(); }
     }

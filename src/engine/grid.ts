@@ -14,7 +14,7 @@ export interface P { x: number; y: number }
 
 export class Grid {
   w: number; h: number; tiles: Tile[][] = [];
-  spawns: { pc: P[]; foe: P[]; ally: P[] } = { pc: [], foe: [], ally: [] };
+  spawns: { pc: P[]; foe: P[]; ally: P[]; wave: P[] } = { pc: [], foe: [], ally: [], wave: [] };
   marks: P[] = [];
   constructor(rows: string[]) {
     this.h = rows.length; this.w = rows[0].length;
@@ -27,6 +27,7 @@ export class Grid {
         if (/[1-6]/.test(ch)) { pcSlots.push([+ch, { x, y }]); ch = '.'; }
         else if (ch === 'e') { this.spawns.foe.push({ x, y }); ch = '.'; }
         else if (ch === 'a') { this.spawns.ally.push({ x, y }); ch = '.'; }
+        else if (ch === 'w') { this.spawns.wave.push({ x, y }); ch = '.'; }
         else if (ch === '*') this.marks.push({ x, y });
         const t = LEGEND[ch]; if (!t) throw new Error(`Carácter de mapa desconocido '${ch}' en (${x},${y})`);
         line.push({ ch, ...t });

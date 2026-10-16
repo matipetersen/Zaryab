@@ -60,7 +60,7 @@ export const MONSTERS: Record<string, MonsterDef> = {
     xp: 700, color: '#aab7d8', glyph: 'R', sprite: 'mirror', lore: 'Copia a su original, pero sin conjuros. Al romperse se funde brevemente con quien lo golpeó.',
   },
   nasnas: {
-    id: 'nasnas', name: 'Nasnas Deforme', type: 'aberración', cr: '1/4', hp: 13, ac: 12, speed: 30, mods: m(1, 2, 1, -2, 0, -2), prof: 2,
+    id: 'nasnas', name: 'Nasnas Deforme', type: 'aberración', cr: '1/4', hp: 11, ac: 12, speed: 30, mods: m(1, 2, 1, -2, 0, -2), prof: 2,
     actions: [{ id: 'garra', name: 'Zarpazo torcido', kind: 'melee', toHit: 3, reach: 1, dmg: [{ dice: '1d6+1', type: 'slashing' }] }],
     xp: 50, color: '#7a4e3a', glyph: 'n', sprite: 'beast', lore: 'Medio cuerpo que salta: seguidor del culto de Dahhak.',
   },
@@ -147,6 +147,36 @@ export const MONSTERS: Record<string, MonsterDef> = {
     id: 'perro_arena', name: 'Perro de Arena', type: 'bestia', cr: '1/2', hp: 22, ac: 13, speed: 40, mods: m(2, 2, 1, -4, 1, -3), prof: 2,
     actions: [{ id: 'mordisco', name: 'Mordisco', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d6+2', type: 'piercing' }], save: { ab: 'str', dc: 12, cond: 'prone', turns: -1 } }],
     xp: 100, color: '#c9a060', glyph: 'p', sprite: 'beast', lore: 'Rastreador de los Inquisidores: nunca pierde un olor a herejía.',
+  },
+  adorador_valiente: {
+    id: 'adorador_valiente', name: 'Adepto Valiente', type: 'humanoide', cr: '1/2', hp: 37, ac: 12, speed: 30, mods: m(2, 0, 2, 0, 1, 0), prof: 2,
+    actions: [{ id: 'daga', name: 'Daga Ritual', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d4+2', type: 'slashing' }, { dice: '1d6', type: 'necrotic' }] }],
+    xp: 0, color: '#c28ae8', glyph: 'a', sprite: 'humanoid', lore: 'Un seguidor que se ofreció a defender el santuario.',
+  },
+  coloso: {
+    id: 'coloso', name: 'Coloso del Capitolio (corrupto)', type: 'constructo colosal', cr: '8', hp: 120, ac: 17, speed: 20, mods: m(7, -1, 6, 0, 1, 0), prof: 3, size: 3,
+    immune: ['poison', 'psychic'], condImmune: ['frightened', 'charmed', 'paralyzed', 'stunned', 'poisoned', 'prone'],
+    actions: [
+      { id: 'bola', name: 'Bola de Pinchos', kind: 'melee', toHit: 7, reach: 2, dmg: [{ dice: '2d6+5', type: 'bludgeoning' }] },
+      { id: 'barrido', name: 'Barrido de Cadenas', kind: 'save', reach: 3, aoe: 2, dmg: [{ dice: '3d8', type: 'bludgeoning' }], half: true, save: { ab: 'dex', dc: 14, cond: 'prone', turns: -1 }, recharge: 5 },
+    ],
+    multiattack: ['bola'], traits: ['boss', 'pilonRegen'], xp: 2900, color: '#c9a227', glyph: 'C', sprite: 'colossus',
+    lore: 'Hierro bruñido y oro opaco, tan alto como cuatro edificios. Bolas de pinchos por brazos. Sus gemas lloran luz; ahora, luz púrpura.',
+  },
+  pilon: {
+    id: 'pilon', name: 'Pilón de Gema Púrpura', type: 'constructo', cr: '1', hp: 24, ac: 12, speed: 0, mods: m(0, -2, 4, 0, 0, 0), prof: 2, immune: ['poison', 'psychic'],
+    actions: [], traits: ['pilon'], xp: 200, color: '#b04ad8', glyph: '◆', sprite: 'pylon',
+    lore: 'Una gema envenenada por la palabra de Dahhak. Alimenta al Coloso mientras brille.',
+  },
+  dahhak: {
+    id: 'dahhak', name: 'Dahhak, el Portador de Cuellos', type: 'aberración (djinn)', cr: '5', hp: 50, ac: 15, speed: 30, mods: m(2, 4, 3, 2, 3, 4), prof: 3, resist: ['poison'],
+    actions: [
+      { id: 'colmillos', name: 'Colmillos de Víbora', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '1d8+2', type: 'piercing' }, { dice: '1d6', type: 'poison' }], save: { ab: 'con', dc: 13, cond: 'poisoned', turns: 2 } },
+      { id: 'serpientes', name: 'Serpientes Arrojadas', kind: 'ranged', toHit: 6, reach: 5, dmg: [{ dice: '2d6+3', type: 'piercing' }] },
+      { id: 'canto', name: 'Canto de los Cuellos Torcidos', kind: 'save', reach: 6, aoe: 3, save: { ab: 'wis', dc: 14, cond: 'frightened', turns: 2 }, recharge: 5 },
+    ],
+    traits: ['flees50'], xp: 1800, color: '#6a5a2a', glyph: 'D', sprite: 'serpent',
+    lore: 'Hombros en espiral, cabellos de serpientes vivas y una sonrisa de quien ya ganó. «Dahhak no da poder: devora historia.»',
   },
   djinn_menor: {
     id: 'djinn_menor', name: 'Djinn Menor', type: 'elemental', cr: '1', hp: 30, ac: 13, speed: 30, mods: m(1, 2, 1, 0, 0, 1), prof: 2, fly: 30,

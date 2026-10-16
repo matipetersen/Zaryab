@@ -1,12 +1,12 @@
 import type { Node } from '../story/types';
 import type { Campaign, Effect } from '../state';
 import { has } from '../state';
-import { CAP1, CAP2, CAP3, CAP4 } from '../story/script';
+import { CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
 
 export type QKind = 'main' | 'side' | 'personal' | 'faction';
 export interface QuestDef {
   id: string; title: string; kind: QKind; district: string; giver: string; blurb: string;
-  when: (c: Campaign) => boolean; days: number; alert?: number; script: Node[]; reward: string; planned?: boolean; pc?: string;
+  when: (c: Campaign) => boolean; days: number; next?: string; alert?: number; script: Node[]; reward: string; planned?: boolean; pc?: string;
 }
 const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
@@ -205,8 +205,9 @@ const P_PANCHI: Node[] = [
 // ───────────────────────── Catálogo ─────────────────────────
 export const QUESTS: QuestDef[] = [
   { id: 'm_cap3', title: 'Los Pecados Bajo el Agua', kind: 'main', district: 'zoco', giver: 'EaNassr · Zahir', blurb: 'EaNassr os cita en la sala de espejos. Zahir llama desde el agua. El fragmento del meteorito espera en los acueductos.', when: done('cap2_done'), days: 3, script: CAP3, reward: 'Fragmento 2 · Si\'lats · Azuran' },
-  { id: 'm_cap4', title: 'El Reflejo se Rompe', kind: 'main', district: 'plaza', giver: 'Zahir', blurb: 'Zahir está furioso: hablasteis con Razul y con Dahhak. Debéis robar el meteorito del Cubo de los Mil Reflejos.', when: c => has(c, 'cap3_done') && (c.day >= 8 || Object.values(c.quests).filter(s => s === 'done').length >= 2), days: 3, script: CAP4, reward: 'Fragmento 3 · Pista de Ellie' },
-  { id: 'm_cap5', title: 'La Caída del Capitolio', kind: 'main', district: 'plaza', giver: 'Dahhak', blurb: 'El Coloso de Dahhak avanza. (Próximamente: Acto I, jefe final.)', when: () => false, days: 3, script: [], reward: '—', planned: true },
+  { id: 'm_cap4', title: 'El Reflejo se Rompe', kind: 'main', district: 'plaza', giver: 'Zahir', blurb: 'Zahir está furioso: hablasteis con Razul y con Dahhak. Debéis robar el meteorito del Cubo de los Mil Reflejos.', when: c => has(c, 'cap3_done') && (c.day >= 8 || Object.values(c.quests).filter(s => s === 'done').length >= 2), days: 3, script: CAP4, reward: 'Fragmento 3 · Pista de Ellie', next: 'm_cap5' },
+  { id: 'm_cap5', title: 'La Caída del Capitolio', kind: 'main', district: 'plaza', giver: 'Dahhak', blurb: 'El Coloso corrupto de Dahhak avanza sobre la plaza. Jefe del Acto I y primera gran decisión.', when: done('cap4_done'), days: 2, script: CAP5, reward: 'Postura: Orden / Pueblo / Sombra' },
+  { id: 'm_cap6', title: 'La Guerra Civil: Medinat al-Rih', kind: 'main', district: 'medinat', giver: 'Joren · Panchi', blurb: 'El Acto II: la revolución de los Nasnas, el Torneo de los Puños Cerrados y la Iglesia del Simurg. (Próximamente.)', when: () => false, days: 3, script: [], reward: '—', planned: true },
 
   { id: 's_lago', title: 'El Precio de la Salvación', kind: 'side', district: 'pozo', giver: 'Aisha', blurb: 'Los túneles de los Hijos del Simurg, Shib moribundo y la rama del Conclave en el Lago. Purificar, quemar o llevar como prueba.', when: done('cap2_done'), days: 2, script: S_LAGO, reward: 'Seguidores · Hijos del Simurg · remedio' },
   { id: 's_espejo', title: 'El Espejo de Almas', kind: 'side', district: 'zoco', giver: 'EaNassr', blurb: 'Recuperar un Espejo de Almas del puesto de Madam Shub, en el Mercado de las Sombras.', when: done('cap3_done'), days: 1, alert: 0, script: S_ESPEJO, reward: 'Mercaderes · Espejo del Alma' },

@@ -12,6 +12,12 @@ npx tsx scripts/validate.ts   # valida encuentros, hablantes, tabla del oráculo
 
 Atajos de depuración: `/?battle=linyera|acueducto|cubo` abre un combate directamente.
 
+## Novedades de la v0.3
+
+- **Cap. V · La Caída del Capitolio:** jefe con tres pilones que alimentan al Coloso, Dahhak que huye al llegar al 50 % de PG, oleadas de refuerzos, y la primera gran decisión (Orden / Pueblo / Sombra). Cierra el Acto I.
+- **Seguidores estilo Cult of the Lamb:** oficios, fe, rasgos, víveres/materiales/rumores, sermones, rituales (Dab, banquete, casamiento de telas blancas, ofrenda, ascensión), deserción y guardias que combaten a vuestro lado.
+- **Balance** con un bot competente: tabla de objetivos por nivel de dificultad en [`docs/DISENO.md`](docs/DISENO.md#9-balance-v03). `npx tsx scripts/sim.ts all 100` y `scripts/tune.ts`.
+
 ## Novedades de la v0.2
 
 - **Mapa del mundo** (estilo Tactics Ogre) entre capítulos: 13 distritos, tiempo en días, *Alerta del Conclave* y eventos del reloj (patrulla, asalto al santuario, llamada de Zahir, cacería).

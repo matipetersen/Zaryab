@@ -1,48 +1,35 @@
-// Simulación sin interfaz: PCs y monstruos controlados por IA, para detectar errores del motor.
+// Simulación sin interfaz con un bot competente. Uso: tsx scripts/sim.ts [encuentro|all] [N] [log]
 import { buildBattle } from '../src/engine/setup';
 import { runAI } from '../src/engine/ai';
 import { setSeed } from '../src/engine/dice';
 import { ENCOUNTERS } from '../src/data/maps';
 import { PARTY } from '../src/data/party';
-import type { Unit, MAction } from '../src/engine/types';
-import { cheb } from '../src/engine/grid';
+import { botSetup, botTurn } from './bot';
 
-function pcActions(u: Unit): MAction[] {
-  return u.weapons.filter(w => !w.bonusAction && w.id !== 'longbow_ss').map(w => ({ id: w.id, name: w.name, kind: w.ranged ? 'ranged' : 'melee', toHit: w.toHit, reach: w.range, dmg: w.dmg } as MAction));
-}
-async function playBattle(enc: string, seed: number, verbose = false) {
+export async function playBattle(enc: string, seed: number, verbose = false, party = PARTY.map(p => p.id), opts: { pf?: number; allies?: string[] } = {}) {
   setSeed(seed);
-  const b = buildBattle(enc, PARTY.map(p => p.id));
-  for (const u of b.units) if (u.side === 'pc') { u.ai = true; u.actions = pcActions(u); }
-  b.start();
-  let turns = 0;
-  while (!b.over && turns < 400) {
+  const b = buildBattle(enc, party, { allies: opts.allies, pf: opts.pf });
+  botSetup(b); b.start();
+  const everDown = new Set<string>(); let turns = 0;
+  while (!b.over && turns < 600) {
     const u = b.cur!; turns++;
-    if (u.side === 'pc' && !u.down) {
-      // curación simple de Romain
-      const hurt = b.units.find(a => a.side === 'pc' && !a.dead && a.hp < a.maxHp * 0.5 && !a.down);
-      const downed = b.units.find(a => a.side === 'pc' && a.down && !a.dead);
-      if (u.id === 'romain' && (downed || hurt)) {
-        const t = downed ?? hurt!; const r = b.useAbility(u, 'healing_word', t); if (!r.ok && verbose) console.log('HW fail', r.msg);
-      }
-      if (u.id === 'rabb') b.useAbility(u, 'hexblades_curse', b.foesOf(u)[0]);
-      if (u.id === 'romain' && b.foesOf(u).some(f => f.undead)) b.useAbility(u, 'turn_undead', undefined);
-      if (u.id === 'romain' && !u.actionUsed) { const f = b.foesOf(u).sort((x, y) => cheb(x, u) - cheb(y, u))[0]; if (f && cheb(f, u) <= 24) b.useAbility(u, 'guiding_bolt', f); }
-    }
-    await runAI(b, u);
+    if (u.pcId) await botTurn(b, u); else await runAI(b, u);
+    for (const p of b.units) if (p.pcId && (p.down || p.dead)) everDown.add(p.pcId);
     if (!b.over) b.endTurn();
-    if (verbose) for (const e of b.takeEvents()) if (e.t === 'log') console.log(e.text); else b.takeEvents();
-    else b.takeEvents();
+    for (const e of b.takeEvents()) if (verbose && e.t === 'log') console.log(e.text);
   }
-  const pcs = b.units.filter(u => u.side === 'pc');
-  return { result: b.result ?? 'timeout', round: b.round, alive: pcs.filter(p => !p.dead && !p.down).length, dead: pcs.filter(p => p.dead).length };
+  const pcs = b.units.filter(u => u.pcId);
+  return { result: b.result ?? 'timeout', round: b.round, downs: everDown.size, dead: pcs.filter(p => p.dead).length, hpLeft: pcs.reduce((s, p) => s + (p.dead ? 0 : Math.max(0, p.hp)), 0) / pcs.reduce((s, p) => s + p.maxHp, 0) };
 }
-const arg = process.argv[2];
-if (arg === 'log') { await playBattle(process.argv[3] || 'linyera', Number(process.argv[4] || 1), true); }
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+const arg = process.argv[2] || "all"; const N = +(process.argv[3] || 80);
+if (!isMain) { /* importado por tune.ts */ }
+else if (process.argv[4] === 'log') await playBattle(arg, 1, true);
 else {
-  for (const enc of (process.argv[2] && process.argv[2] !== 'log' ? [process.argv[2]] : Object.keys(ENCOUNTERS))) {
-    const stats = { victory: 0, defeat: 0, timeout: 0, rounds: 0, deaths: 0 }; const N = 60;
-    for (let i = 0; i < N; i++) { const r = await playBattle(enc, 1000 + i); stats[r.result as 'victory']++; stats.rounds += r.round; stats.deaths += r.dead; }
-    console.log(enc.padEnd(10), `victorias ${stats.victory}/${N}`, `derrotas ${stats.defeat}`, `timeouts ${stats.timeout}`, `rondas medias ${(stats.rounds / N).toFixed(1)}`, `muertes medias ${(stats.deaths / N).toFixed(2)}`);
+  console.log('encuentro      victorias  caídos/combate  muertes  rondas  PG restantes');
+  for (const enc of arg === 'all' ? Object.keys(ENCOUNTERS) : [arg]) {
+    let w = 0, downs = 0, dead = 0, rounds = 0, hp = 0;
+    for (let i = 0; i < N; i++) { const r = await playBattle(enc, 5000 + i); if (r.result === 'victory') w++; downs += r.downs; dead += r.dead; rounds += r.round; hp += r.hpLeft; }
+    console.log(enc.padEnd(14), `${String(Math.round(w / N * 100)).padStart(5)}%`, `${(downs / N).toFixed(2).padStart(14)}`, `${(dead / N).toFixed(2).padStart(10)}`, `${(rounds / N).toFixed(1).padStart(7)}`, `${Math.round(hp / N * 100)}%`.padStart(10));
   }
 }

@@ -11,6 +11,7 @@ import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, ty
 import { CHAPTER_SCRIPTS, QUEST_BY_ID, QUESTS } from './world/quests';
 import { EVENTS, pendingEvent } from './world/events';
 import { D100, ZONES, drawOracle, eventScript, type OEv } from './world/oracle';
+import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
 import type { Node } from './story/types';
 
@@ -28,7 +29,7 @@ class App {
     this.app.append(this.top, this.rootEl);
     this.story = new StoryUI(this.storyEl); this.hub = new HubUI(this.hubEl);
     this.story.battle = (enc, n, foes) => this.runBattle(enc, n, foes); this.story.hud = () => this.renderHud();
-    this.hub.onChange = () => { this.renderHud(); saveGame(this.camp); };
+    this.hub.onChange = () => { this.renderHud(); saveGame(this.camp); }; this.hub.api = { advance: n => this.advance(n) };
     this.renderHud(); this.showMenu();
     const q = new URLSearchParams(location.search);
     if (q.get('battle')) this.devBattle(q.get('battle')!);
@@ -71,7 +72,7 @@ class App {
     const c = this.camp;
     for (let i = 0; i < days; i++) {
       c.day++; c.alertTick++;
-      if (c.alertTick >= 3) { c.alertTick = 0; c.alert = Math.min(10, c.alert + 1); const inc = Math.floor(c.followers.length / 3); if (inc) { c.pf += inc; c.seal += inc; } }
+      if (c.alertTick >= 3) { c.alertTick = 0; c.alert = Math.min(10, c.alert + 1); for (const l of tick(c)) c.journal.push(`Día ${c.day}: ${l}`); }
       if (built(c, 'torre') && c.day % 7 === 0) c.alert = Math.max(0, c.alert - 1);
     }
     this.renderHud();
@@ -95,12 +96,18 @@ class App {
         const q = QUEST_BY_ID[a.id]; await this.runScript('q:' + a.id);
         this.camp.quests[q.id] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
         if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
-        this.advance(q.days); if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
+        this.advance(q.days); let nx = q.next;
+        while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
+      }
+      if (a.t === 'peek') {
+        const dr = drawOracle(this.camp, a.district); this.camp.rumors -= 2; this.camp.peek = { district: a.district, n: dr.ev.n }; this.camp.journal.push(`Día ${this.camp.day}: los espías avisan: «${dr.ev.title}» en ${DISTRICT_BY_ID[a.district].name}.`); saveGame(this.camp); continue;
       }
       if (a.t === 'oracle') {
-        const dr = drawOracle(this.camp, a.district); const e: OEv = dr.ev; this.camp.oracleSeen.push(e.n);
+        let dr = drawOracle(this.camp, a.district); const pk = this.camp.peek;
+        if (pk && pk.district === a.district) { const found = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === pk.n); if (found) dr = { ...dr, ev: found }; } this.camp.peek = null;
+        const e: OEv = dr.ev; this.camp.oracleSeen.push(e.n);
         let nodes = eventScript(this.camp, dr);
-        if (built(this.camp, 'pozo_vis')) nodes = [{ t: 'bg', id: 'oraculo' }, { t: 'say', who: 'Oráculo de las Mil Lenguas', text: `El Pozo de Visiones me obliga a decir la verdad: ${e.title}.`, tone: 'por primera vez, no miente' }, ...nodes.slice(2)];
+        if (built(this.camp, 'pozo_vis') || count(this.camp, 'visionario') > 0) nodes = [{ t: 'bg', id: 'oraculo' }, { t: 'say', who: 'Oráculo de las Mil Lenguas', text: `${built(this.camp, 'pozo_vis') ? 'El Pozo de Visiones me obliga' : 'Farid sueña por mí'} a decir la verdad: ${e.title}.`, tone: 'por primera vez, no miente' }, ...nodes.slice(2)];
         await this.runScript('oracle:' + e.n, 0, nodes); void DISTRICT_BY_ID;
         if (!built(this.camp, 'alfombra')) this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: el Oráculo anuncia «${e.title}».`); this.renderHud(); saveGame(this.camp);
       }
@@ -113,6 +120,7 @@ class App {
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
     const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
+    if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
@@ -123,7 +131,7 @@ class App {
     c.pf = Math.max(0, c.pf - res.pfSpent);
     if (won) {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
-      for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: -3 }); }
+      for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }
     this.renderHud(); saveGame(c); return won;
   }

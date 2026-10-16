@@ -82,7 +82,7 @@ export const CAP2: Node[] = [
   { t: 'say', who: 'Zahir', text: 'Habéis cumplido… pero esto es sólo el primer latido del corazón del culto. Aquí, donde el Conclave enterró los Huesos del Primer Pacto, construiréis mi altar.', tone: 'un gigante de arena bajo un eclipse sangriento' },
   { t: 'say', who: 'Zahir', text: 'Cada ladrillo será una mentira que derribasteis… cada sacrificio, un latido más fuerte. El Conclave enviará sus bestias de arena. Pero recordad: yo soy la tormenta.' },
   { t: 'narr', text: 'Establecéis la biblioteca como base y primera iglesia del Simurg. Aisha y Farid cuidan del santuario. Con vuestros primeros adeptos, el cristal de Zahir os otorga poderes nuevos.' },
-  { t: 'fx', e: { flags: ['cap2_done'], follow: ['Aisha', 'Farid'], rep: { hijos: 1 } }, note: 'Zaryab se abre ante vosotros. Desde ahora podéis recorrer la ciudad, aceptar encargos y volver a la biblioteca. El tiempo corre: el Conclave os busca.' },
+  { t: 'fx', e: { flags: ['cap2_done'], follow: ['Aisha', 'Farid', 'Ranma', 'Cabernet', 'Apu'], rep: { hijos: 1 } }, note: 'Zaryab se abre ante vosotros. Desde ahora podéis recorrer la ciudad, aceptar encargos y volver a la biblioteca. El tiempo corre: el Conclave os busca.' },
 ];
 
 export const CAP3: Node[] = [
@@ -169,7 +169,6 @@ export const CAP4: Node[] = [
   { t: 'narr', text: 'Los Qilaat se alinean en anillos alrededor del Capitolio: «Protocolo 900. La Divinidad No Es Bienvenida». Y entonces, las columnas del Capitolio se abren como pétalos. Emerge un coloso de hierro bruñido y oro opaco, tan alto como cuatro edificios, con bolas de pinchos por brazos. Dahhak trepa por su espalda, le susurra algo hueco y antiguo… y las gemas se encienden en púrpura enfermizo.' },
   { t: 'say', who: 'Dahhak', text: '¿Querían un dios? Les traje uno. Uno con músculos de metal y alma de locura. Lucharán. O serán historia enterrada bajo la historia.' },
   { t: 'fx', e: { flags: ['cap4_done'] } },
-  { t: 'end', title: 'Continuará…', text: 'El Coloso de Dahhak avanza. Este es el final de la versión 0.1: el combate del Coloso, el torneo de Panchi con Ellie en Medinat al-Rih, la misión del Vizir a Romain y la sombra del Lich llegarán en las próximas versiones.' },
 ];
 
 
@@ -183,3 +182,24 @@ export const MARKS = [
   { id: 'eco', name: 'El Eco Incontrolado' },
 ];
 export const MARK_ANSWER: Record<string, string> = { romain: 'balanza', zyrthar: 'cuchilla', rabb: 'espejo', joren: 'senda', pact: 'fuego', panchi: 'eco' };
+
+export const CAP5: Node[] = [
+  { t: 'chapter', title: 'Capítulo V — La Caída del Capitolio', sub: 'Plaza Central · atardecer rojo', bg: 'plaza' },
+  { t: 'narr', text: 'Desde los balcones del Capitolio, banderas desgarradas del Vizir ondean sin viento. Guardias autómatas de cobre corren sin cohesión. Los soldados de élite gritan órdenes: «¡Aseguren el nivel inferior! ¡Almas prioritarias evacuadas al anillo 2! ¡Código rojo! ¡El Hombre Serpiente se acerca!»' },
+  { t: 'narr', text: 'Los Qilaat se alinean en anillos alrededor del Capitolio, con escudos de obsidiana y lanzas de impulso arcano. Hablan con voces sincronizadas: «Protocolo 900. Defensa del Núcleo. La Divinidad No Es Bienvenida.»' },
+  { t: 'say', who: 'Vizir Razul', text: 'Zaryab no caerá ante falsos dioses ni profetas deformes. Si la ciudad debe arder, lo hará limpia.', tone: 'su rostro, proyectado en el cielo' },
+  { t: 'say', who: 'Dahhak', text: '¿Tanto metal para frenar el alma? Pobre Vizir… aún cree que puede contener lo inevitable.', tone: 'sobre un hombro del coloso' },
+  { t: 'narr', text: 'El coloso da un paso. Luego otro. La tierra tiembla. Tres gemas púrpuras, tres pilones que lo alimentan, brillan en la plaza. Y el coloso carga.' },
+  { t: 'battle', enc: 'coloso' },
+  { t: 'narr', text: 'El último pilón estalla. El coloso se arrodilla, humea, se apaga. En lo alto de la torre rota, la silueta de Dahhak ya no está: huyó al oeste, hacia la Iglesia del Simurg. Sólo queda su voz, flotando entre el humo.' },
+  { t: 'say', who: 'Dahhak', text: 'No era para vencerme. Era para que vierais lo que el Vizir esconde. La guerra civil… acaba de empezar.', tone: 'ya lejos' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'Habéis hecho algo que ni yo esperaba. Y no sé si eso me complace… o me asusta.', tone: 'el cristal se enfría' },
+  { t: 'narr', text: 'El Capitolio sangra aceite violeta por las grietas. Los Qilaat, sin órdenes claras, giran las lanzas hacia vosotros… o hacia los Nasnas que aún rondan las calles. La multitud huye. Alguien tiene que decidir qué hacer con Zaryab herida.' },
+  { t: 'choice', prompt: 'La primera gran decisión. Marca la Postura con la que entraréis en la guerra civil.', options: [
+    { label: 'Defender el Capitolio junto a los Qilaat', hint: 'Orden: Razul sabrá quién ayudó.', e: { d: 1, alert: -2, rep: { qilaat: 3, conclave: 1, hijos: -1 }, flags: ['postura_orden'] }, result: ['Ayudáis a los autómatas a cerrar la plaza. El Vizir os observa desde su torre y no dice nada. Algo, entre los engranajes de un Qilaat, parece asentir.'] },
+    { label: 'Proteger al pueblo: abrir los túneles a los refugiados', hint: 'Pueblo: los Hijos del Simurg y los Nómadas os verán distinto.', e: { d: 2, pf: 6, alert: 2, rep: { hijos: 2, nomadas: 1, qilaat: -1 }, follow: ['Idris el albañil', 'Layla la costurera', 'Taj el aguador'], flags: ['postura_pueblo'] }, result: ['Shib abre los túneles. Cientos de familias bajan a la biblioteca llevando lo que pueden. Aisha reparte pan de arena hasta quedarse sin manos. Los Qilaat no os detienen.'] },
+    { label: 'Dejar que el Capitolio caiga y negociar con lo que quede', hint: 'Sombra: poder sobre las ruinas, con precio.', e: { c: 2, pf: 8, alert: 2, rep: { dahhak: 1, conclave: -1, mercaderes: 1 }, flags: ['postura_sombra'] }, result: ['Esperáis. Cuando el humo baja, vuestros emisarios ya han comprado lealtades de la guardia herida. EaNassr sonríe en la esquina de la plaza con un contrato abierto.'] },
+  ] },
+  { t: 'fx', e: { flags: ['cap5_done'], rep: {} } },
+  { t: 'end', title: 'Fin del Acto I', text: 'El Capitolio tiembla, Dahhak huye al oeste y la guerra civil de Zaryab comienza. Medinat al-Rih, la Iglesia del Simurg y el Torneo de los Puños Cerrados llegarán en el Acto II.' },
+];
