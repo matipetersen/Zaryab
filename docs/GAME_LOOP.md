@@ -32,3 +32,6 @@
 - **Morales** (13): niño y escorpión, ladrón, djinn esclavizado, inquisidor, Marid, juicio del pueblo, Jann, etc. Cada una deja **ecos** que estallan días después.
 - **El Inventario de Maunator** (tras el Cap. VIII): robo en un sótano rotante con alerta, cinco capítulos propios.
 - **Tigre alado** y **cementerio** (tras el Cap. VI): jefes opcionales y compañeros.
+
+---
+Ver también `docs/MUNDO.md`: reloj del Eclipse, frentes de guerra, errantes, lugares y vínculos que dan vida a la ciudad entre capítulos.
