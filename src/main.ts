@@ -18,6 +18,8 @@ import { autoPicks } from './data/progression';
 import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
+import { POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from './world/pois';
+import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
 class App {
@@ -42,9 +44,9 @@ class App {
   }
   show(which: 'menu' | 'story' | 'hub' | 'battle') { this.menuEl.classList.toggle('hidden', which !== 'menu'); this.storyEl.classList.toggle('hidden', which !== 'story'); this.hubEl.classList.toggle('hidden', which !== 'hub'); this.battleEl.classList.toggle('hidden', which !== 'battle'); }
   renderHud() {
-    const c = this.camp; this.hudEl.innerHTML = '';
+    const c = this.camp; this.hudEl.innerHTML = ''; const left = c.eclipseDay && !has(c, 'cap13_done') ? Math.max(0, c.eclipseDay - c.day) : -1;
     const m = (cls: string, label: string, v: number, max: number) => h('div', { class: `meter ${cls}` }, label, h('div', { class: 'bar' }, h('i', { style: { width: (v / max) * 100 + '%' } })), h('span', {}, `${v}/${max}`));
-    this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day}`), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
+    this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day} · ${PHASE_ICON[c.phase]} ${PHASE[c.phase]}`), ...(left >= 0 ? [h('div', { class: 'meter', style: { color: left <= 10 ? '#ff9c8f' : left <= 30 ? '#e8c872' : '' } }, `🌑 Eclipse en ${left} d`)] : []), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
       h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
   }
   showMenu() {
@@ -64,6 +66,7 @@ class App {
     if (CHAPTER_SCRIPTS[id]) return CHAPTER_SCRIPTS[id];
     if (id.startsWith('q:')) return QUEST_BY_ID[id.slice(2)].script;
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
+    if (id.startsWith('poi:')) return POI_BY_ID[id.slice(4)].script;
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
     return [];
   }
@@ -75,12 +78,23 @@ class App {
   }
   advance(days: number) {
     const c = this.camp;
+    c.phase = 0;
     for (let i = 0; i < days; i++) {
-      c.day++; c.alertTick++;
+      c.day++; c.alertTick++; for (const l of worldDay(c)) c.journal.push(`Día ${c.day}: ${l}`);
       if (c.alertTick >= 3) { c.alertTick = 0; c.alert = Math.min(10, c.alert + 1); for (const l of tick(c)) c.journal.push(`Día ${c.day}: ${l}`); }
       if (built(c, 'torre') && c.day % 7 === 0) c.alert = Math.max(0, c.alert - 1);
     }
     this.renderHud();
+  }
+  /** Una visita consume una fase del día (amanecer → día → noche); la tercera pasa el día. */
+  passPhase() { const c = this.camp; c.phase++; if (c.phase >= 3) this.advance(1); else this.renderHud(); }
+  /** El Eclipse llegó sin que lo detuvierais: los capítulos que faltan quedan sin resolver y empieza el ritual. */
+  async forceEclipse() {
+    const c = this.camp; const skipped: number[] = [];
+    for (let i = 6; i <= 12; i++) if (!has(c, `cap${i}_done`)) { skipped.push(i); applyEffect(c, { flags: [`cap${i}_done`, `skipped_cap${i}`] }); }
+    if (skipped.length) c.journal.push(`Día ${c.day}: el Eclipse os alcanzó antes de los capítulos ${skipped.join(', ')}.`);
+    if (!c.flags.some(f => f.startsWith('ruta_'))) applyEffect(c, { flags: ['ruta_' + computeRuta(c)] });
+    applyEffect(c, { flags: finalFlags(c) }); c.squad = []; await this.runScript('q:m_cap13'); c.quests['m_cap13'] = 'done'; saveGame(c); this.renderHud();
   }
   async start() {
     this.renderHud(); this.story.camp = this.camp; this.story.mount(); this.show('story');
@@ -94,13 +108,30 @@ class App {
     for (;;) {
       const due = this.camp.ecos.findIndex(x => x.due <= this.camp.day);
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
+      if (has(this.camp, 'eclipse_forzado') && !has(this.camp, 'cap13_done')) { await this.forceEclipse(); continue; }
       const ev = pendingEvent(this.camp);
       if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev); this.renderHud(); continue; }
       if ((window as any).__autolevel) { const c = this.camp; for (let n = pendingLevel(c); n; n = pendingLevel(c)) { for (const pc of c.party.filter(p => !c.dead.includes(p))) (c.picks[pc] ??= []).push(...autoPicks(pc, n, c.d, c.c)); c.lvl = n; } }
-      this.show('hub'); this.renderHud();
+      ensureFronts(this.camp); this.show('hub'); this.renderHud();
       const a = await this.hub.choose(this.camp);
       if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
-      if (a.t === 'rest') { this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansáis en la biblioteca.`); saveGame(this.camp); continue; }
+      if (a.t === 'poi') {
+        const p = POI_BY_ID[a.id]; this.camp.poiCd[p.id] = this.camp.day + p.cd; this.camp.journal.push(`Día ${this.camp.day}: visitáis ${p.name}.`);
+        await this.runScript('poi:' + p.id); this.passPhase(); this.renderHud(); saveGame(this.camp); continue;
+      }
+      if (a.t === 'roamer') {
+        const r = this.camp.roamers.find(x => x.id === a.id); if (!r) continue; const won = await this.runBattle(ROAMER_ENC[r.kind]);
+        if (won) { this.camp.roamers = this.camp.roamers.filter(x => x.id !== r.id); const g = 25 + Math.floor(Math.random() * 30); applyEffect(this.camp, { gold: g, alert: -1, rep: r.kind === 'conclave' ? { conclave: -1 } : {} }); this.camp.journal.push(`Día ${this.camp.day}: abatís a un errante (${r.kind}) en ${DISTRICT_BY_ID[r.district].name}. +${g} PO.`); this.passPhase(); }
+        saveGame(this.camp); continue;
+      }
+      if (a.t === 'reinforce') {
+        const c = this.camp; if (c.pf < 3 || !c.front[a.district]) continue; c.pf -= 3; c.front[a.district] = 'libre'; c.journal.push(`Día ${c.day}: reforzáis ${DISTRICT_BY_ID[a.district].name}; vuelve a ser libre.`); this.passPhase(); saveGame(c); continue;
+      }
+      if (a.t === 'leave') {
+        applyEffect(this.camp, { flags: ['final_desierto'] });
+        await this.runScript('ev:desierto'); clearSave(); location.reload(); return;
+      }
+      if (a.t === 'rest') { this.camp.phase = 0; this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansáis en la biblioteca.`); saveGame(this.camp); continue; }
       if (a.t === 'quest') {
         const q = QUEST_BY_ID[a.id]; if (a.id === 'm_cap13') applyEffect(this.camp, { flags: finalFlags(this.camp) }); await this.runScript('q:' + a.id);
         if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: vuestra Ruta es el ${RUTA_LABEL[r]}.`); }

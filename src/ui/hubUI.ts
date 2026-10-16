@@ -6,9 +6,11 @@ import { ROLES, TRAITS, RITUALS, projection, sermon, recruit, ritual, setRole, t
 import { MIRACLES, ABILITIES } from '../engine/abilities';
 import type { InvUI } from './invUI';
 import { LevelUI } from './levelUI';
+import { POIS, POI_BY_ID, PHASE, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
+import { BOND_NAME } from '../world/bonds';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
 
-export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' };
+export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' } | { t: 'poi'; id: string } | { t: 'roamer'; id: string } | { t: 'reinforce'; district: string } | { t: 'leave' };
 const KIND_LABEL: Record<string, string> = { main: '★ Principal', side: 'Secundaria', personal: 'Personal', faction: 'Facción' };
 
 export class HubUI {
@@ -35,8 +37,9 @@ export class HubUI {
     for (const d of DISTRICTS) {
       const open = d.open(c); const avail = QUESTS.filter(q => q.district === d.id && this.questStatus(q) === 'available');
       const hasMain = avail.some(q => q.kind === 'main'); const hasPers = avail.some(q => q.kind === 'personal');
-      const el = h('button', { class: `node ${open ? '' : 'locked'} ${this.sel === d.id ? 'sel' : ''} ${hasMain ? 'main' : ''}`, style: { left: d.x + '%', top: d.y + '%' }, title: d.name, onClick: () => { this.sel = d.id; this.render(); } },
-        h('span', { class: 'ic' }, d.icon), h('span', { class: 'nm' }, d.name), avail.length ? h('span', { class: `dot ${hasMain ? 'm' : hasPers ? 'p' : ''}` }, String(avail.length)) : null);
+      const fr = c.front[d.id]; const rm = c.roamers.filter(r => r.district === d.id).length;
+      const el = h('button', { class: `node ${open ? '' : 'locked'} ${this.sel === d.id ? 'sel' : ''} ${hasMain ? 'main' : ''}`, style: { left: d.x + '%', top: d.y + '%', ...(fr && open ? { boxShadow: `0 0 0 2px ${FRONT_COLOR[fr]}, 0 0 14px ${FRONT_COLOR[fr]}66` } : {}) }, title: d.name + (fr ? ` · ${FRONT_LABEL[fr]}` : ''), onClick: () => { this.sel = d.id; this.render(); } },
+        h('span', { class: 'ic' }, d.icon), h('span', { class: 'nm' }, d.name), avail.length ? h('span', { class: `dot ${hasMain ? 'm' : hasPers ? 'p' : ''}` }, String(avail.length)) : null, rm ? h('span', { class: 'dot', style: { background: '#a33', right: 'auto', left: '-4px' } }, '⚔') : null);
       map.append(el);
     }
     const dist = DISTRICT_BY_ID[this.sel]; this.root.append(map, this.panel(dist), this.bottom());
@@ -45,6 +48,20 @@ export class HubUI {
     const c = this.camp; const open = d.open(c); const p = h('aside', { class: 'wpanel' });
     p.append(h('h3', {}, d.name), h('div', { class: 'small' }, `Peligro ${'●'.repeat(Math.min(5, Math.ceil(d.danger / 2)))}${'○'.repeat(5 - Math.min(5, Math.ceil(d.danger / 2)))}`), h('p', { class: 'lore' }, d.blurb));
     if (!open) { p.append(h('div', { class: 'tag bad' }, '🔒 ' + (d.lockedNote ?? 'Cerrado'))); return p; }
+    const fr = c.front[d.id];
+    if (fr) {
+      p.append(h('div', { class: 'tag', style: { borderColor: FRONT_COLOR[fr], color: FRONT_COLOR[fr] } }, `⚑ Frente: ${FRONT_LABEL[fr]}`));
+      if (fr !== 'libre' && FRONT_DISTRICTS.includes(d.id)) p.append(h('button', { class: 'btn sm ghost', disabled: c.pf < 3, onClick: () => this.pick({ t: 'reinforce', district: d.id }) }, `🛡 Reforzar el frente (−3 PF, una fase)`));
+    }
+    for (const r of c.roamers.filter(x => x.district === d.id)) p.append(h('div', { class: 'qcard main' }, h('div', { class: 'qk' }, '⚔ Errante'), h('b', {}, r.kind === 'conclave' ? 'Recaudador del Conclave' : r.kind === 'culto' ? 'Infiltrado del Culto de Dahhak' : 'Ghuls errantes'), h('div', { class: 'small' }, `Lleva ${c.day - r.since} días aquí. Si pasan 8, la Alerta sube.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'roamer', id: r.id }) }, 'Enfrentarlo (una fase)')));
+    const pois = POIS.filter(x => x.district === d.id && poiState(c, x) !== 'hidden' && poiState(c, x) !== 'locked');
+    if (pois.length) p.append(h('div', { class: 'sec' }, `Lugares · ${PHASE[c.phase]}`));
+    for (const x of pois) {
+      const st = poiState(c, x); const bond = x.npc ? c.bond[x.npc] ?? 0 : -1;
+      p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, `${x.icon} ${x.hidden ? 'Descubierto · ' : ''}${x.npc ? `${BOND_NAME[x.npc]} ${'♥'.repeat(bond)}${'♡'.repeat(5 - bond)}` : 'Lugar'}`), h('b', {}, x.name), h('div', { class: 'small' }, x.desc),
+        st === 'ok' ? h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'poi', id: x.id }) }, 'Visitar (una fase)') : h('div', { class: 'tag' }, st === 'cd' ? `Volved en ${(c.poiCd[x.id] ?? 0) - c.day} día(s)` : st === 'night' ? `Sólo abierto: ${(x.ph ?? []).map(i => PHASE[i]).join(' / ')}` : 'Cerrado: la facción que domina el barrio ahuyentó a la gente. Reforzad el frente.')));
+    }
+    void POI_BY_ID; void closedByFront;
     const qs = QUESTS.filter(q => q.district === d.id); const order = { main: 0, personal: 1, side: 2, faction: 3 } as Record<string, number>;
     qs.sort((a, b) => order[a.kind] - order[b.kind]);
     for (const q of qs) {
@@ -65,7 +82,12 @@ export class HubUI {
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),
-      h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`), h('span', { class: 'pip free' }, `${c.gold} PO`)));
+      has(c, 'cap2_done') && !has(c, 'cap13_done') ? h('button', { class: 'act', style: { color: '#ff9c8f' }, onClick: () => this.confirmLeave() }, '🏜 Abandonar Zaryab') : null,
+      h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day} · ${PHASE[c.phase]}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`), h('span', { class: 'pip free' }, `${c.gold} PO`)));
+  }
+  confirmLeave() {
+    const b = h('div', { class: 'res' }, h('div', {}, 'Podéis dar la espalda a Zaryab, a Zahir y al Eclipse. Es un final, no una pausa: la campaña termina aquí y la partida guardada se borra.'), h('div', { class: 'small lore' }, 'Si sólo queréis descansar, usad «Guardar y salir».'), h('button', { class: 'btn', style: { marginTop: '10px', background: '#4a1f1f' }, onClick: () => this.pick({ t: 'leave' }) }, 'Irme al desierto, de verdad'));
+    this.openModal('¿Abandonar Zaryab?', b);
   }
   // ───────── modales ─────────
   closeModal() { this.modal?.remove(); this.modal = null; }

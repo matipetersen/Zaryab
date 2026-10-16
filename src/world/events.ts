@@ -30,9 +30,41 @@ export const EVENTS: Record<string, Node[]> = {
   ],
   zahir_llama: [
     { t: 'bg', id: 'limbo' },
-    S('Zahir', 'No les di la segunda vida para que la gasten paseando.', 'tras demasiados días de silencio'),
-    S('Zahir', 'El cristal se enfría. Cada día sin hacer lo que prometieron es un latido menos.', 'serio, casi triste'),
-    { t: 'fx', e: { pf: -3 }, note: 'Zahir os descuenta fe por vuestra tardanza. Sentid el cristal: espera una señal.' },
+    { t: 'if', flag: 'cap11_done', then: [S('Zahir', 'Quedan pocos fragmentos y poco cristal. Os estoy pidiendo que corráis, no que paseéis.', 'sin aliento, casi suplicando')], else: [{ t: 'if', flag: 'cap7_done', then: [S('Zahir', 'He esperado siglos, pero ahora sé contar los días. Y cada día que paseáis me roba uno.', 'con una calma que asusta')], else: [S('Zahir', 'No les di la segunda vida para que la gasten paseando.', 'tras demasiados días de silencio'), S('Zahir', 'El cristal se enfría. Cada día sin hacer lo que prometieron es un latido menos.', 'serio, casi triste')] }] },
+    { t: 'fx', e: { pf: -3, fe: -1 }, note: 'Zahir os descuenta fe por vuestra tardanza: −3 PF, y los seguidores dudan. Avanzad la historia.' },
+  ],
+  eclipse_aviso1: [
+    { t: 'chapter', title: 'El Cielo se Oscurece', sub: 'Faltan treinta días', bg: 'plaza' },
+    N('Una mañana, el sol sale con un borde mordido. Los viejos del Zoco lo ven y se persignan. Los niños lo señalan con un dedo manchado de tiza.'),
+    S('Zahir', 'Treinta días. Lo siento en los huesos. Lo que no hagáis hoy, lo hará el Eclipse por vosotros.', 'sin teatralidad'),
+    { t: 'fx', e: { rumors: 1 }, note: 'El Eclipse llegará en treinta días.' },
+  ],
+  eclipse_aviso2: [
+    { t: 'chapter', title: 'La Sombra Crece', sub: 'Faltan diez días', bg: 'plaza' },
+    N('A mediodía hace frío. Las campanas del Conclave suenan por nadie. Las sombras se alargan hacia el sur, hacia las Catacumbas, como brújulas.'),
+    S('Zahir', 'Diez días. Después, no habrá elección: sólo lo que hayáis llegado a ser.', 'casi en un susurro'),
+    { t: 'fx', e: { alert: 1 }, note: 'Diez días para el Eclipse. Lo que dejéis sin hacer, quedará sin hacer.' },
+  ],
+  eclipse_llega: [
+    { t: 'chapter', title: 'El Eclipse', sub: 'No esperó a nadie', bg: 'limbo' },
+    N('A mediodía el sol se apaga. El Zoco calla. Las campanas dejan de sonar. Debajo de la biblioteca, en las Catacumbas, algo respira por fin con alivio.'),
+    S('Zahir', 'Es hora. Lo que no hicisteis, lo hará la ciudad sola. Lo que sois, ya lo sois. Vamos.', 'con voz de siempre, y de nunca'),
+    { t: 'fx', e: { flags: ['eclipse_forzado'] }, note: 'El Eclipse llegó. Los capítulos que dejasteis atrás quedan sin resolver.' },
+  ],
+  razul_plazo: [
+    { t: 'if', flag: 'cap12_done', then: [], else: [
+      { t: 'chapter', title: 'Se Acabó el Plazo', sub: 'Razul cobra', bg: 'plaza' },
+      N('Suenan las campanas del Conclave a la hora exacta. Razul no manda emisarios: viene él, con el reloj de arena vacío en una mano y una lista en la otra.'),
+      S('Vizir Razul', 'Os di tiempo. Lo habéis gastado en otras cosas. No me ofendo. Cobro.', 'sin levantar la voz'),
+      { t: 'fx', e: { pf: -8, alert: 3, rep: { conclave: -1 }, flags: ['razul_cobro'] }, note: 'Razul cobra: −8 PF, +3 Alerta.' },
+    ] },
+  ],
+  desierto: [
+    { t: 'chapter', title: 'El Desierto', sub: 'Elegisteis iros', bg: 'dunas' },
+    N('Una noche, sin avisar, recogéis lo poco que os pertenece. Aisha deja de amasar. Farid levanta la mirada del arpa y no dice nada.'),
+    S('Zahir', 'No os culpo. Yo también quise irme alguna vez. Nunca supe adónde.', 'con una voz apagada, casi tierna'),
+    N('El cristal se enfría en vuestro pecho, latido a latido. Detrás de vosotros, Zaryab sigue su curso sin pedir permiso: el Conclave, la guerra, el Eclipse. Delante, sólo dunas blancas y el viento que sopla para quien lo merece.'),
+    { t: 'end', title: 'Fin · El Desierto', text: 'Os fuisteis. El Eclipse llegó igual, y Zaryab aprendió a vivir sin vosotros, o a no vivir. Nadie volvió a hablar de la compañía; de vez en cuando, un caminante cuenta que en las dunas hay seis huellas que no llevan a ninguna parte.' },
   ],
   cacería: [
     { t: 'chapter', title: 'La Cacería', sub: 'Zaryab entera os busca', bg: 'plaza' },
@@ -51,6 +83,7 @@ export function pendingEvent(c: Campaign): string | null {
   if (c.alert >= 10 && !has(c, 'ev_cacería_done') && !built(c, 'torre')) return 'cacería';
   if (c.alert >= 7 && !has(c, 'ev_asalto_done')) return 'asalto';
   if (c.alert >= 4 && !has(c, 'ev_patrulla_done')) return 'patrulla';
-  if (c.day - c.lastMainDay >= 12 && !has(c, 'cap4_done')) return 'zahir_llama';
+  const zp = has(c, 'cap11_done') ? 8 : has(c, 'cap7_done') ? 10 : 12;
+  if (c.day - c.lastMainDay >= zp && !has(c, 'cap13_done')) return 'zahir_llama';
   return null;
 }

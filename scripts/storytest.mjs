@@ -15,7 +15,7 @@ for (let i = 0; i < 12000; i++) {
     const vis = id => { const el = document.querySelector(id); return el && !el.classList.contains('hidden'); };
     const overlay = document.querySelector('.overlay .btn');
     return { battle: vis('#battle') && !!document.querySelector('#battle canvas'), hub: !!document.querySelector('#hub') && !document.querySelector('#hub').classList.contains('hidden'), overlay: !!overlay && !document.querySelector('#hub .overlay'),
-      choices: document.querySelectorAll('.choice:not([disabled])').length, puzzle: !!document.querySelector('.puzzle select'), txt: document.querySelector('.dialog .txt')?.textContent ?? '', title: document.querySelector('.stage-title h1')?.textContent ?? '',
+      choices: document.querySelectorAll('.choice:not([disabled])').length, puzzle: !!document.querySelector('.puzzle select'), squad: !!document.querySelector('.puzzle .box > .btn') && !document.querySelector('.puzzle select'), txt: document.querySelector('.dialog .txt')?.textContent ?? '', title: document.querySelector('.stage-title h1')?.textContent ?? '',
       endBtn: [...document.querySelectorAll('button')].some(b => b.textContent === 'Volver al mapa de Zaryab') };
   });
   if (st.overlay) { await page.click('.overlay .btn'); await page.waitForTimeout(250); continue; }
@@ -25,6 +25,7 @@ for (let i = 0; i < 12000; i++) {
     if (key) { battles.add(key + '@' + i); if (shots < 4) { await page.waitForTimeout(1200); await page.screenshot({ path: `${dir}/story_battle${shots++}.png` }); } }
     await page.waitForTimeout(600); continue;
   }
+  if (st.squad) { await page.click('.puzzle .box > .btn'); await page.waitForTimeout(200); continue; }
   if (st.puzzle) { await page.evaluate((wrong) => { const ans = ['balanza', 'espejo', 'senda', 'fuego', 'cuchilla', 'eco']; const sels = [...document.querySelectorAll('.puzzle select')]; const order = ['romain', 'pact', 'rabb', 'joren', 'zyrthar', 'panchi']; const A = { romain: 'balanza', zyrthar: 'cuchilla', rabb: 'espejo', joren: 'senda', pact: 'fuego', panchi: 'eco' }; sels.forEach((s, i) => { s.value = A[order[i]]; }); if (wrong) { sels[1].value = 'eco'; sels[5].value = 'fuego'; } }, pick === 'wrong'); await page.click('.puzzle .btn'); await page.waitForTimeout(300); continue; }
   if (st.choices) { const n = st.choices; const idx = pick === 'last' ? n - 1 : Math.min(+pick || 0, n - 1); const btn = (await page.$$('.choice:not([disabled])'))[idx]; await btn.click(); await page.waitForTimeout(120); continue; }
   if (st.hub) {

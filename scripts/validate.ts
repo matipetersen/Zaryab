@@ -5,6 +5,8 @@ import { D100, ZONES } from '../src/world/oracle';
 import { ENCOUNTERS, MAPS } from '../src/data/maps';
 import { MONSTERS } from '../src/data/monsters';
 import { SPEAKERS } from '../src/story/speakers';
+import { POIS, POI_BY_ID, ROAMER_ENC } from '../src/world/pois';
+import { BOONS, BOND_NAME } from '../src/world/bonds';
 import { CAP1, CAP2 } from '../src/story/script';
 import { Grid } from '../src/engine/grid';
 import type { Node } from '../src/story/types';
@@ -17,6 +19,8 @@ const check = (nodes: Node[], where: string) => walk(nodes, where, n => {
 });
 for (const q of QUESTS) check(q.script, q.id);
 for (const [k, v] of Object.entries(EVENTS)) check(v, 'ev:' + k);
+for (const p of POIS) { check(p.script, 'poi:' + p.id); const j = JSON.stringify(p.script); for (const m of j.matchAll(/"found":\[("[^\]]*)\]/g)) for (const id of m[1].split(',').map(x => x.replace(/"/g, ''))) if (!POI_BY_ID[id]?.hidden) err(`poi ${p.id}: found «${id}» no es un POI oculto`); for (const m of j.matchAll(/"bond":\{"(\w+)"/g)) if (!BOND_NAME[m[1]] || !BOONS[m[1]]) err(`poi ${p.id}: vínculo ${m[1]} sin ventaja`); if (p.hidden && !POIS.some(q => q !== p && JSON.stringify(q.script).includes(`"${p.id}"`))) err(`poi oculto ${p.id}: nadie lo revela`); }
+for (const e of Object.values(ROAMER_ENC)) if (!ENCOUNTERS[e]) err(`errante: encuentro ${e}`);
 check(CAP1, 'cap1'); check(CAP2, 'cap2');
 for (const e of [...D100, ...Object.values(ZONES).flat()]) { if (e.enc && !ENCOUNTERS[e.enc]) err(`oráculo ${e.n}: encuentro ${e.enc}`); for (const o of e.opts ?? []) o.then && check(o.then, 'oráculo ' + e.n); }
 const nums = new Set(D100.map(e => e.n)); const missing: number[] = []; for (let i = 1; i <= 100; i++) if (!nums.has(i)) missing.push(i);

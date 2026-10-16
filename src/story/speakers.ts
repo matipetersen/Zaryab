@@ -6,6 +6,7 @@ export const SPEAKERS: Record<string, Speaker> = {
   'El Simurg': { color: '#e0b84a', glyph: '🜂', img: 'simurg' },
   'Anciano Encapuchado': { color: '#8a7a5a', glyph: '?' },
   'Viejo Linyera': { color: '#9a8f78', glyph: 'L' },
+  'El Cojo': { color: '#6e6a5a', glyph: 'C' },
   'Aisha': { color: '#b0568c', glyph: 'A' },
   'Farid': { color: '#d9b6ff', glyph: 'F' },
   'Shib': { color: '#59a37a', glyph: 'S' },
