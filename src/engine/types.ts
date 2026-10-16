@@ -66,7 +66,7 @@ export interface Unit {
 
 export interface Tile { ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean }
 export interface MapDef {
-  id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine';
+  id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine' | 'garden' | 'crater' | 'market' | 'ruins' | 'sanctum';
   intro?: string; objective: string; marks?: string[];
 }
 export type BEvent =

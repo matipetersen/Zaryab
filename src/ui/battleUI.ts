@@ -12,7 +12,7 @@ import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
 type Mode = { k: 'idle' } | { k: 'move' } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' };
-export interface BattleResult { result: 'victory' | 'defeat'; xp: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number }
+export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number }
 
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
@@ -72,7 +72,7 @@ export class BattleUI {
     await this.flush(); await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
-    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round });
+    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round });
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }
@@ -195,7 +195,8 @@ export class BattleUI {
     B.append(h('div', { class: 'pips' },
       h('span', { class: `pip ${left > 0 ? 'free' : 'used'}` }, `Mov ${left * 5}ft`),
       h('span', { class: `pip ${b.hasAction(u) ? 'free' : 'used'}` }, `Acción${u.extraActions ? ' +' + u.extraActions : ''}${u.attacksMade > 0 && u.attacksMade < b.maxAttacks(u) ? ' (ataque ' + (u.attacksMade + 1) + ')' : ''}`),
-      h('span', { class: `pip ${!u.bonusUsed || u.res['flurry'] > 0 ? 'free' : 'used'}` }, 'Adicional')));
+      h('span', { class: `pip ${!u.bonusUsed || u.res['flurry'] > 0 ? 'free' : 'used'}` }, 'Adicional'),
+      this.b.pfPool > 0 ? h('span', { class: 'pip free', title: 'Puntos de Fe disponibles para Milagros' }, `PF ${this.b.pfPool}`) : null));
   }
   openAttackMenu() {
     const u = this.cur; if (!u) return; this.clearMenu();
@@ -216,7 +217,7 @@ export class BattleUI {
       if (!ids.length) continue; m.append(h('h4', {}, name));
       for (const id of ids) {
         const ab = ABILITIES[id]; const can = b.canUse(u, id); const lv = ab.slot ? b.slotLevels(u, ab.slot) : [];
-        const cost = ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ab.id === 'dash' || ab.id === 'dodge' ? '' : 'truco';
+        const cost = ab.pf ? `${ab.pf} PF` : ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ab.id === 'dash' || ab.id === 'dodge' ? '' : 'truco';
         const row = h('div', { style: { display: 'flex', alignItems: 'center' } });
         const main = h('button', { class: 'mi', disabled: !can.ok, title: can.msg ?? '', onClick: () => this.pickAbility(id, lv[0] ?? 0), onMouseenter: (e: MouseEvent) => this.tipAt(e, `<b>${ab.name}</b><br>${ab.desc}${ab.conc ? '<br><i>Concentración</i>' : ''}${ab.range > 1 ? `<br>Alcance ${ab.range * 5} ft` : ''}`), onMouseleave: () => this.tip.classList.add('hidden') }, h('span', { class: 'nm' }, ab.name), h('span', { class: 'cost' }, cost));
         row.append(main);
@@ -244,6 +245,6 @@ export class BattleUI {
     this.tip.classList.add('hidden');
   }
 }
-const RES: Record<string, string> = { slot1: 'Esp. N1', slot2: 'Esp. N2', slot3: 'Esp. N3', channel: 'Canalizar', sw: 'Tomar Aliento', surge: 'Oleada', sd: 'Dados Sup.', soul: 'Alma Radiante', hh: 'Manos Cur.', curse: 'Maldición', faerie: 'Fuego Feérico', ki: 'Ki', flurry: 'Ráfaga' };
+const RES: Record<string, string> = { eclipse: 'Eclipse', verdad: 'Una Verdad', slot1: 'Esp. N1', slot2: 'Esp. N2', slot3: 'Esp. N3', channel: 'Canalizar', sw: 'Tomar Aliento', surge: 'Oleada', sd: 'Dados Sup.', soul: 'Alma Radiante', hh: 'Manos Cur.', curse: 'Maldición', faerie: 'Fuego Feérico', ki: 'Ki', flurry: 'Ráfaga' };
 const TERRAIN: Record<string, string> = { floor: 'Suelo llano.', diff: 'Terreno difícil: cuesta el doble de movimiento.', wall: 'Muro: bloquea el paso y la visión.', cover: 'Cobertura: bloquea el paso; +2 CA a quien esté detrás.', hazard: 'Peligroso: 1d6 de fuego al entrar o empezar el turno.', water: 'Agua: terreno difícil.', high: 'Plataforma elevada: terreno difícil.', mark: 'Marca grabada en el suelo.' };
 export type { BEvent };

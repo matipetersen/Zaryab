@@ -40,7 +40,7 @@ async function playBattle(enc: string, seed: number, verbose = false) {
 const arg = process.argv[2];
 if (arg === 'log') { await playBattle(process.argv[3] || 'linyera', Number(process.argv[4] || 1), true); }
 else {
-  for (const enc of Object.keys(ENCOUNTERS)) {
+  for (const enc of (process.argv[2] && process.argv[2] !== 'log' ? [process.argv[2]] : Object.keys(ENCOUNTERS))) {
     const stats = { victory: 0, defeat: 0, timeout: 0, rounds: 0, deaths: 0 }; const N = 60;
     for (let i = 0; i < N; i++) { const r = await playBattle(enc, 1000 + i); stats[r.result as 'victory']++; stats.rounds += r.round; stats.deaths += r.dead; }
     console.log(enc.padEnd(10), `victorias ${stats.victory}/${N}`, `derrotas ${stats.defeat}`, `timeouts ${stats.timeout}`, `rondas medias ${(stats.rounds / N).toFixed(1)}`, `muertes medias ${(stats.deaths / N).toFixed(2)}`);

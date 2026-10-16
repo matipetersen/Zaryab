@@ -1,4 +1,5 @@
 import type { Unit, Weapon, Mods } from '../engine/types';
+import type { Grant } from '../state';
 
 export interface PCDef {
   id: string; name: string; race: string; klass: string; level: number; color: string; glyph: string; portrait: string;
@@ -82,7 +83,7 @@ export const PARTY: PCDef[] = [
 ];
 export const PARTY_BY_ID = Object.fromEntries(PARTY.map(p => [p.id, p]));
 
-export function makePC(def: PCDef): Unit {
+export function makePC(def: PCDef, grant?: Grant): Unit {
   const m = def.mods; const prof = 2;
   const saves = { ...m }; for (const k of def.saveProf) saves[k] += prof;
   const sm = def.spellAb ? m[def.spellAb] : 0;
@@ -91,10 +92,10 @@ export function makePC(def: PCDef): Unit {
     x: 0, y: 0, size: 1, mods: { ...m }, saves, prof, level: def.level,
     hp: def.hp, maxHp: def.hp, temp: 0, ac: def.ac, speed: Math.ceil(def.speed / 5), fly: false,
     spellMod: sm, spellDC: 8 + prof + sm, spellAtk: prof + sm,
-    weapons: def.weapons.map(x => ({ ...x })), abilities: [...def.abilities, 'dash', 'dodge'], actions: [], multiattack: [],
-    res: { ...def.res }, resMax: { ...def.res }, statuses: [], death: { succ: 0, fail: 0 }, down: false, dead: false, stable: false,
+    weapons: [...def.weapons.filter(x => !grant?.removeWeapons?.includes(x.id)), ...(grant?.weapons ?? [])].map(x => ({ ...x })), abilities: [...new Set([...def.abilities, ...(grant?.abilities ?? []), 'dash', 'dodge'])], actions: [], multiattack: [],
+    res: { ...def.res, ...(grant?.res ?? {}) }, resMax: { ...def.res, ...(grant?.res ?? {}) }, statuses: [], death: { succ: 0, fail: 0 }, down: false, dead: false, stable: false,
     moveLeft: 0, actionUsed: false, bonusUsed: false, extraActions: 0, attacksMade: 0, acted: false, initiative: 0,
-    resist: (def.resist ?? []) as any, immune: [], vuln: [], condImmune: [], traits: [...def.traits], xp: 0, undead: false,
+    resist: (def.resist ?? []) as any, immune: [], vuln: [], condImmune: [], traits: [...def.traits, ...(grant?.traits ?? [])], xp: 0, undead: false,
     regen: 0, rechargeReady: {}, turnsTaken: 0, portrait: def.portrait,
   };
 }

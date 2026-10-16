@@ -7,9 +7,19 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # typecheck + build de producción
 npm run sim        # simulación headless de los combates (60 partidas por encuentro)
+npx tsx scripts/validate.ts   # valida encuentros, hablantes, tabla del oráculo y mapas
 ```
 
 Atajos de depuración: `/?battle=linyera|acueducto|cubo` abre un combate directamente.
+
+## Novedades de la v0.2
+
+- **Mapa del mundo** (estilo Tactics Ogre) entre capítulos: 13 distritos, tiempo en días, *Alerta del Conclave* y eventos del reloj (patrulla, asalto al santuario, llamada de Zahir, cacería).
+- **15 misiones**: principales (III, IV, y el Cap. V marcado como próximo), **10 secundarias/personales** (un arco inicial por cada PJ) con elecciones, combates y habilidades nuevas.
+- **Oráculo de las Mil Lenguas**: tabla d100 (los 100 encuentros del resumen de campaña) + tablas d10 por zona. El Oráculo siempre miente: muestra un augurio falso y luego ocurre el evento real.
+- **Santuario**: 8 edificios con efecto de juego (se compran con PF), seguidores, y **Milagros** de Devoción/Corrupción que se lanzan en combate gastando PF.
+- **Reputación** de 7 facciones, habilidades cruzadas ganadas en los arcos, aliados (golem, escorpiones) y 5 mapas y 13 monstruos nuevos.
+- Diseño completo de los tres actos, rutas y finales en [`docs/DISENO.md`](docs/DISENO.md).
 
 ## Qué incluye la v0.1
 

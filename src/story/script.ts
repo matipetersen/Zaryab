@@ -5,7 +5,7 @@ import type { Node } from './types';
 //  árbol de nodos; las elecciones modifican Corrupción (c), Devoción (d), PF.
 // ──────────────────────────────────────────────────────────────────────────────
 
-const CAP1: Node[] = [
+export const CAP1: Node[] = [
   { t: 'chapter', title: 'Capítulo I — El Juicio', sub: 'Plaza Central de Zaryab · Patio de las Verdades Retorcidas', bg: 'prison' },
   { t: 'narr', text: 'Cinco días de marcha. Luego, el viento. Una brisa, una ventisca, ráfagas que levantan la arena hasta borrar el cielo. Tres días de tormenta sin referencias. Entonces, a lo lejos: cuatro pilares torcidos, rotos, azotados por la arena.' },
   { t: 'narr', text: 'Un ruido de cadenas. Mecanismos de hierro. Una compuerta se abre y un ascensor de mármol sube con tres figuras de túnicas largas y máscaras de pájaro: ibis negros. Al final del pasillo esperan dos colosos de bronce. Los maniatan con sogas impregnadas de sal, que anulan la magia.' },
@@ -47,7 +47,7 @@ const CAP1: Node[] = [
   { t: 'narr', text: 'Despertáis en un callejón, con carteles de «SE BUSCAN HEREJES» y el sonido de campanas lejanas. Vuestras heridas están cerradas. En el reflejo de un charco, por un instante, veis alas oscuras a vuestras espaldas.' },
 ];
 
-const CAP2: Node[] = [
+export const CAP2: Node[] = [
   { t: 'chapter', title: 'Capítulo II — Las Ocho Casas', sub: 'Bajo Zaryab · El Distrito de las Mentiras', bg: 'bajo' },
   { t: 'narr', text: 'El Bajo Zaryab no es un barrio… es una herida abierta. Las casas se apilan como cadáveres, sus paredes transpiran un líquido violeta. Faroles de vidrio roto proyectan sombras que se retuercen demasiado lento. Y el aire huele a mentira fermentada.' },
   { t: 'narr', text: 'Ocho casas idénticas, marcadas con runas distorsionadas. Una es la de Aisha. Y todo el barrio miente.' },
@@ -82,9 +82,10 @@ const CAP2: Node[] = [
   { t: 'say', who: 'Zahir', text: 'Habéis cumplido… pero esto es sólo el primer latido del corazón del culto. Aquí, donde el Conclave enterró los Huesos del Primer Pacto, construiréis mi altar.', tone: 'un gigante de arena bajo un eclipse sangriento' },
   { t: 'say', who: 'Zahir', text: 'Cada ladrillo será una mentira que derribasteis… cada sacrificio, un latido más fuerte. El Conclave enviará sus bestias de arena. Pero recordad: yo soy la tormenta.' },
   { t: 'narr', text: 'Establecéis la biblioteca como base y primera iglesia del Simurg. Aisha y Farid cuidan del santuario. Con vuestros primeros adeptos, el cristal de Zahir os otorga poderes nuevos.' },
+  { t: 'fx', e: { flags: ['cap2_done'], follow: ['Aisha', 'Farid'], rep: { hijos: 1 } }, note: 'Zaryab se abre ante vosotros. Desde ahora podéis recorrer la ciudad, aceptar encargos y volver a la biblioteca. El tiempo corre: el Conclave os busca.' },
 ];
 
-const CAP3: Node[] = [
+export const CAP3: Node[] = [
   { t: 'chapter', title: 'Capítulo III — Los Pecados Bajo el Agua', sub: 'Zoco de los Mil Soplos · Viejo hammam · Acueductos del oeste', bg: 'zoco' },
   { t: 'narr', text: 'El Zoco de los Mil Soplos: tiendas de seda púrpura sostenidas por columnas de mármol veteadas de oro. Faroles de vidrio morado proyectan hologramas de alfombras voladoras. Esferas de cristal graban contratos. Todo el mundo vende algo. Todo el mundo escucha.' },
   { t: 'bg', id: 'zoco' },
@@ -116,9 +117,10 @@ const CAP3: Node[] = [
   ] },
   { t: 'narr', text: 'Al tocar el fragmento, las piletas rotas escupen ghuls. Los espectros se multiplican a su alrededor, alimentados por el poder celestial del Simurg: más veloces, y algunos estallan al morir en necroarena.' },
   { t: 'battle', enc: 'acueducto' },
+  { t: 'fx', e: { flags: ['alfombra_sacrificada'] } },
   { t: 'narr', text: 'Los ghuls caen… pero llegan más. Corréis por tramos inundados, derrumbes, sombras que se mueven. La alfombra remendada de Al-Khush se lanza hacia una compuerta rota para cerrarla y frenar a la horda. Se enrolla como si os saludara antes de desaparecer.' },
   { t: 'choice', prompt: 'La alfombra se ha sacrificado por vosotros.', options: [
-    { label: 'Honrar su memoria: recoger los hilos y llevárselos a Al-Khush', hint: 'Un gesto sin recompensa.', e: { d: 1 }, result: ['Recogéis un puñado de hilos dorados chamuscados. Al-Khush no puede hablar, pero apoya la mano sobre vuestro hombro un largo rato.'] },
+    { label: 'Honrar su memoria: recoger los hilos y llevárselos a Al-Khush', hint: 'Un gesto sin recompensa.', e: { d: 1, flags: ['honro_alfombra'] }, result: ['Recogéis un puñado de hilos dorados chamuscados. Al-Khush no puede hablar, pero apoya la mano sobre vuestro hombro un largo rato.'] },
     { label: 'No hay tiempo para sentimentalismos', result: ['Seguís corriendo. Detrás de vosotros, los hilos se apagan.'] },
   ] },
   { t: 'narr', text: 'Una cámara circular. El fragmento flota sobre agua sólida. Para tomarlo se necesita un sacrificio emocional.' },
@@ -136,9 +138,10 @@ const CAP3: Node[] = [
   { t: 'narr', text: 'Al pronunciarse el nombre de Azuran, una llamarada de energía dorada fracturada surge del cuerpo de Pact Risen. El fragmento vibra. Todos ven una corona de fuego invertido sobre su cabeza, sólo por un instante.' },
   { t: 'fx', e: { flags: ['pact_azuran'] }, note: 'Pact Risen recupera un eco de su identidad celestial: Azuran.' },
   { t: 'if', flag: 'efrit_muerto', then: [{ t: 'narr', text: 'Esa noche soñáis con el eco de la voz de Shul-Avar. Los Guanteletes de la Ira Rígida pesan más de lo que deberían.' }], else: [{ t: 'narr', text: 'Esa noche soñáis con el Simurg sobre una ciudad de huesos, y con tres djinns libres que miran hacia el este.' }] },
+  { t: 'fx', e: { flags: ['cap3_done'], follow: ['Al-Khush'], rep: { mercaderes: 1 } }, note: 'Se abren el Jardín de los Suspiros y nuevos encargos. Las Si\'lats han dejado un camino que sólo Pact puede seguir.' },
 ];
 
-const CAP4: Node[] = [
+export const CAP4: Node[] = [
   { t: 'chapter', title: 'Capítulo IV — El Reflejo se Rompe', sub: 'Plaza Central · El Cubo de los Mil Reflejos', bg: 'limbo' },
   { t: 'narr', text: 'Una grieta negra se abre en el suelo. De ella brota Zahir, ya sin forma humana: piel de papel calcinado flotando en humo, ojos de estrellas muertas. Cada palabra suya deja un eco de fiebre en la lengua.' },
   { t: 'say', who: 'Zahir (Caído)', text: 'He visto reinos colapsar por menos que una duda. Ustedes… hablaron con Razul. Ustedes… consideraron a Dahhak como aliado. ¡Ya han traicionado el fuego!', tone: 'las marcas del Simurg queman en vuestra piel' },
@@ -165,10 +168,10 @@ const CAP4: Node[] = [
   { t: 'say', who: 'Dahhak', text: '¿Tanto metal para frenar el alma? Pobre Vizir… aún cree que puede contener lo inevitable.', tone: 'en lo alto de una torre rota, hombros en espiral, cabellos de serpientes vivas' },
   { t: 'narr', text: 'Los Qilaat se alinean en anillos alrededor del Capitolio: «Protocolo 900. La Divinidad No Es Bienvenida». Y entonces, las columnas del Capitolio se abren como pétalos. Emerge un coloso de hierro bruñido y oro opaco, tan alto como cuatro edificios, con bolas de pinchos por brazos. Dahhak trepa por su espalda, le susurra algo hueco y antiguo… y las gemas se encienden en púrpura enfermizo.' },
   { t: 'say', who: 'Dahhak', text: '¿Querían un dios? Les traje uno. Uno con músculos de metal y alma de locura. Lucharán. O serán historia enterrada bajo la historia.' },
+  { t: 'fx', e: { flags: ['cap4_done'] } },
   { t: 'end', title: 'Continuará…', text: 'El Coloso de Dahhak avanza. Este es el final de la versión 0.1: el combate del Coloso, el torneo de Panchi con Ellie en Medinat al-Rih, la misión del Vizir a Romain y la sombra del Lich llegarán en las próximas versiones.' },
 ];
 
-export const CHAPTERS: Node[][] = [CAP1, CAP2, CAP3, CAP4];
 
 // Puzzle de las seis marcas: cada alma ↔ su marca verdadera (canon de la Sesión 3).
 export const MARKS = [

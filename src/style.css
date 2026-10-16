@@ -118,3 +118,27 @@ button { font-family: inherit; cursor: pointer; }
 .overlay h2 { font-family: var(--f-head); font-size: 34px; margin: 0 0 6px; color: var(--secondary); letter-spacing: .08em; }
 .overlay .res { text-align: left; margin: 14px 0; font-size: 14px; line-height: 1.7; }
 @media (max-width: 1020px) { #battle { grid-template-columns: 1fr; } #left, #right { display: none; } }
+
+/* ---------- mapa del mundo ---------- */
+#hub { background: #0a0714; }
+#hub .wmap { position: absolute; left: 0; top: 0; right: 360px; bottom: 64px; overflow: hidden; }
+#hub .wsvg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#hub .node { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; color: var(--text); font-family: var(--f-head); font-size: 12px; text-shadow: 0 1px 6px #000; padding: 4px; }
+#hub .node .ic { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: radial-gradient(circle at 35% 30%, #8a4a7a, #3a1a40); border: 2px solid var(--secondary); box-shadow: 0 0 16px rgba(107,45,92,.7); transition: transform .15s; }
+#hub .node:hover .ic { transform: scale(1.12); }
+#hub .node.locked { opacity: .45; filter: grayscale(.7); } #hub .node.locked .ic { border-style: dashed; }
+#hub .node.sel .ic { border-color: var(--pf); box-shadow: 0 0 22px rgba(241,196,15,.6); }
+#hub .node.main .ic { animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 10px rgba(241,196,15,.4); } 50% { box-shadow: 0 0 28px rgba(241,196,15,.95); } }
+#hub .node .nm { max-width: 120px; text-align: center; line-height: 1.15; }
+#hub .dot { position: absolute; top: -2px; right: 2px; min-width: 18px; height: 18px; border-radius: 9px; background: #4a2a5c; border: 1px solid var(--secondary); font-size: 11px; font-family: var(--f-num); display: flex; align-items: center; justify-content: center; }
+#hub .dot.m { background: #b8860b; color: #111; } #hub .dot.p { background: #6a3a8a; }
+#hub .wpanel { position: absolute; right: 0; top: 0; bottom: 64px; width: 360px; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 14px; }
+#hub .wpanel h3 { font-family: var(--f-head); color: var(--secondary); margin: 0 0 4px; font-size: 20px; }
+#hub .wbar { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: var(--panel); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 14px; }
+.qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
+.qcard.main { border-color: var(--pf); } .qcard.done { opacity: .55; } .qcard.personal { border-color: #8a5ab0; }
+.qcard .qk { font-family: var(--f-head); font-size: 11px; letter-spacing: .1em; color: var(--secondary); text-transform: uppercase; }
+.btn.sm { min-width: 0; padding: 7px 14px; font-size: 13px; align-self: flex-start; }
+.overlay .card.wide { width: min(760px, 94vw); max-height: 88vh; overflow-y: auto; text-align: left; }
+.jq { background: var(--panel2); border-radius: 8px; padding: 7px 10px; margin: 5px 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }

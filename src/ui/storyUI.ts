@@ -1,7 +1,7 @@
 import { h, sleep, avatar } from './dom';
 import type { Node, Opt } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
-import { applyEffect, has, type Campaign, type Effect } from '../state';
+import { applyEffect, has, built, previewEffect, type Campaign, type Effect } from '../state';
 import { MARKS, MARK_ANSWER } from '../story/script';
 import { PARTY_BY_ID } from '../data/party';
 
@@ -18,6 +18,7 @@ const BG: Record<string, string> = {
   acueducto: 'radial-gradient(ellipse at 50% 80%, #2f7f90 0%, #14363e 50%, #050f12 100%)',
   cubo: 'radial-gradient(ellipse at 50% 50%, #e4e6f4 0%, #8e95bd 40%, #1c1a3a 100%)',
   plaza: 'radial-gradient(ellipse at 50% 90%, #b0402a 0%, #5a1a1a 45%, #120505 100%)',
+  oraculo: 'radial-gradient(ellipse at 50% 35%, #7a4fb0 0%, #2a1850 45%, #07040f 100%)',
 };
 
 export class StoryUI {
@@ -85,14 +86,14 @@ export class StoryUI {
       case 'choice': return this.choice(n.prompt, n.options);
       case 'battle': { let won = false; while (!won) won = await this.battle(n.enc, n.foeCount); return; }
       case 'puzzle': return this.marksPuzzle();
-      case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); await new Promise<void>(() => {}); } return;
+      case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); const b = h('button', { class: 'btn', style: { position: 'absolute', bottom: '14%', left: '50%', transform: 'translateX(-50%)' } }, 'Volver al mapa de Zaryab'); this.el.append(b); await new Promise<void>(r => b.addEventListener('click', () => r())); t.remove(); b.remove(); } return;
     }
   }
   async choice(prompt: string | undefined, options: Opt[]) {
     const avail = options.filter(o => !o.if || has(this.camp, o.if));
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
-      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null));
+      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
       this.show(null, prompt ?? 'Elegid.', undefined, wrap);
     });
     const lines = applyEffect(this.camp, picked.e); this.hud();

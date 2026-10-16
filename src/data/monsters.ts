@@ -82,6 +82,72 @@ export const MONSTERS: Record<string, MonsterDef> = {
     ],
     xp: 1800, color: '#c79a3b', glyph: 'Q', sprite: 'construct',
   },
+
+  ghul_catacumbas: {
+    id: 'ghul_catacumbas', name: 'Ghul de las Catacumbas', type: 'no-muerto', cr: '2', hp: 32, ac: 12, speed: 30, mods: m(3, 2, 3, -2, 0, -2), prof: 2, undead: true,
+    actions: [{ id: 'garras', name: 'Garras Venenosas', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d4+2', type: 'piercing' }, { dice: '1d6', type: 'poison' }], save: { ab: 'con', dc: 12, cond: 'poisoned', turns: 2 } }],
+    xp: 450, color: '#6d7a4e', glyph: 'G', sprite: 'undead', lore: 'Criatura demacrada de piel de reptil y dedos alargados para cavar tumbas.',
+  },
+  ghul_invocado: {
+    id: 'ghul_invocado', name: 'Ghul Invocado', type: 'no-muerto', cr: '1', hp: 25, ac: 12, speed: 30, mods: m(3, 2, 3, -2, 0, -2), prof: 2, undead: true,
+    actions: [{ id: 'garras', name: 'Garras', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d4+2', type: 'slashing' }] }],
+    xp: 0, color: '#8a6aa8', glyph: 'g', sprite: 'undead',
+  },
+  hormiga_arena: {
+    id: 'hormiga_arena', name: 'Hormiga de Arena', type: 'bestia', cr: '0', hp: 3, ac: 11, speed: 30, mods: m(-2, 1, 0, -5, 0, -4), prof: 2,
+    actions: [{ id: 'mordisco', name: 'Mordisco', kind: 'melee', toHit: 3, reach: 1, dmg: [{ dice: '1d4', type: 'piercing' }] }],
+    xp: 10, color: '#b8864b', glyph: 'h', sprite: 'beast', lore: 'Salen de la piel de los envenenados por el Pozo del Silencio.',
+  },
+  flor_carnivora: {
+    id: 'flor_carnivora', name: 'Flor Carnívora', type: 'planta', cr: '1/2', hp: 22, ac: 11, speed: 5, mods: m(2, 0, 2, -4, 0, -4), prof: 2,
+    actions: [{ id: 'mordisco', name: 'Zarcillo y Mordisco', kind: 'melee', toHit: 4, reach: 2, dmg: [{ dice: '1d8+2', type: 'piercing' }], save: { ab: 'str', dc: 12, cond: 'restrained', turns: 2 } }],
+    xp: 100, color: '#b0306a', glyph: 'f', sprite: 'beast', lore: 'Rosas de pétalos translúcidos que sangran néctar violeta.',
+  },
+  drow_espia: {
+    id: 'drow_espia', name: "Espía de la Casa Vel'Shara", type: 'humanoide (drow)', cr: '1', hp: 27, ac: 15, speed: 30, mods: m(0, 4, 1, 1, 2, 1), prof: 2,
+    actions: [
+      { id: 'espada', name: 'Espada corta envenenada', kind: 'melee', toHit: 5, reach: 1, dmg: [{ dice: '1d6+3', type: 'piercing' }], save: { ab: 'con', dc: 12, cond: 'poisoned', turns: 3 } },
+      { id: 'ballesta', name: 'Ballesta de mano', kind: 'ranged', toHit: 5, reach: 6, dmg: [{ dice: '1d6+3', type: 'piercing' }] },
+    ],
+    multiattack: ['espada', 'espada'], xp: 200, color: '#3d3858', glyph: 'V', sprite: 'humanoid', lore: 'La Casa Vel\'Shara no olvida. No perdona. No muere.',
+  },
+  mercenario_zoco: {
+    id: 'mercenario_zoco', name: 'Mercenario del Zoco', type: 'humanoide', cr: '2', hp: 45, ac: 15, speed: 30, mods: m(3, 3, 3, 1, 0, 0), prof: 2,
+    actions: [
+      { id: 'cuchillo', name: 'Cuchillo curvo', kind: 'melee', toHit: 5, reach: 1, dmg: [{ dice: '1d6+3', type: 'slashing' }] },
+      { id: 'mercurio', name: 'Frasco de Mercurio', kind: 'save', reach: 4, aoe: 1, dmg: [{ dice: '2d6', type: 'acid' }], half: true, save: { ab: 'dex', dc: 13 }, recharge: 5 },
+    ],
+    multiattack: ['cuchillo', 'cuchillo'], xp: 450, color: '#8a4aa0', glyph: 'M', sprite: 'humanoid', lore: 'Turbante violeta y cuchillos curvos bañados en mercurio.',
+  },
+  serpiente_cristal: {
+    id: 'serpiente_cristal', name: 'Serpiente de Cristal', type: 'constructo', cr: '1/2', hp: 16, ac: 15, speed: 30, mods: m(-2, 4, 1, -4, 0, -4), prof: 2,
+    actions: [{ id: 'mordisco', name: 'Mordisco Silencioso', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d4+2', type: 'piercing' }], save: { ab: 'con', dc: 12, cond: 'paralyzed', turns: 1 } }],
+    xp: 100, color: '#7fd1c8', glyph: 'c', sprite: 'beast', lore: 'Espía mágico del Zoco: se mueve como una joya hasta atacar.',
+  },
+  golem_arena: {
+    id: 'golem_arena', name: 'Golem de Arena Defectuoso', type: 'constructo', cr: '3', hp: 60, ac: 16, speed: 20, mods: m(4, -1, 4, -5, -1, -5), prof: 2, immune: ['poison', 'psychic'],
+    actions: [{ id: 'golpe', name: 'Golpetear', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '2d8+4', type: 'bludgeoning' }] }],
+    onDeath: { name: 'Desmoronarse', dmg: [{ dice: '3d6', type: 'slashing' }], radius: 1, dc: 14, ab: 'dex' },
+    xp: 700, color: '#a8744a', glyph: 'Ω', sprite: 'construct', lore: 'Arcilla y runas violetas, moviéndose de forma espasmódica. Roto, enojado, solo.',
+  },
+  adorador: {
+    id: 'adorador', name: 'Adorador del Simurg', type: 'humanoide', cr: '1/2', hp: 27, ac: 11, speed: 30, mods: m(1, 0, 1, 0, 1, 0), prof: 2,
+    actions: [{ id: 'daga', name: 'Daga Ritual', kind: 'melee', toHit: 3, reach: 1, dmg: [{ dice: '1d4+1', type: 'slashing' }, { dice: '1d6', type: 'necrotic' }] }],
+    xp: 100, color: '#9a6ac8', glyph: 'a', sprite: 'humanoid', lore: 'Fanático de túnica parchada con un cristal violeta incrustado en el pecho.',
+  },
+  nino_poseido: {
+    id: 'nino_poseido', name: 'Niño Poseído por Zahir', type: 'humanoide', cr: '2', hp: 40, ac: 12, speed: 30, mods: m(-1, 1, 0, 1, 2, 3), prof: 2,
+    actions: [
+      { id: 'toque', name: 'Toque de Zahir', kind: 'save', reach: 6, dmg: [{ dice: '2d6', type: 'necrotic' }], save: { ab: 'wis', dc: 13 } },
+      { id: 'arañazo', name: 'Arañazo de arena', kind: 'melee', toHit: 3, reach: 1, dmg: [{ dice: '1d6', type: 'slashing' }] },
+    ],
+    xp: 450, color: '#d9b6ff', glyph: 'F', sprite: 'djinn', lore: 'Ojos de arena que fluye y voz de eco múltiple.',
+  },
+  perro_arena: {
+    id: 'perro_arena', name: 'Perro de Arena', type: 'bestia', cr: '1/2', hp: 22, ac: 13, speed: 40, mods: m(2, 2, 1, -4, 1, -3), prof: 2,
+    actions: [{ id: 'mordisco', name: 'Mordisco', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d6+2', type: 'piercing' }], save: { ab: 'str', dc: 12, cond: 'prone', turns: -1 } }],
+    xp: 100, color: '#c9a060', glyph: 'p', sprite: 'beast', lore: 'Rastreador de los Inquisidores: nunca pierde un olor a herejía.',
+  },
   djinn_menor: {
     id: 'djinn_menor', name: 'Djinn Menor', type: 'elemental', cr: '1', hp: 30, ac: 13, speed: 30, mods: m(1, 2, 1, 0, 0, 1), prof: 2, fly: 30,
     actions: [{ id: 'zarpazo', name: 'Zarpazo de arena', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d8+2', type: 'slashing' }] }],

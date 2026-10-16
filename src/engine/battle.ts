@@ -23,6 +23,7 @@ export class Battle {
   grid: Grid; units: Unit[]; order: Unit[] = []; idx = -1; round = 0;
   events: BEvent[] = []; over = false; result?: 'victory' | 'defeat'; nextUid = 1000;
   flags: Record<string, any> = {};
+  pfPool = 0; pfSpent = 0;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
 
   // ---------- util ----------
@@ -357,6 +358,7 @@ export class Battle {
     if (ab.cost === 'bonus' && u.bonusUsed) return { ok: false, msg: 'Sin acción adicional.' };
     if (ab.slot && !this.slotLevels(u, ab.slot).length) return { ok: false, msg: 'Sin espacios de conjuro.' };
     if (ab.use && (u.res[ab.use] ?? 0) <= 0) return { ok: false, msg: 'Sin usos restantes.' };
+    if (ab.pf && this.pfPool < ab.pf) return { ok: false, msg: `Faltan PF (${ab.pf}).` };
     return { ok: true };
   }
   useAbility(u: Unit, id: string, target: Target, lvl?: number): Res {
@@ -369,6 +371,7 @@ export class Battle {
     if (ab.cost === 'bonus') u.bonusUsed = true;
     if (ab.slot) u.res['slot' + L]--;
     if (ab.use) u.res[ab.use]--;
+    if (ab.pf) { this.pfPool -= ab.pf; this.pfSpent += ab.pf; }
     u.acted = true;
     ab.run(this, u, target as any, L);
     return { ok: true };
@@ -439,6 +442,11 @@ export class Battle {
     return { ok: true };
   }
   xpValue() { return this.units.filter(u => u.side === 'foe' && u.dead && !u.summoned).reduce((s, u) => s + u.xp, 0); }
+  /** Invoca una criatura aliada controlada por la IA; entra en el orden de iniciativa justo después del invocador. */
+  summon(u: Unit, owner: Unit, p: P) {
+    u.side = owner.side; u.ai = true; u.summoned = true; u.initiative = owner.initiative - 0.5; this.spawn(u, p);
+    const i = this.order.indexOf(owner); this.order.splice(i + 1, 0, u); if (this.idx > i) this.idx++;
+  }
   spawn(u: Unit, p: P) { u.uid = this.nextUid++; u.x = p.x; u.y = p.y; this.units.push(u); this.emit({ t: 'spawn', uid: u.uid }); }
 }
 export type { Side };

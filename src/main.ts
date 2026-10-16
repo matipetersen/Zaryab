@@ -2,37 +2,44 @@ import './style.css';
 import { h, avatar } from './ui/dom';
 import { StoryUI } from './ui/storyUI';
 import { BattleUI, type BattleResult } from './ui/battleUI';
-import { CHAPTERS } from './story/script';
-import { ENCOUNTERS, MAPS } from './data/maps';
+import { HubUI } from './ui/hubUI';
+import { ENCOUNTERS } from './data/maps';
 import { PARTY, PARTY_BY_ID } from './data/party';
 import { buildBattle } from './engine/setup';
-import { newCampaign, loadGame, saveGame, clearSave, applyEffect, type Campaign } from './state';
+import { MIRACLES } from './engine/abilities';
+import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, type Campaign } from './state';
+import { CHAPTER_SCRIPTS, QUEST_BY_ID, QUESTS } from './world/quests';
+import { EVENTS, pendingEvent } from './world/events';
+import { D100, ZONES, drawOracle, eventScript, type OEv } from './world/oracle';
+import { DISTRICT_BY_ID } from './world/districts';
+import type { Node } from './story/types';
 
 class App {
   app = document.getElementById('app')!; camp: Campaign = newCampaign(); settings = { permadeath: false };
-  top!: HTMLElement; rootEl!: HTMLElement; menuEl!: HTMLElement; storyEl!: HTMLElement; battleEl!: HTMLElement;
-  story!: StoryUI; hudEl!: HTMLElement;
+  top!: HTMLElement; rootEl!: HTMLElement; menuEl!: HTMLElement; storyEl!: HTMLElement; battleEl!: HTMLElement; hubEl!: HTMLElement;
+  story!: StoryUI; hub!: HubUI; hudEl!: HTMLElement; running = false;
 
   constructor() {
     try { this.settings = { ...this.settings, ...JSON.parse(localStorage.getItem('zaryab.settings') || '{}') }; } catch { /* */ }
     this.hudEl = h('div', { class: 'meters' });
     this.top = h('div', { id: 'topbar' }, h('div', { class: 'brand' }, 'ZARYAB · Las Entrañas de Piedra Viva'), this.hudEl);
-    this.menuEl = h('div', { class: 'screen', id: 'menu' }); this.storyEl = h('div', { class: 'screen hidden' }); this.battleEl = h('div', { class: 'screen hidden' });
-    this.rootEl = h('div', { id: 'root' }, this.menuEl, this.storyEl, this.battleEl);
+    this.menuEl = h('div', { class: 'screen', id: 'menu' }); this.storyEl = h('div', { class: 'screen hidden' }); this.battleEl = h('div', { class: 'screen hidden' }); this.hubEl = h('div', { class: 'screen hidden' });
+    this.rootEl = h('div', { id: 'root' }, this.menuEl, this.storyEl, this.hubEl, this.battleEl);
     this.app.append(this.top, this.rootEl);
-    this.story = new StoryUI(this.storyEl);
-    this.story.battle = (enc, n, foes) => this.runBattle(enc, n, foes);
-    this.story.hud = () => this.renderHud();
+    this.story = new StoryUI(this.storyEl); this.hub = new HubUI(this.hubEl);
+    this.story.battle = (enc, n, foes) => this.runBattle(enc, n, foes); this.story.hud = () => this.renderHud();
+    this.hub.onChange = () => { this.renderHud(); saveGame(this.camp); };
     this.renderHud(); this.showMenu();
     const q = new URLSearchParams(location.search);
     if (q.get('battle')) this.devBattle(q.get('battle')!);
+    (window as any).__app = this;
   }
-  show(which: 'menu' | 'story' | 'battle') { this.menuEl.classList.toggle('hidden', which !== 'menu'); this.storyEl.classList.toggle('hidden', which !== 'story'); this.battleEl.classList.toggle('hidden', which !== 'battle'); }
+  show(which: 'menu' | 'story' | 'hub' | 'battle') { this.menuEl.classList.toggle('hidden', which !== 'menu'); this.storyEl.classList.toggle('hidden', which !== 'story'); this.hubEl.classList.toggle('hidden', which !== 'hub'); this.battleEl.classList.toggle('hidden', which !== 'battle'); }
   renderHud() {
     const c = this.camp; this.hudEl.innerHTML = '';
     const m = (cls: string, label: string, v: number, max: number) => h('div', { class: `meter ${cls}` }, label, h('div', { class: 'bar' }, h('i', { style: { width: (v / max) * 100 + '%' } })), h('span', {}, `${v}/${max}`));
-    this.hudEl.append(m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
-      h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); } }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => location.reload() }, 'Menú'));
+    this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day}`), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
+      h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
   }
   showMenu() {
     this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = '';
@@ -41,54 +48,101 @@ class App {
     perm.addEventListener('change', () => { this.settings.permadeath = perm.checked; localStorage.setItem('zaryab.settings', JSON.stringify(this.settings)); });
     m.append(h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA'), roster,
       h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.start(); } }, 'Nueva campaña'),
-      h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar (Cap. ${save.cursor.chapter + 1})` : 'Continuar'),
+      h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar (día ${save.day})` : 'Continuar'),
       h('label', { class: 'small', style: { display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' } }, perm, 'Muerte permanente (si no, el cristal de Zahir devuelve a los caídos a cambio de Corrupción y PF)'),
-      h('div', { class: 'mnote' }, 'Combate de D&D 5.ª edición sobre cuadrícula isométrica. Fichas reales de Romain, Pact Risen, Rabb Locke y Joren Hell. ⚠ Zyr\'thar y Panchi usan estadísticas estimadas (sin ficha en los archivos). Controles: clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar.'));
+      h('div', { class: 'mnote' }, 'Combate de D&D 5.ª edición sobre cuadrícula isométrica. Fichas reales de Romain, Pact Risen, Rabb Locke y Joren Hell. ⚠ Zyr\'thar y Panchi usan estadísticas estimadas. Controles: clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar.'));
+  }
+
+  // ───────── guiones ─────────
+  scriptNodes(id: string): Node[] {
+    if (CHAPTER_SCRIPTS[id]) return CHAPTER_SCRIPTS[id];
+    if (id.startsWith('q:')) return QUEST_BY_ID[id.slice(2)].script;
+    if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
+    if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
+    return [];
+  }
+  async runScript(id: string, from = 0, nodes?: Node[]) {
+    const list = nodes ?? this.scriptNodes(id); this.show('story'); if (!this.storyEl.querySelector('.bg')) { this.story.camp = this.camp; this.story.mount(); }
+    this.story.camp = this.camp; this.camp.run = { script: id, idx: from }; this.story.onTop = i => { this.camp.run = { script: id, idx: from + i }; saveGame(this.camp); };
+    await this.story.play(list.slice(from), true);
+    this.camp.run = null; if (id === 'cap1') applyEffect(this.camp, { flags: ['cap1_done'] }); saveGame(this.camp);
+  }
+  advance(days: number) {
+    const c = this.camp;
+    for (let i = 0; i < days; i++) {
+      c.day++; c.alertTick++;
+      if (c.alertTick >= 3) { c.alertTick = 0; c.alert = Math.min(10, c.alert + 1); const inc = Math.floor(c.followers.length / 3); if (inc) { c.pf += inc; c.seal += inc; } }
+      if (built(c, 'torre') && c.day % 7 === 0) c.alert = Math.max(0, c.alert - 1);
+    }
+    this.renderHud();
   }
   async start() {
-    this.renderHud(); this.show('story'); this.story.camp = this.camp; this.story.mount();
-    let ci = this.camp.cursor.chapter; let start = this.camp.cursor.path[0] ?? 0;
-    for (; ci < CHAPTERS.length; ci++) {
-      const nodes = CHAPTERS[ci]; const off = start; this.camp.cursor = { chapter: ci, path: [off] };
-      this.story.onTop = i => { this.camp.cursor = { chapter: ci, path: [off + i] }; saveGame(this.camp); };
-      await this.story.play(nodes.slice(off), true); start = 0;
-      this.camp.cursor = { chapter: ci + 1, path: [0] }; saveGame(this.camp);
+    this.renderHud(); this.story.camp = this.camp; this.story.mount(); this.show('story');
+    if (this.camp.run) await this.runScript(this.camp.run.script, this.camp.run.idx);
+    await this.hubLoop();
+  }
+  async hubLoop() {
+    if (!has(this.camp, 'cap1_done')) await this.runScript('cap1');
+    if (!has(this.camp, 'cap2_done')) await this.runScript('cap2');
+    for (;;) {
+      const ev = pendingEvent(this.camp);
+      if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev); this.renderHud(); continue; }
+      this.show('hub'); this.renderHud();
+      const a = await this.hub.choose(this.camp);
+      if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
+      if (a.t === 'rest') { this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansáis en la biblioteca.`); saveGame(this.camp); continue; }
+      if (a.t === 'quest') {
+        const q = QUEST_BY_ID[a.id]; await this.runScript('q:' + a.id);
+        this.camp.quests[q.id] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
+        if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
+        this.advance(q.days); if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
+      }
+      if (a.t === 'oracle') {
+        const dr = drawOracle(this.camp, a.district); const e: OEv = dr.ev; this.camp.oracleSeen.push(e.n);
+        let nodes = eventScript(this.camp, dr);
+        if (built(this.camp, 'pozo_vis')) nodes = [{ t: 'bg', id: 'oraculo' }, { t: 'say', who: 'Oráculo de las Mil Lenguas', text: `El Pozo de Visiones me obliga a decir la verdad: ${e.title}.`, tone: 'por primera vez, no miente' }, ...nodes.slice(2)];
+        await this.runScript('oracle:' + e.n, 0, nodes); void DISTRICT_BY_ID;
+        if (!built(this.camp, 'alfombra')) this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: el Oráculo anuncia «${e.title}».`); this.renderHud(); saveGame(this.camp);
+      }
     }
   }
+
+  // ───────── combate ─────────
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
-    const e = ENCOUNTERS[enc]; const party = this.camp.party.filter(p => !this.camp.dead.includes(p));
+    const e = ENCOUNTERS[enc]; const c = this.camp; const party = c.party.filter(p => !c.dead.includes(p));
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
-    const b = buildBattle(enc, party, { foes: list });
+    const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
+    const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
     const won = res.result === 'victory';
-    const overlay = this.resultOverlay(res, enc); this.battleEl.append(overlay);
+    const overlay = this.resultOverlay(res); this.battleEl.append(overlay);
     await new Promise<void>(r => overlay.querySelector('button')!.addEventListener('click', () => r()));
     ui.destroy(); overlay.remove(); this.battleEl.innerHTML = ''; this.show('story');
-    if (won) { this.camp.battlesWon++; this.camp.xp += res.xp; this.afterVictory(res); this.renderHud(); }
-    return won;
-  }
-  afterVictory(res: BattleResult) {
-    for (const id of res.dead) {
-      if (this.settings.permadeath) { if (!this.camp.dead.includes(id)) this.camp.dead.push(id); }
-      else applyEffect(this.camp, { c: 1, pf: -3 });
+    c.pf = Math.max(0, c.pf - res.pfSpent);
+    if (won) {
+      c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
+      for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: -3 }); }
     }
+    this.renderHud(); saveGame(c); return won;
   }
-  resultOverlay(res: BattleResult, enc: string) {
+  resultOverlay(res: BattleResult) {
     const won = res.result === 'victory'; const names = (ids: string[]) => ids.map(i => PARTY_BY_ID[i].name).join(', ');
     const lines: (string | HTMLElement)[] = [];
     if (won) {
-      lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia obtenida: `, h('b', {}, String(res.xp)), ' XP'));
+      lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia: `, h('b', {}, String(res.xp)), ' XP'));
+      if (res.pfSpent) lines.push(h('div', {}, `PF gastados en milagros: ${res.pfSpent}`));
       if (res.downed.length) lines.push(h('div', {}, `Caídos que se recuperan: ${names(res.downed.filter(d => !res.dead.includes(d)))}`));
       if (res.dead.length) lines.push(h('div', { style: { color: '#ff9c8f' } }, this.settings.permadeath ? `Han muerto para siempre: ${names(res.dead)}.` : `${names(res.dead)} murió… y el cristal de Zahir lo devuelve. +1 Corrupción, −3 PF.`));
       lines.push(h('div', { class: 'small' }, 'Tras el combate, un descanso corto restaura PG y recursos.'));
     } else lines.push(h('div', {}, 'La compañía ha caído. Zahir susurra: «Aún no.» Puedes reintentar el combate.'));
-    void enc; void MAPS;
     return h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, won ? 'Victoria' : 'Derrota'), h('div', { class: 'res' }, ...lines), h('button', { class: 'btn' }, won ? 'Continuar' : 'Reintentar')));
   }
   async devBattle(enc: string) {
-    this.show('battle'); this.camp = newCampaign(); const e = ENCOUNTERS[enc]; const b = buildBattle(enc, this.camp.party); const ui = new BattleUI(this.battleEl); (window as any).__ui = ui; (window as any).__b = b;
+    this.show('battle'); this.camp = newCampaign(); const e = ENCOUNTERS[enc]; const b = buildBattle(enc, this.camp.party, { pf: 30, miracles: MIRACLES.map(m => m.id) }); const ui = new BattleUI(this.battleEl); (window as any).__ui = ui; (window as any).__b = b;
     await ui.run(b, e.map, e.intro);
   }
 }
+(window as any).__quests = QUESTS;
 new App();

@@ -3,12 +3,13 @@ import type { Unit, DmgType, DmgPart } from './types';
 import type { P } from './grid';
 import { cheb } from './grid';
 import { roll, rand } from './dice';
+import { makeFoe } from '../data/monsters';
 
 export type TargetKind = 'enemy' | 'ally' | 'allyOrSelf' | 'self' | 'none' | 'tile' | 'downedAlly' | 'any' | 'deadAlly';
 export interface AbilityDef {
   id: string; name: string; desc: string; cost: 'action' | 'bonus' | 'free';
   range: number; target: TargetKind; slot?: number; use?: string; conc?: boolean; upcast?: boolean; los?: boolean;
-  aoe?: number; tag?: 'heal' | 'attack' | 'buff' | 'control' | 'move' | 'utility';
+  aoe?: number; pf?: number; miracle?: 'dev' | 'corr'; tag?: 'heal' | 'attack' | 'buff' | 'control' | 'move' | 'utility';
   validate?: (b: Battle, u: Unit, t: any, l: number) => Res | undefined;
   run: (b: Battle, u: Unit, t: any, l: number) => void;
 }
@@ -46,8 +47,8 @@ def({ id: 'dodge', name: 'Esquivar', desc: 'Los ataques contra ti tienen desvent
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); b.log(`${u.name} se pone a la defensiva.`, 'sys'); } });
 
 // ---------- Romain (Clérigo de la Tumba) ----------
-def({ id: 'cure_wounds', name: 'Curar Heridas', desc: 'Toque. Cura 1d8+mod por nivel de espacio.', cost: 'action', range: 1, target: 'allyOrSelf', slot: 1, upcast: true, tag: 'heal',
-  run: (b, u, t: Unit, l) => { const r = roll(`${l}d8`); const amt = r.total + u.spellMod; b.heal(t, amt, u); b.log(`${u.name} cura a ${t.name} (${amt}) con Curar Heridas.`, 'heal'); } });
+def({ id: 'cure_wounds', name: 'Curar Heridas', desc: 'Toque. Cura 1d8+mod por nivel de espacio (+1d8 con la Luz del Simurg mejorada).', cost: 'action', range: 1, target: 'allyOrSelf', slot: 1, upcast: true, tag: 'heal',
+  run: (b, u, t: Unit, l) => { const r = roll(`${l + (u.traits.includes('luzMejorada') ? 1 : 0)}d8`); const amt = r.total + u.spellMod; b.heal(t, amt, u); b.log(`${u.name} cura a ${t.name} (${amt}) con Curar Heridas.`, 'heal'); } });
 def({ id: 'healing_word', name: 'Palabra de Curación', desc: 'Acción adicional, 12 casillas. Cura 1d4+mod por nivel de espacio.', cost: 'bonus', range: 12, target: 'allyOrSelf', slot: 1, upcast: true, tag: 'heal', los: false,
   run: (b, u, t: Unit, l) => { const r = roll(`${l}d4`); const amt = r.total + u.spellMod; b.heal(t, amt, u); b.log(`${u.name} susurra una Palabra de Curación: ${t.name} +${amt}.`, 'heal'); } });
 def({ id: 'bless', name: 'Bendecir', desc: 'Concentración. Hasta 3 aliados a 6 casillas suman 1d4 a ataques y salvaciones.', cost: 'action', range: 0, target: 'none', slot: 1, conc: true, upcast: true, tag: 'buff',
@@ -117,3 +118,25 @@ def({ id: 'patient_defense', name: 'Defensa Paciente', desc: 'Gastas 1 ki: Esqui
 def({ id: 'step_of_wind', name: 'Paso del Viento', desc: 'Gastas 1 ki: Correr como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; } });
 void rand;
+
+// ---------- Milagros del culto (cuestan PF; los lanza cualquier portador del cristal de Zahir) ----------
+def({ id: 'bendicion_arenas', name: 'Bendición de las Arenas', desc: 'Milagro (5 PF). Aliados a 2 casillas recuperan 1d8+2 PG.', cost: 'action', range: 0, target: 'none', pf: 5, miracle: 'dev', aoe: 2, tag: 'heal',
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); for (const a of b.alliesOf(u).filter(a => cheb(a, u) <= 2 && !a.dead && a.sprite !== 'wall')) { const r = roll('1d8').total + 2; b.heal(a, r, u); } b.log(`${u.name} invoca la Bendición de las Arenas.`, 'heal'); } });
+def({ id: 'renacimiento_puro', name: 'Renacimiento Puro', desc: 'Milagro (20 PF). Levanta a un aliado caído con la mitad de sus PG.', cost: 'action', range: 6, target: 'downedAlly', pf: 20, miracle: 'dev', tag: 'heal', los: false,
+  run: (b, u, t: Unit) => { b.heal(t, Math.floor(t.maxHp / 2), u); b.log(`${u.name} devuelve la vida a ${t.name}: Renacimiento Puro.`, 'heal'); } });
+def({ id: 'grito_tormenta', name: 'Grito de la Tormenta', desc: 'Milagro (5 PF). Enemigos a 2 casillas: 2d6 de trueno, salvación CON 13 para la mitad.', cost: 'action', range: 0, target: 'none', pf: 5, miracle: 'corr', aoe: 2, tag: 'attack',
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log(`${u.name} aúlla: Grito de la Tormenta.`, 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 2)) { const ok = b.save(f, 'con', 13, '(Grito de la Tormenta)'); const d = roll('2d6').total; b.damage(f, ok ? Math.floor(d / 2) : d, 'thunder', u); } } });
+def({ id: 'pacto_abismo', name: 'Pacto con el Abismo', desc: 'Milagro (10 PF). Invoca un ghul aliado (25 PG) en una casilla libre cercana.', cost: 'action', range: 3, target: 'tile', pf: 10, miracle: 'corr', tag: 'utility',
+  run: (b, u, t: P) => { const g = makeFoe('ghul_invocado', t.x, t.y, '', u.side); b.summon(g, u, t); b.log(`${u.name} abre una grieta: un ghul obedece.`, 'buff'); } });
+def({ id: 'eclipse_zahir', name: 'Eclipse de Zahir', desc: 'Milagro (15 PF). Enemigos a 6 casillas: salvación SAB 15 o quedan cegados 2 turnos.', cost: 'action', range: 0, target: 'none', pf: 15, miracle: 'corr', aoe: 6, tag: 'control',
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log('El sol se apaga sobre el campo de batalla.', 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 6)) if (!b.save(f, 'wis', 15, '(Eclipse de Zahir)')) b.addStatus(f, { id: 'blinded', turns: 2, src: u.uid }); } });
+export const MIRACLES: { id: string; need: 'd' | 'c'; min: number }[] = [
+  { id: 'bendicion_arenas', need: 'd', min: 2 }, { id: 'renacimiento_puro', need: 'd', min: 6 },
+  { id: 'grito_tormenta', need: 'c', min: 2 }, { id: 'pacto_abismo', need: 'c', min: 4 }, { id: 'eclipse_zahir', need: 'c', min: 6 },
+];
+
+// ---------- Habilidades ganadas por los arcos personales ----------
+def({ id: 'eclipse_personal', name: 'Eclipse Personal', desc: 'Una vez por combate. Enemigos a 2 casillas: salvación CON o 2d6 radiante y cegados; aliados a 2 casillas ganan +2 CA 2 turnos.', cost: 'action', range: 0, target: 'none', use: 'eclipse', aoe: 2, tag: 'control',
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log(`${u.name} oscurece el sol a su alrededor: Eclipse Personal.`, 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 2)) { if (!b.save(f, 'con', Math.max(12, u.spellDC), '(Eclipse Personal)')) { b.damage(f, roll('2d6').total, 'radiant', u); b.addStatus(f, { id: 'blinded', turns: 1, src: u.uid }); } } for (const a of b.alliesOf(u).filter(a => cheb(a, u) <= 2 && !a.dead)) b.addStatus(a, { id: 'shieldFaith', turns: 2, src: u.uid }, true); } });
+def({ id: 'declarar_verdad', name: 'Declarar una Verdad', desc: 'Una vez por combate. Un enemigo a 6 casillas: salvación SAB 13 o queda al descubierto (sin invisibilidad, desventaja 2 turnos) y sufre 2d6 radiante.', cost: 'action', range: 6, target: 'enemy', use: 'verdad', tag: 'control',
+  run: (b, u, t: Unit) => { b.emit({ t: 'fx', kind: 'bolt', x: u.x, y: u.y, x2: t.x, y2: t.y }); b.log(`${u.name} pronuncia una verdad que quema.`, 'roll'); if (!b.save(t, 'wis', 13, '(Una Verdad)')) { b.removeStatus(t, 'invisible'); b.addStatus(t, { id: 'disadvNext', turns: 2, src: u.uid }); b.damage(t, roll('2d6').total, 'radiant', u); } else b.float(t, 'Resiste', 'miss'); } });
