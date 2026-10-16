@@ -10,10 +10,11 @@ import { ENCOUNTERS } from './data/maps';
 import { PARTY, PARTY_BY_ID } from './data/party';
 import { buildBattle } from './engine/setup';
 import { MIRACLES } from './engine/abilities';
-import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, type Campaign } from './state';
+import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, progMap, pendingLevel, type Campaign } from './state';
 import { CHAPTER_SCRIPTS, QUEST_BY_ID, QUESTS } from './world/quests';
 import { EVENTS, pendingEvent } from './world/events';
 import { D100, ZONES, drawOracle, eventScript, type OEv } from './world/oracle';
+import { autoPicks } from './data/progression';
 import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
@@ -95,6 +96,7 @@ class App {
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
       const ev = pendingEvent(this.camp);
       if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev); this.renderHud(); continue; }
+      if ((window as any).__autolevel) { const c = this.camp; for (let n = pendingLevel(c); n; n = pendingLevel(c)) { for (const pc of c.party.filter(p => !c.dead.includes(p))) (c.picks[pc] ??= []).push(...autoPicks(pc, n, c.d, c.c)); c.lvl = n; } }
       this.show('hub'); this.renderHud();
       const a = await this.hub.choose(this.camp);
       if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
@@ -130,7 +132,7 @@ class App {
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv });
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party) });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
     const duel = !!e.duel; const won = res.result === 'victory' || duel;
@@ -154,6 +156,7 @@ class App {
     if (won) {
       lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia: `, h('b', {}, String(res.xp)), ' XP'));
       if (loot) lines.push(h('div', {}, '💰 Botín: ', h('b', {}, `${loot.gold} PO`), loot.mats ? ` · ${loot.mats} materiales` : '', ...Object.entries(loot.items).map(([k, n]) => ` · ${ITEM[k].icon} ${ITEM[k].name} ×${n}`)));
+      if (pendingLevel(this.camp)) lines.push(h('div', { style: { color: '#e8c872' } }, '⬆ ¡Habéis ganado experiencia suficiente para subir de nivel! Hacedlo desde el mapa.'));
       if (res.pfSpent) lines.push(h('div', {}, `PF gastados en milagros: ${res.pfSpent}`));
       if (res.downed.length) lines.push(h('div', {}, `Caídos que se recuperan: ${names(res.downed.filter(d => !res.dead.includes(d)))}`));
       if (res.dead.length) lines.push(h('div', { style: { color: '#ff9c8f' } }, this.settings.permadeath ? `Han muerto para siempre: ${names(res.dead)}.` : `${names(res.dead)} murió… y el cristal de Zahir lo devuelve. +1 Corrupción, −3 PF.`));

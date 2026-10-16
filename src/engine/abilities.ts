@@ -14,16 +14,18 @@ export interface AbilityDef {
   run: (b: Battle, u: Unit, t: any, l: number) => void;
 }
 export const ABILITIES: Record<string, AbilityDef> = {};
-const def = (a: AbilityDef) => { ABILITIES[a.id] = a; };
+export const def = (a: AbilityDef) => { ABILITIES[a.id] = a; };
 
+export const sdDie = (u: Unit) => `1d${u.traits.includes('sd12') ? 12 : u.traits.includes('sd10') ? 10 : 8}`;
 // ---------- helpers ----------
-function spellAttack(b: Battle, u: Unit, t: Unit, dice: string, type: DmgType, name: string, ranged = true, extra?: (crit: boolean) => void) {
+export function spellAttack(b: Battle, u: Unit, t: Unit, dice: string, type: DmgType, name: string, ranged = true, extra?: (crit: boolean) => void) {
   const wasInvis = b.has(u, 'invisible');
   const r = b.rollAttack(u, t, u.spellAtk, { ranged, spell: true });
   b.emit({ t: 'fx', kind: ranged ? 'bolt' : 'slash', x: u.x, y: u.y, x2: t.x, y2: t.y });
   if (!r.hit) { b.log(`${u.name} lanza ${name} a ${t.name}: ${r.nat}→${r.total} vs CA ${r.ac}: falla.`, 'roll'); b.float(t, 'Falla', 'miss'); }
   else {
     const parts: DmgPart[] = [{ dice, type }];
+    if (type === 'necrotic' && u.traits.includes('necroBoost')) parts.push({ dice: '1d8', type });
     if (b.has(u, 'hex') && b.status(u, 'hex')!.val === t.uid) parts.push({ dice: '1d6', type: 'necrotic' });
     if (b.has(u, 'hexCurse') && b.status(u, 'hexCurse')!.val === t.uid) parts.push({ dice: String(u.prof), type });
     const rolled = b.rollParts(parts, r.crit);
@@ -35,9 +37,9 @@ function spellAttack(b: Battle, u: Unit, t: Unit, dice: string, type: DmgType, n
   }
   if (wasInvis) b.removeStatus(u, 'invisible');
 }
-const nearestAllies = (b: Battle, u: Unit, radius: number, n: number) =>
+export const nearestAllies = (b: Battle, u: Unit, radius: number, n: number) =>
   b.alliesOf(u).filter(a => !a.down && a.sprite !== 'wall' && cheb(a, u) <= radius).sort((x, y) => cheb(x, u) - cheb(y, u)).slice(0, n);
-const nearestFoes = (b: Battle, u: Unit, radius: number, n: number) =>
+export const nearestFoes = (b: Battle, u: Unit, radius: number, n: number) =>
   b.foesOf(u).filter(f => cheb(f, u) <= radius && b.canSee(u, f).visible && b.targetable(u, f)).sort((x, y) => cheb(x, u) - cheb(y, u)).slice(0, n);
 
 // ---------- generales ----------
@@ -82,7 +84,7 @@ def({ id: 'second_wind', name: 'Tomar Aliento', desc: 'Acción adicional. Recupe
 def({ id: 'action_surge', name: 'Oleada de Acción', desc: 'Obtienes una acción adicional este turno.', cost: 'free', range: 0, target: 'self', use: 'surge', tag: 'buff',
   run: (b, u) => { u.extraActions++; b.log(`${u.name} lanza una Oleada de Acción.`, 'buff'); b.float(u, '¡Oleada!', 'status'); } });
 def({ id: 'rally', name: 'Reagrupar', desc: 'Acción adicional, dado de superioridad. Aliado a 12 casillas gana 1d8+CAR PG temporales.', cost: 'bonus', range: 12, target: 'allyOrSelf', use: 'sd', tag: 'buff', los: false,
-  run: (b, u, t: Unit) => { const a = roll('1d8').total + u.mods.cha; t.temp = Math.max(t.temp, a); b.float(t, `+${a} temp`, 'heal'); b.log(`${u.name} reagrupa a ${t.name} (+${a} PG temporales).`, 'buff'); } });
+  run: (b, u, t: Unit) => { const a = roll(sdDie(u)).total + u.mods.cha; t.temp = Math.max(t.temp, a); b.float(t, `+${a} temp`, 'heal'); b.log(`${u.name} reagrupa a ${t.name} (+${a} PG temporales).`, 'buff'); } });
 def({ id: 'radiant_soul', name: 'Alma Radiante', desc: 'Brotan alas luminosas: vuelas y sumas 3 de daño radiante por turno (10 rondas).', cost: 'action', range: 0, target: 'self', use: 'soul', tag: 'buff',
   run: (b, u) => { u.fly = true; b.addStatus(u, { id: 'radiantSoul', turns: 10, src: u.uid }); b.log(`Dos alas de luz brotan de la espalda de ${u.name}.`, 'buff'); b.emit({ t: 'fx', kind: 'heal', x: u.x, y: u.y }); } });
 def({ id: 'healing_hands', name: 'Manos Curativas', desc: 'Toque. Recupera PG igual a tu nivel.', cost: 'action', range: 1, target: 'allyOrSelf', use: 'hh', tag: 'heal',
@@ -90,7 +92,7 @@ def({ id: 'healing_hands', name: 'Manos Curativas', desc: 'Toque. Recupera PG ig
 
 // ---------- Rabb Locke (Hexblade) ----------
 def({ id: 'eldritch_blast', name: 'Estallido Sobrenatural', desc: 'Truco. Ataque de conjuro a 24 casillas: 1d10 de fuerza.', cost: 'action', range: 24, target: 'enemy', tag: 'attack',
-  run: (b, u, t: Unit) => spellAttack(b, u, t, '1d10', 'force', 'Estallido Sobrenatural') });
+  run: (b, u, t: Unit) => { const n = 1 + (u.level >= 5 ? 1 : 0) + (u.level >= 11 ? 1 : 0) + (u.level >= 17 ? 1 : 0); for (let i = 0; i < n && !t.dead; i++) spellAttack(b, u, t, u.traits.includes('agonizing') ? `1d10+${u.spellMod}` : '1d10', 'force', 'Estallido Sobrenatural'); } });
 def({ id: 'hex', name: 'Maleficio', desc: 'Acción adicional, concentración. +1d6 necrótico a tus ataques contra el objetivo.', cost: 'bonus', range: 18, target: 'enemy', slot: 1, conc: true, tag: 'control',
   run: (b, u, t: Unit) => { u.conc = { id: 'hex', targets: [t.uid] }; b.addStatus(t, { id: 'hex', turns: 600, src: u.uid, val: t.uid }, true); b.addStatus(u, { id: 'hex', turns: 600, src: u.uid, val: t.uid }, true); b.float(t, 'Maleficio', 'status'); b.log(`${u.name} maldice a ${t.name}.`, 'buff'); } });
 def({ id: 'wrathful_smite', name: 'Golpe Iracundo', desc: 'Acción adicional, concentración. Tu próximo golpe cuerpo a cuerpo: +1d6 psíquico y puede aterrar.', cost: 'bonus', range: 0, target: 'none', slot: 1, conc: true, tag: 'buff',

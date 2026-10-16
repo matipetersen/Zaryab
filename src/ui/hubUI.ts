@@ -5,7 +5,8 @@ import { BUILDINGS, RITOS } from '../world/buildings';
 import { ROLES, TRAITS, RITUALS, projection, sermon, recruit, ritual, setRole, type Role, type ActResult } from '../world/followers';
 import { MIRACLES, ABILITIES } from '../engine/abilities';
 import type { InvUI } from './invUI';
-import { FACTIONS, has, built, applyEffect, type Campaign } from '../state';
+import { LevelUI } from './levelUI';
+import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
 
 export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' };
 const KIND_LABEL: Record<string, string> = { main: '★ Principal', side: 'Secundaria', personal: 'Personal', faction: 'Facción' };
@@ -59,6 +60,7 @@ export class HubUI {
     const c = this.camp;
     return h('div', { class: 'wbar' },
       h('button', { class: 'act', onClick: () => this.openSanctuary() }, '☥ Santuario'),
+      h('button', { class: `act ${pendingLevel(c) ? 'on' : ''}`, onClick: () => this.openLevel() }, pendingLevel(c) ? `⬆ Subir a nivel ${pendingLevel(c)}` : `⭐ Nivel ${c.lvl}`),
       h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
@@ -84,8 +86,9 @@ export class HubUI {
     if (c.journal.length) { b.append(h('div', { class: 'sec' }, 'Diario')); for (const j of c.journal.slice(-12).reverse()) b.append(h('div', { class: 'small' }, j)); }
     this.openModal('Diario de misiones', b);
   }
-  inv?: InvUI;
-  openInventory(tab = 'equipo') { if (!this.inv) return; this.openModal('Inventario · Equipo y objetos', this.inv.render(this.camp, tab, () => { this.onChange?.(); this.openInventory(this.inv!.tab); })); }
+  inv?: InvUI; lvl = new LevelUI();
+  openInventory(tab = 'personajes') { if (!this.inv) return; this.openModal('Inventario · Equipo y objetos', this.inv.render(this.camp, tab, () => { this.onChange?.(); this.openInventory(this.inv!.tab); })); }
+  openLevel() { const c = this.camp; this.lvl.redraw = () => this.openLevel(); const done = () => { this.onChange?.(); this.render(); this.closeModal(); if (pendingLevel(c)) this.openLevel(); }; this.openModal(pendingLevel(c) ? 'Subida de nivel' : 'Nivel del grupo', this.lvl.render(c, done)); }
   lastMsg = ''; api?: { advance: (n: number) => void };
   act(r: ActResult, tab: string) { this.lastMsg = r.text; if (r.ok && r.days) this.api?.advance(r.days); this.onChange?.(); this.openSanctuary(tab); }
   openSanctuary(tab = 'seguidores') {

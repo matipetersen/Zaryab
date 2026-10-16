@@ -261,6 +261,6 @@ export class BattleUI {
     this.tip.classList.add('hidden');
   }
 }
-const RES: Record<string, string> = { eclipse: 'Eclipse', verdad: 'Una Verdad', slot1: 'Esp. N1', slot2: 'Esp. N2', slot3: 'Esp. N3', channel: 'Canalizar', sw: 'Tomar Aliento', surge: 'Oleada', sd: 'Dados Sup.', soul: 'Alma Radiante', hh: 'Manos Cur.', curse: 'Maldición', faerie: 'Fuego Feérico', ki: 'Ki', flurry: 'Ráfaga' };
+const RES: Record<string, string> = { eclipse: 'Eclipse', verdad: 'Una Verdad', slot1: 'Esp. N1', slot2: 'Esp. N2', slot3: 'Esp. N3', channel: 'Canalizar', sw: 'Tomar Aliento', surge: 'Oleada', sd: 'Dados Sup.', soul: 'Alma Radiante', hh: 'Manos Cur.', curse: 'Maldición', faerie: 'Fuego Feérico', ki: 'Ki', flurry: 'Ráfaga', slot4: 'Esp. N4', slot5: 'Esp. N5', slot6: 'Esp. N6', slot7: 'Esp. N7', slot8: 'Esp. N8', juicio: 'Juicio Final', indomitable: 'Indómito', specter: 'Espectro', arc6: 'Arcano 6', arc7: 'Arcano 7', volley: 'Descarga', poison: 'Veneno', smoke: 'Humo', whole: 'Plenitud', palm: 'Palma' };
 const TERRAIN: Record<string, string> = { fire: 'Fuego: 1d6 al entrar o empezar el turno. Dura unas rondas y se propaga a lo inflamable.', floor: 'Suelo llano.', diff: 'Terreno difícil: cuesta el doble de movimiento.', wall: 'Muro: bloquea el paso y la visión.', cover: 'Cobertura: bloquea el paso; +2 CA a quien esté detrás.', hazard: 'Peligroso: 1d6 de fuego al entrar o empezar el turno.', water: 'Agua: terreno difícil.', high: 'Plataforma elevada: terreno difícil.', mark: 'Marca grabada en el suelo.' };
 export type { BEvent };

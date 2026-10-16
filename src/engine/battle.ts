@@ -2,6 +2,7 @@ import { Grid, P, cheb, key } from './grid';
 import { d20, roll, avg, rand, pick } from './dice';
 import type { Unit, Weapon, MAction, BEvent, CondId, Status, DmgType, DmgPart, Ab, Side } from './types';
 import { ABILITIES } from './abilities';
+import './abilities2';
 
 import { makeFoe as makeFoeLazy } from '../data/monsters';
 const MASCARAS: { name: string; res: DmgType[]; vuln: DmgType }[] = [
@@ -16,7 +17,7 @@ export const COND_LABEL: Record<CondId, string> = {
   stunned: 'Aturdido', restrained: 'Inmovilizado', invisible: 'Invisible', burning: 'En llamas', dodging: 'Esquiva', bless: 'Bendecido',
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
-  guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', faerie: 'Delineado',
+  guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
   taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche',
 };
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
@@ -104,7 +105,7 @@ export class Battle {
   status(u: Unit, id: CondId) { return u.statuses.find(s => s.id === id); }
   incapacitated(u: Unit) { return u.down || u.dead || this.has(u, 'paralyzed') || this.has(u, 'stunned'); }
   ac(u: Unit, cover = 0) { return u.ac + (this.has(u, 'shieldFaith') ? 2 : 0) + cover; }
-  maxAttacks(u: Unit) { return 1 + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 1 : 0); }
+  maxAttacks(u: Unit) { return 1 + (u.extraAtk ?? 0) + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 1 : 0); }
 
   addStatus(t: Unit, s: Status, quiet = false) {
     if (t.dead || t.condImmune.includes(s.id)) { if (!quiet) this.float(t, 'Inmune', 'status'); return false; }
@@ -160,7 +161,7 @@ export class Battle {
       const a = u.actions.find(x => x.id === k);
       if (a?.recharge) { const r = Math.floor(rand() * 6) + 1; if (r >= a.recharge) { u.rechargeReady[k] = true; this.log(`${u.name} recupera ${a.name}.`, 'sys'); } }
     }
-    if (!u.dead) this.bossStart(u);
+    if (!u.dead) { this.bossStart(u); this.auraStart(u); }
     if (u.traits.includes('pilonRegen') && !u.dead) { const n = this.units.filter(x => !x.dead && x.traits.includes('pilon')).length; if (n && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, n * 7); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`Los pilones alimentan al Coloso (+${g}).`, 'sys'); } }
     if (u.traits.includes('smash') && !u.dead) { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && this.destructible(u.x + dx, u.y + dy)) { this.log(`${u.name} aplasta lo que se interpone.`, 'sys'); this.destroyTile(u.x + dx, u.y + dy, 'bludgeoning', u); } }
     if (u.regen && !u.down && u.hp > 0 && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + u.regen); this.float(u, `+${u.regen}`, 'heal'); }
@@ -299,7 +300,9 @@ export class Battle {
       if (t.death.fail >= 3 || a >= t.maxHp) this.kill(t, src);
       return a;
     }
+    if (src && t.traits.includes('uncanny') && !this.flags['unc' + t.uid + '_' + this.round]) { this.flags['unc' + t.uid + '_' + this.round] = 1; a = Math.floor(a / 2); this.log(`${t.name} esquiva lo peor del golpe (Esquiva Asombrosa).`, 'sys'); }
     const absorbed = Math.min(t.temp, a); t.temp -= absorbed; a -= absorbed;
+    if (t.hp - a <= 0 && this.has(t, 'deathWard')) { this.removeStatus(t, 'deathWard'); t.hp = 1 + a; this.log(`La Protección contra la Muerte salva a ${t.name}.`, 'heal'); }
     const before = t.hp; t.hp -= a;
     if (t.traits.includes('enrage') && t.hp > 0 && t.hp <= t.maxHp / 2 && !this.flags['enr' + t.uid]) { this.flags['enr' + t.uid] = 1; for (const ac of t.actions) { if (ac.toHit != null) ac.toHit += 2; if (ac.save) ac.save = { ...ac.save, dc: ac.save.dc + 2 }; } for (const k of Object.keys(t.rechargeReady)) t.rechargeReady[k] = true; this.log(`¡${t.name} entra en furia! Sus ataques mejoran y recupera sus poderes.`, 'sys'); this.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); }
     if (t.hp <= 0) {
@@ -315,7 +318,7 @@ export class Battle {
     } else if (t.traits.includes('flees50') && t.hp <= t.maxHp / 2) { this.flee(t); }
     else if (t.conc && a > 0 && before > 0) {
       const dc = Math.max(10, Math.floor(a / 2));
-      let n = d20() + t.mods.con; if (this.has(t, 'bless')) n += 2;
+      let n = d20(); if (t.traits.includes('warCaster')) n = Math.max(n, d20()); n += t.mods.con; if (this.has(t, 'bless')) n += 2;
       this.log(`${t.name} concentración: ${n} vs CD ${dc}.`, 'roll');
       if (n < dc) this.breakConc(t, ' (dañado)');
     }
@@ -408,9 +411,12 @@ export class Battle {
       if (this.has(u, 'wrathSmite') && !ranged) { ex.push({ dice: '1d6', type: 'psychic' }); this.removeStatus(u, 'wrathSmite'); if (!this.save(t, 'wis', u.spellDC, '(Golpe Iracundo)')) this.addStatus(t, { id: 'frightened', turns: 10, src: u.uid }); }
       if (u.traits.includes('sneak') && !this.has(u, 'sneakUsed') && (w.finesse || ranged)) {
         const flank = this.units.some(a => a !== u && !a.dead && a.side === u.side && !this.incapacitated(a) && cheb(a, t) <= 1);
-        if (r.adv || flank) { ex.push({ dice: '2d6', type: w.dmg[0].type }); this.addStatus(u, { id: 'sneakUsed', turns: -1 }, true); bonusTxt = ' +Ataque furtivo'; }
+        if (r.adv || flank) { ex.push({ dice: `${Math.ceil(u.level / 2)}d6`, type: w.dmg[0].type }); this.addStatus(u, { id: 'sneakUsed', turns: -1 }, true); bonusTxt = ' +Ataque furtivo'; }
       }
       if (this.has(u, 'ambusher') && u.attacksMade === 1 && u.turnsTaken === 1) ex.push({ dice: '1d8', type: w.dmg[0].type });
+      if (this.has(u, 'ensnare') && !ranged) { this.removeStatus(u, 'ensnare'); if (!this.save(t, 'str', u.spellDC, '(Golpe Enredador)')) this.addStatus(t, { id: 'restrained', turns: 5, src: u.uid }); }
+      for (const [tr, dice, type] of [['divineStrike', u.level >= 14 ? '2d8' : '1d8', 'necrotic'], ['radStrike', u.level >= 14 ? '2d8' : '1d8', 'radiant']] as const) if (u.traits.includes(tr) && !ranged && !this.flags[`${tr}${u.uid}_${this.round}`]) { this.flags[`${tr}${u.uid}_${this.round}`] = 1; ex.push({ dice, type }); }
+      if (u.traits.includes('lifedrinker') && !ranged) ex.push({ dice: String(Math.max(1, u.spellMod)), type: 'necrotic' });
       const all = this.rollParts([...parts, ...ex], r.crit);
       let total = 0; const txt: string[] = [];
       const enf = this.has(u, 'enfeebled');
@@ -427,7 +433,7 @@ export class Battle {
 
   // ---------- habilidades ----------
   slotLevels(u: Unit, min: number): number[] {
-    const out: number[] = []; for (let l = min; l <= 5; l++) if ((u.res['slot' + l] ?? 0) > 0) out.push(l); return out;
+    const out: number[] = []; for (let l = min; l <= 7; l++) if ((u.res['slot' + l] ?? 0) > 0) out.push(l); return out;
   }
   canUse(u: Unit, id: string): Res {
     const ab = ABILITIES[id]; if (!ab) return { ok: false, msg: 'Habilidad desconocida.' };
@@ -514,7 +520,7 @@ export class Battle {
       if (a.dmg && a.aoe) this.hitArea(center, a.aoe, a.dmg.reduce((sum, p) => sum + roll(p.dice).total, 0), a.dmg[0].type, u);
       for (const v of victims) {
         const ok = this.save(v, a.save!.ab, a.save!.dc, `(${a.name})`);
-        if (a.dmg) for (const p of this.rollParts(a.dmg, false)) this.damage(v, ok ? (a.half ? Math.floor(p.amt / 2) : 0) : p.amt, p.type, u);
+        if (a.dmg) { const ev = v.traits.includes('evasion') && a.save!.ab === 'dex'; for (const p of this.rollParts(a.dmg, false)) this.damage(v, ok ? (ev ? 0 : a.half ? Math.floor(p.amt / 2) : 0) : (ev ? Math.floor(p.amt / 2) : p.amt), p.type, u); }
         if (!ok && a.save!.cond && !v.dead) this.addStatus(v, { id: a.save!.cond, turns: a.save!.turns ?? 1, src: u.uid, dot: a.save!.dot });
       }
     } else if (a.kind === 'heal') {
@@ -543,6 +549,20 @@ export class Battle {
       for (let i = 0; i < 3 && w.length; i++) { const k = Math.floor(rand() * w.length); const p = w.splice(k, 1)[0]; this.grid.setTile(p.x, p.y, '~'); this.emit({ t: 'tile', kind: 'build', x: p.x, y: p.y }); }
       this.log(`${u.name} hace subir el agua: el campo se inunda.`, 'sys');
       if (this.grid.at(u.x, u.y)?.kind === 'water' && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, 8); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`${u.name} se alimenta del agua (+${g}).`, 'sys'); }
+    }
+  }
+
+  /** Auras y efectos persistentes de personaje que se evalúan al empezar el turno de `u`. */
+  auraStart(u: Unit) {
+    if (u.dead || u.down) return;
+    for (const s of this.units) {
+      if (s.dead || s.down || s === u && !['auraVida', 'auraValor'].some(t => s.traits.includes(t))) continue;
+      const d = cheb(s, u);
+      if (s.traits.includes('auraVida') && s.side === u.side && d <= 2 && u.hp < u.maxHp && !u.dead) { const h = this.heal(u, s.prof + 1, s, true); if (h) this.float(u, `+${h}`, 'heal'); }
+      if (s.traits.includes('auraValor') && s.side === u.side && d <= 2 && this.has(u, 'frightened')) { this.removeStatus(u, 'frightened'); this.log(`${s.name} infunde valor a ${u.name}.`, 'buff'); }
+      if (s.traits.includes('auraSombra') && s.side !== u.side && d <= 2) { this.damage(u, 2 + s.prof, 'necrotic', s); }
+      const sg = this.status(s, 'spiritGuard');
+      if (sg && s.side !== u.side && d <= 3) { const dmg = roll(`${sg.val ?? 3}d8`).total; const ok = this.save(u, 'wis', s.spellDC, '(Guardianes Espirituales)'); this.damage(u, ok ? Math.floor(dmg / 2) : dmg, 'radiant', s); }
     }
   }
   freeNear(o: P): P | undefined {

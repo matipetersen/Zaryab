@@ -9,7 +9,7 @@ export function pcActions(u: Unit): MAction[] {
   if (u.abilities.includes('eldritch_blast')) a.push({ id: 'eb', name: 'Estallido', kind: 'ranged', toHit: u.spellAtk, reach: 24, dmg: [{ dice: '1d10', type: 'force' }] } as MAction);
   return a;
 }
-export function botSetup(b: Battle) { for (const u of b.units) if (u.pcId) { u.ai = true; u.actions = pcActions(u); } }
+export function botSetup(b: Battle) { for (const u of b.units) if (u.pcId) { u.ai = true; u.actions = pcActions(u); const main = u.actions[0]; if (main && (u.extraAtk ?? 0) > 0) u.multiattack = Array(1 + (u.extraAtk ?? 0)).fill(main.id); } }
 
 const foesOf = (b: Battle, u: Unit) => b.foesOf(u).filter(f => f.sprite !== 'wall' && b.targetable(u, f) && f.hp > 0);
 const nearest = (b: Battle, u: Unit, list: Unit[]) => [...list].sort((a, c) => cheb(a, u) - cheb(c, u))[0];
@@ -23,7 +23,9 @@ async function emulate(b: Battle, u: Unit) {
     else if (hurt && !u.bonusUsed) b.useAbility(u, 'healing_word', hurt);
     const undead = foes.filter(f => f.undead && cheb(f, u) <= 6);
     if (undead.length >= 2 && u.res.channel > 0) b.useAbility(u, 'turn_undead', undefined);
+    if (!u.actionUsed && !u.conc && u.abilities.includes('spirit_guardians') && foes.filter(f => cheb(f, u) <= 3).length >= 2 && b.slotLevels(u, 3).length) b.useAbility(u, 'spirit_guardians', undefined, b.slotLevels(u, 3)[0]);
     if (!u.actionUsed && !u.conc && b.round <= 2 && foes.length >= 3) b.useAbility(u, 'bless', undefined);
+    if (!u.actionUsed && u.abilities.includes('flame_strike') && foes.length >= 3 && b.slotLevels(u, 5).length) { const t = nearest(b, u, foes); b.useAbility(u, 'flame_strike', { x: t.x, y: t.y }); }
     if (!u.actionUsed && hurt && cheb(u, hurt) <= 1) b.useAbility(u, 'cure_wounds', hurt);
     if (!u.actionUsed && foes.length) { const t = [...foes].sort((a, c) => c.hp - a.hp)[0]; if (b.slotLevels(u, 1).length > 1) b.useAbility(u, 'guiding_bolt', t); }
   } else if (u.id === 'pact') {

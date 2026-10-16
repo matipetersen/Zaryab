@@ -1,7 +1,8 @@
 import { h } from './dom';
 import { ITEM, ITEMS, RECIPES, SHOP_STOCK, type Slot } from '../data/items';
 import { PARTY_BY_ID } from '../data/party';
-import { has, type Campaign } from '../state';
+import { has, progOf, type Campaign } from '../state';
+import { TRACKS, featuresUpTo, optionById, getPick } from '../data/progression';
 
 const SLOTS: [Slot, string][] = [['arma', '⚔ Arma'], ['armadura', '🛡 Armadura'], ['talisman', '✦ Talismán']];
 const RAR: Record<string, string> = { comun: '', poco: 'good', raro: 'mag', unico: 'bad' };
@@ -19,12 +20,21 @@ export class InvUI {
     this.tab = tab; const party = c.party.filter(p => !c.dead.includes(p)); if (!this.who || !party.includes(this.who)) this.who = party[0];
     const go = (t: string) => () => { this.msg = ''; this.tab = t; refresh(); };
     const b = h('div', { class: 'res' });
-    b.append(h('div', { class: 'tabs' }, ...[['equipo', '🧍 Equipo'], ['mochila', '🎒 Mochila'], ['tienda', '🏺 Tienda de EaNassr'], ['taller', '🔨 Taller']].map(([id, lb]) => h('button', { class: `tabbtn ${tab === id ? 'on' : ''}`, onClick: go(id) }, lb))),
+    b.append(h('div', { class: 'tabs' }, ...[['personajes', '📖 Personajes'], ['equipo', '🧍 Equipo'], ['mochila', '🎒 Mochila'], ['tienda', '🏺 Tienda de EaNassr'], ['taller', '🔨 Taller']].map(([id, lb]) => h('button', { class: `tabbtn ${tab === id ? 'on' : ''}`, onClick: go(id) }, lb))),
       h('div', {}, h('span', { class: 'tag' }, `💰 ${c.gold} PO`), h('span', { class: 'tag' }, `🧱 Materiales ${c.mats}`)));
     if (this.msg) b.append(h('div', { class: 'msg' }, this.msg));
     const say = (m: string) => { this.msg = m; refresh(); };
     const card = (id: string, extra: (HTMLElement | null)[] = []) => { const it = ITEM[id]; return h('div', { class: 'jq' }, h('span', {}, it.icon + ' '), h('b', {}, it.name), ' ', h('span', { class: `tag ${RAR[it.rarity]}` }, it.rarity), h('div', { class: 'small' }, it.desc), it.lore ? h('div', { class: 'small lore' }, it.lore) : null, ...extra); };
-    if (tab === 'equipo') {
+    if (tab === 'personajes') {
+      b.append(h('div', { class: 'tabs' }, ...party.map(p => h('button', { class: `tabbtn ${this.who === p ? 'on' : ''}`, onClick: () => { this.who = p; refresh(); } }, PARTY_BY_ID[p].name))));
+      const def = PARTY_BY_ID[this.who]; const t = TRACKS[this.who]; const prog = progOf(c, this.who);
+      const paths = [5, 9, 13].filter(l => l <= prog.level).map(l => { const id = getPick(prog.picks, 'tier', l); const o = id ? optionById(this.who, id) : undefined; return o ? t.paths[o.path] : null; }).filter(Boolean);
+      b.append(h('div', { class: 'sec' }, `${def.name} · ${t.klass} ${prog.level}`), h('div', { class: 'small lore' }, def.blurb),
+        paths.length ? h('div', {}, h('span', { class: 'tag mag' }, `Arquetipo: ${paths[paths.length - 1]}`)) : h('div', { class: 'small' }, 'Aún sin evolución de arquetipo (se elige al nivel 5, 9 y 13).'));
+      const feats = featuresUpTo(this.who, prog); if (!feats.length) b.append(h('div', { class: 'small' }, 'Nivel 3: rasgos de la ficha original.'));
+      for (const f of feats) b.append(h('div', { class: 'jq' }, h('span', { class: `tag ${f.kind === 'path' ? 'mag' : f.kind === 'auto' ? 'good' : ''}` }, `Nv ${f.level}`), h('b', {}, ' ' + f.name), h('div', { class: 'small' }, f.desc)));
+      const nx = t.tiers.find(x => x.level > prog.level); if (nx) b.append(h('div', { class: 'small', style: { marginTop: '8px' } }, `Próxima evolución de arquetipo: nivel ${nx.level} (${nx.title}).`));
+    } else if (tab === 'equipo') {
       b.append(h('div', { class: 'tabs' }, ...party.map(p => h('button', { class: `tabbtn ${this.who === p ? 'on' : ''}`, onClick: () => { this.who = p; refresh(); } }, PARTY_BY_ID[p].name))));
       for (const [s, lb] of SLOTS) {
         const cur = this.slotOf(c, this.who, s); b.append(h('div', { class: 'sec' }, lb));

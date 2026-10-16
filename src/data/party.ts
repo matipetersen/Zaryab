@@ -2,6 +2,7 @@ import type { Unit, Weapon, Mods } from '../engine/types';
 import type { Grant } from '../state';
 import { ITEM } from './items';
 import { addFlat } from '../engine/dice';
+import { applyProgression, type Prog } from './progression';
 
 export interface PCDef {
   id: string; name: string; race: string; klass: string; level: number; color: string; glyph: string; portrait: string;
@@ -85,8 +86,9 @@ export const PARTY: PCDef[] = [
 ];
 export const PARTY_BY_ID = Object.fromEntries(PARTY.map(p => [p.id, p]));
 
-export function makePC(def: PCDef, grant?: Grant, equip: string[] = []): Unit {
+export function makePC(def: PCDef, grant?: Grant, equip: string[] = [], prog?: Prog): Unit {
   const u = buildPC(def, grant);
+  if (prog) applyProgression(u, def, prog);
   applyEquip(u, equip);
   return u;
 }

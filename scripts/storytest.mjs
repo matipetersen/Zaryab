@@ -4,7 +4,7 @@ const dir = process.argv[2] || '/tmp'; const pick = process.argv[3] || '0'; cons
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
 const page = await browser.newPage({ viewport: { width: 1440, height: 860 } });
 const errs = []; page.on('pageerror', e => errs.push('PAGEERR ' + e.message)); page.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-await page.addInitScript(() => { window.__fast = true; });
+await page.addInitScript(() => { window.__fast = true; window.__autolevel = true; });
 await page.goto('http://127.0.0.1:5173/'); await page.waitForTimeout(800);
 await page.click('text=Nueva campaña');
 let battles = new Set(), shots = 0, lastText = '', stuck = 0, steps = 0, hubSteps = 0, oracles = 0, doneQuests = [], endSeen = false;
