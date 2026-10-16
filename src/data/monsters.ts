@@ -183,6 +183,117 @@ export const MONSTERS: Record<string, MonsterDef> = {
     traits: ['flees50'], xp: 1800, color: '#6a5a2a', glyph: 'D', sprite: 'serpent',
     lore: 'Hombros en espiral, cabellos de serpientes vivas y una sonrisa de quien ya ganó. «Dahhak no da poder: devora historia.»',
   },
+  // ───────── No muertos ─────────
+  esqueleto_arena: {
+    id: 'esqueleto_arena', name: 'Esqueleto de Arena', type: 'no-muerto', cr: '1/4', hp: 16, ac: 13, speed: 30, mods: m(2, 2, 2, -4, -1, -3), prof: 2, undead: true, immune: ['poison'], vuln: ['bludgeoning'],
+    actions: [{ id: 'cimitarra', name: 'Cimitarra mellada', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d6+2', type: 'slashing' }] }],
+    xp: 50, color: '#d8d0b0', glyph: 'e', sprite: 'undead', lore: 'Huesos blanqueados por el desierto que aún recuerdan una orden.',
+  },
+  esqueleto_arquero: {
+    id: 'esqueleto_arquero', name: 'Arquero Osario', type: 'no-muerto', cr: '1/2', hp: 20, ac: 13, speed: 30, mods: m(0, 3, 2, -4, -1, -3), prof: 2, undead: true, immune: ['poison'], vuln: ['bludgeoning'],
+    actions: [{ id: 'arco', name: 'Arco corto roído', kind: 'ranged', toHit: 5, reach: 8, dmg: [{ dice: '1d6+3', type: 'piercing' }] }],
+    xp: 100, color: '#cfc6a2', glyph: 'a', sprite: 'undead', lore: 'Las cuerdas de sus arcos están hechas de tendones que no son suyos.',
+  },
+  sombra_arena: {
+    id: 'sombra_arena', name: 'Sombra de Arena', type: 'no-muerto', cr: '1/2', hp: 18, ac: 12, speed: 40, mods: m(-2, 2, 1, -2, 0, -1), prof: 2, undead: true, immune: ['poison', 'necrotic'], resist: ['slashing', 'piercing'],
+    actions: [{ id: 'toque', name: 'Toque que drena', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d6+2', type: 'necrotic' }], save: { ab: 'con', dc: 12, cond: 'enfeebled', turns: 3 } }],
+    xp: 100, color: '#3a3050', glyph: 's', sprite: 'undead', lore: 'La sombra de un viajero que murió sin nombre. Roba el tuyo para vestirse.',
+  },
+  caballero_osario: {
+    id: 'caballero_osario', name: 'Caballero Osario', type: 'no-muerto', cr: '3', hp: 52, ac: 17, speed: 30, mods: m(4, 1, 3, -2, 1, 0), prof: 2, undead: true, immune: ['poison'], condImmune: ['frightened'],
+    actions: [{ id: 'mandoble', name: 'Mandoble de hueso', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '2d6+4', type: 'slashing' }, { dice: '1d6', type: 'necrotic' }] }, { id: 'grito', name: 'Grito de Guerra Muerto', kind: 'save', reach: 0, aoe: 3, aoeSelf: true, save: { ab: 'wis', dc: 13, cond: 'frightened', turns: 2 }, recharge: 5 }],
+    multiattack: ['mandoble', 'mandoble'], xp: 700, color: '#bdb59a', glyph: 'K', sprite: 'undead', lore: 'Un soldado de un ejército que Zaryab borró de sus libros. Todavía cree que hay una guerra.',
+  },
+  ghul_cantor: {
+    id: 'ghul_cantor', name: 'Ghul Cantor', type: 'no-muerto', cr: '2', hp: 30, ac: 12, speed: 30, mods: m(1, 2, 2, 0, 2, 2), prof: 2, undead: true, immune: ['poison'],
+    actions: [{ id: 'arana', name: 'Garras podridas', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d8+2', type: 'slashing' }] }, { id: 'letania', name: 'Letanía de Huesos', kind: 'heal', reach: 5, heal: '2d6+2', recharge: 4 }],
+    xp: 450, color: '#8a7a4a', glyph: 'c', sprite: 'undead', lore: 'Canta las canciones del Lich. Los ghuls que la oyen se levantan una vez más.',
+  },
+  // ───────── Tigre de Tormenta ─────────
+  tigre_alado: {
+    id: 'tigre_alado', name: 'Tigre Alado de las Tormentas', type: 'monstruosidad', cr: '5', hp: 78, ac: 15, speed: 40, fly: 60, mods: m(4, 3, 3, -3, 2, 0), prof: 3, resist: ['lightning'],
+    actions: [
+      { id: 'garra', name: 'Zarpazo', kind: 'melee', toHit: 7, reach: 1, dmg: [{ dice: '2d6+4', type: 'slashing' }] },
+      { id: 'picada', name: 'Picada en Tempestad', kind: 'melee', toHit: 7, reach: 1, dmg: [{ dice: '2d8+4', type: 'slashing' }], save: { ab: 'str', dc: 14, cond: 'prone', turns: 1 }, recharge: 5 },
+      { id: 'rugido', name: 'Rugido del Trueno', kind: 'save', reach: 0, aoe: 3, aoeSelf: true, dmg: [{ dice: '3d8', type: 'thunder' }], half: true, save: { ab: 'con', dc: 14, cond: 'stunned', turns: 1 }, recharge: 6 },
+    ],
+    multiattack: ['garra', 'garra'], traits: ['boss', 'enrage'], xp: 1800, color: '#e8b85a', glyph: 'T', sprite: 'beast',
+    lore: 'Pelaje de arena y rayas de rayo. Las alas son de cuero de roc y el rugido arranca tejas. Sólo obedece a quien lo mira a los ojos sin miedo.',
+  },
+  tigre_companero: {
+    id: 'tigre_companero', name: 'Tigre Alado (compañero)', type: 'monstruosidad', cr: '3', hp: 52, ac: 14, speed: 40, fly: 60, mods: m(4, 3, 3, -3, 2, 0), prof: 2, resist: ['lightning'],
+    actions: [{ id: 'garra', name: 'Zarpazo', kind: 'melee', toHit: 6, reach: 1, dmg: [{ dice: '2d6+4', type: 'slashing' }] }, { id: 'rugido', name: 'Rugido del Trueno', kind: 'save', reach: 0, aoe: 2, aoeSelf: true, dmg: [{ dice: '2d8', type: 'thunder' }], half: true, save: { ab: 'con', dc: 13 }, recharge: 6 }],
+    multiattack: ['garra', 'garra'], xp: 0, color: '#e8b85a', glyph: 'T', sprite: 'beast', lore: 'Ahora cuida de la compañía. Duerme en lo alto de la biblioteca.',
+  },
+  // ───────── Jefes: los falsos dioses ─────────
+  cuello_dahhak: {
+    id: 'cuello_dahhak', name: 'Cuello de Víbora', type: 'monstruosidad', cr: '1/2', hp: 20, ac: 13, speed: 20, mods: m(1, 3, 1, -3, 0, -3), prof: 2, immune: ['poison'], traits: ['objective-ignore'],
+    actions: [{ id: 'mordisco', name: 'Mordisco venenoso', kind: 'melee', toHit: 5, reach: 2, dmg: [{ dice: '1d6+3', type: 'piercing' }, { dice: '1d6', type: 'poison' }] }],
+    xp: 0, color: '#6a7a2a', glyph: 's', sprite: 'serpent', lore: 'Un cuello torcido más. Dahhak tiene cuantos necesite.',
+  },
+  dahhak_final: {
+    id: 'dahhak_final', name: 'Dahhak, el Portador de Cuellos (forma verdadera)', type: 'aberración (djinn)', cr: '8', hp: 150, ac: 16, speed: 30, mods: m(3, 4, 4, 3, 3, 5), prof: 3, size: 3, resist: ['poison'], condImmune: ['poisoned'],
+    actions: [
+      { id: 'colmillos', name: 'Colmillos de Cien Víboras', kind: 'melee', toHit: 8, reach: 2, dmg: [{ dice: '2d8+4', type: 'piercing' }, { dice: '2d6', type: 'poison' }], save: { ab: 'con', dc: 15, cond: 'poisoned', turns: 3 } },
+      { id: 'serpientes', name: 'Lluvia de Serpientes', kind: 'save', reach: 6, aoe: 2, dmg: [{ dice: '3d8', type: 'piercing' }], half: true, save: { ab: 'dex', dc: 15 }, recharge: 5 },
+      { id: 'canto', name: 'Canto de los Cuellos Torcidos', kind: 'save', reach: 0, aoe: 5, aoeSelf: true, save: { ab: 'wis', dc: 15, cond: 'frightened', turns: 2 }, recharge: 5 },
+    ],
+    multiattack: ['colmillos', 'colmillos'], traits: ['boss', 'hydra', 'enrage'], xp: 3900, color: '#6a5a2a', glyph: 'D', sprite: 'serpent',
+    lore: 'Su rostro no tiene boca, sólo una fosa que resuena. De los hombros le crecen cuellos. «Quien no miró al cielo, me mira a mí.»',
+  },
+  marid_guardian: {
+    id: 'marid_guardian', name: 'El Marid Guardián del Meteorito', type: 'elemental (djinn)', cr: '8', hp: 140, ac: 15, speed: 30, mods: m(4, 1, 5, 1, 3, 3), prof: 3, size: 3, resist: ['fire', 'cold'], immune: ['poison'], condImmune: ['prone'],
+    actions: [
+      { id: 'ola', name: 'Puño de Ola', kind: 'melee', toHit: 8, reach: 2, dmg: [{ dice: '3d6+4', type: 'bludgeoning' }], save: { ab: 'str', dc: 15, cond: 'prone', turns: 1 } },
+      { id: 'torrente', name: 'Torrente de Memoria', kind: 'save', reach: 6, aoe: 2, dmg: [{ dice: '4d6', type: 'cold' }], half: true, save: { ab: 'dex', dc: 15, cond: 'restrained', turns: 2 }, recharge: 5 },
+    ],
+    multiattack: ['ola', 'ola'], traits: ['boss', 'flood', 'enrage'], xp: 3900, color: '#3f7fbf', glyph: 'M', sprite: 'elemental',
+    lore: 'Un río que decidió ser persona y se arrepiente. Cobra en recuerdos y guarda cada uno con celo de bibliotecario.',
+  },
+  al_mazhar: {
+    id: 'al_mazhar', name: 'Al-Mazhar al-Khalid, el Lich de las Trece Caras', type: 'no-muerto', cr: '9', hp: 135, ac: 17, speed: 30, mods: m(0, 3, 4, 5, 4, 5), prof: 4, undead: true, immune: ['poison'], condImmune: ['poisoned', 'frightened', 'charmed'],
+    actions: [
+      { id: 'toque', name: 'Toque Pútrido', kind: 'melee', toHit: 9, reach: 1, dmg: [{ dice: '3d6+3', type: 'necrotic' }], save: { ab: 'con', dc: 16, cond: 'enfeebled', turns: 3 } },
+      { id: 'rayo', name: 'Rayo de Putrefacción', kind: 'ranged', toHit: 9, reach: 8, dmg: [{ dice: '4d8', type: 'necrotic' }] },
+      { id: 'cancion', name: 'Canción de los Huesos', kind: 'save', reach: 0, aoe: 6, aoeSelf: true, save: { ab: 'wis', dc: 16, cond: 'frightened', turns: 2 }, recharge: 5 },
+    ],
+    multiattack: ['toque', 'rayo'], traits: ['boss', 'mascaras', 'enrage'], xp: 5000, color: '#8a7a4a', glyph: 'L', sprite: 'mirror',
+    lore: 'Un padre amable de voz suave. Detrás de cada máscara llora arena negra y una cara distinta de un huérfano al que ayudó… y al que levantó.',
+  },
+  brazo_gusano: {
+    id: 'brazo_gusano', name: 'Brazo del Gusano', type: 'monstruosidad', cr: '1', hp: 28, ac: 12, speed: 0, mods: m(3, 0, 3, -4, 0, -4), prof: 2, immune: ['poison', 'psychic'], condImmune: ['frightened', 'charmed'], traits: ['brazo', 'objective-ignore'],
+    actions: [{ id: 'agarre', name: 'Agarre', kind: 'melee', toHit: 5, reach: 2, dmg: [{ dice: '1d8+3', type: 'bludgeoning' }], save: { ab: 'str', dc: 13, cond: 'restrained', turns: 2 } }],
+    xp: 0, color: '#9a6a5a', glyph: 'h', sprite: 'beast', lore: 'Una mano humana que cavó hasta encontrarlo… y se quedó pegada.',
+  },
+  gul_amarat: {
+    id: 'gul_amarat', name: 'Gul-Amarat, el Gusano de las Cuevas', type: 'aberración (djinn)', cr: '10', hp: 170, ac: 14, speed: 20, mods: m(6, -1, 6, 0, 2, 0), prof: 4, size: 3, immune: ['poison', 'psychic'], condImmune: ['frightened', 'charmed', 'prone'],
+    actions: [
+      { id: 'dientes', name: 'Espiral de Dientes', kind: 'melee', toHit: 10, reach: 2, dmg: [{ dice: '3d10+6', type: 'piercing' }] },
+      { id: 'silencio', name: 'Silencio Sepulcral', kind: 'save', reach: 0, aoe: 4, aoeSelf: true, dmg: [{ dice: '3d8', type: 'psychic' }], half: true, save: { ab: 'wis', dc: 16, cond: 'stunned', turns: 1 }, recharge: 5 },
+    ],
+    multiattack: ['dientes'], traits: ['boss', 'shielded', 'enrage'], xp: 5900, color: '#7a5a4a', glyph: 'G', sprite: 'serpent',
+    lore: 'Su cuerpo es una espiral de brazos humanos. No tiene ojos. Su culto exige silencio perpetuo, dormir en piedra y ofrendas de sangre fría.',
+  },
+  razul_final: {
+    id: 'razul_final', name: 'Razul ibn Tameer, el Vizir sin rostro', type: 'humanoide (arcanista inmortal)', cr: '10', hp: 150, ac: 18, speed: 30, mods: m(1, 3, 4, 7, 5, 5), prof: 4, immune: ['poison'], condImmune: ['charmed', 'frightened'],
+    actions: [
+      { id: 'baston', name: 'Bastón de Runas', kind: 'melee', toHit: 9, reach: 1, dmg: [{ dice: '1d6+1', type: 'bludgeoning' }, { dice: '1d8', type: 'lightning' }] },
+      { id: 'sentencia', name: 'Sentencia', kind: 'ranged', toHit: 10, reach: 8, dmg: [{ dice: '3d6', type: 'lightning' }] },
+      { id: 'espiral', name: 'La Espiral del Dios Caducado', kind: 'save', reach: 0, aoe: 5, aoeSelf: true, dmg: [{ dice: '3d6', type: 'psychic' }], half: true, save: { ab: 'int', dc: 17, cond: 'stunned', turns: 1 }, recharge: 6 },
+    ],
+    multiattack: ['baston', 'sentencia'], traits: ['boss', 'enrage'], xp: 5900, color: '#c9a227', glyph: 'R', sprite: 'humanoid',
+    lore: 'Tres milenios de ver repetirse lo mismo. Habla con varias voces a la vez. «Toda fe se oxida.»',
+  },
+  simurg_eclipse: {
+    id: 'simurg_eclipse', name: 'Zahir, el Simurg del Eclipse', type: 'celestial caído (fragmento)', cr: '12', hp: 240, ac: 17, speed: 30, fly: 60, mods: m(5, 3, 5, 4, 6, 6), prof: 4, size: 3, resist: ['fire', 'radiant'], condImmune: ['frightened', 'charmed'],
+    actions: [
+      { id: 'pico', name: 'Pico de Fuego', kind: 'melee', toHit: 11, reach: 2, dmg: [{ dice: '3d8+5', type: 'piercing' }, { dice: '2d6', type: 'fire' }] },
+      { id: 'alas', name: 'Alas del Eclipse', kind: 'save', reach: 0, aoe: 4, aoeSelf: true, dmg: [{ dice: '5d8', type: 'fire' }], half: true, save: { ab: 'dex', dc: 17 }, recharge: 5 },
+      { id: 'trompetas', name: 'Trompetas Doradas', kind: 'save', reach: 0, aoe: 6, aoeSelf: true, save: { ab: 'wis', dc: 17, cond: 'blinded', turns: 2 }, recharge: 5 },
+    ],
+    multiattack: ['pico', 'pico'], traits: ['boss', 'enrage'], xp: 8400, color: '#f2c14a', glyph: 'Z', sprite: 'serpent',
+    lore: 'No es el Simurg. Es un fragmento que se cree entero. Cuando extiende las alas, el eclipse se pone a su favor.',
+  },
   djinn_menor: {
     id: 'djinn_menor', name: 'Djinn Menor', type: 'elemental', cr: '1', hp: 30, ac: 13, speed: 30, mods: m(1, 2, 1, 0, 0, 1), prof: 2, fly: 30,
     actions: [{ id: 'zarpazo', name: 'Zarpazo de arena', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d8+2', type: 'slashing' }] }],

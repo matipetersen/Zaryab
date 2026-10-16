@@ -3,6 +3,14 @@ import { d20, roll, avg, rand, pick } from './dice';
 import type { Unit, Weapon, MAction, BEvent, CondId, Status, DmgType, DmgPart, Ab, Side } from './types';
 import { ABILITIES } from './abilities';
 
+import { makeFoe as makeFoeLazy } from '../data/monsters';
+const MASCARAS: { name: string; res: DmgType[]; vuln: DmgType }[] = [
+  { name: 'las Lágrimas', res: ['cold', 'poison'], vuln: 'fire' }, { name: 'la Ira', res: ['fire', 'slashing'], vuln: 'cold' }, { name: 'la Duda', res: ['psychic', 'necrotic'], vuln: 'radiant' },
+  { name: 'la Hambruna', res: ['poison', 'acid'], vuln: 'lightning' }, { name: 'el Padre', res: ['radiant', 'bludgeoning'], vuln: 'necrotic' }, { name: 'la Nodriza', res: ['cold', 'piercing'], vuln: 'fire' },
+  { name: 'el Sabio', res: ['psychic', 'lightning'], vuln: 'acid' }, { name: 'el Huérfano', res: ['slashing', 'piercing'], vuln: 'radiant' }, { name: 'la Peste', res: ['poison', 'necrotic'], vuln: 'radiant' },
+  { name: 'el Verdugo', res: ['bludgeoning', 'slashing'], vuln: 'psychic' }, { name: 'la Madre', res: ['fire', 'acid'], vuln: 'cold' }, { name: 'el Silencio', res: ['thunder', 'psychic'], vuln: 'lightning' },
+  { name: 'la Última', res: ['necrotic', 'cold'], vuln: 'fire' },
+];
 export const COND_LABEL: Record<CondId, string> = {
   prone: 'Derribado', blinded: 'Cegado', poisoned: 'Envenenado', frightened: 'Aterrado', charmed: 'Hechizado', paralyzed: 'Paralizado',
   stunned: 'Aturdido', restrained: 'Inmovilizado', invisible: 'Invisible', burning: 'En llamas', dodging: 'Esquiva', bless: 'Bendecido',
@@ -152,6 +160,7 @@ export class Battle {
       const a = u.actions.find(x => x.id === k);
       if (a?.recharge) { const r = Math.floor(rand() * 6) + 1; if (r >= a.recharge) { u.rechargeReady[k] = true; this.log(`${u.name} recupera ${a.name}.`, 'sys'); } }
     }
+    if (!u.dead) this.bossStart(u);
     if (u.traits.includes('pilonRegen') && !u.dead) { const n = this.units.filter(x => !x.dead && x.traits.includes('pilon')).length; if (n && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, n * 7); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`Los pilones alimentan al Coloso (+${g}).`, 'sys'); } }
     if (u.traits.includes('smash') && !u.dead) { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && this.destructible(u.x + dx, u.y + dy)) { this.log(`${u.name} aplasta lo que se interpone.`, 'sys'); this.destroyTile(u.x + dx, u.y + dy, 'bludgeoning', u); } }
     if (u.regen && !u.down && u.hp > 0 && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + u.regen); this.float(u, `+${u.regen}`, 'heal'); }
@@ -280,6 +289,7 @@ export class Battle {
     if (t.immune.includes(type)) a = 0;
     else { if (t.resist.includes(type)) a = Math.floor(a / 2); if (t.vuln.includes(type)) a *= 2; }
     if (a > 0 && this.has(t, 'vulnerable')) { a *= 2; this.removeStatus(t, 'vulnerable'); }
+    if (a > 0 && t.traits.includes('shielded') && this.units.some(x => !x.dead && x.side === t.side && x.traits.includes('brazo'))) { a = Math.floor(a / 2); if (!this.flags['shieldNote']) { this.flags['shieldNote'] = 1; this.log(`Los brazos protegen a ${t.name}: el daño se reduce a la mitad mientras sigan vivos.`, 'sys'); } }
     if (a <= 0) { if (!o.quiet) this.float(t, '0', 'miss'); return 0; }
     this.emit({ t: 'hit', uid: t.uid });
     if (!o.silent) this.float(t, String(a), o.crit ? 'crit' : 'dmg');
@@ -291,6 +301,7 @@ export class Battle {
     }
     const absorbed = Math.min(t.temp, a); t.temp -= absorbed; a -= absorbed;
     const before = t.hp; t.hp -= a;
+    if (t.traits.includes('enrage') && t.hp > 0 && t.hp <= t.maxHp / 2 && !this.flags['enr' + t.uid]) { this.flags['enr' + t.uid] = 1; for (const ac of t.actions) { if (ac.toHit != null) ac.toHit += 2; if (ac.save) ac.save = { ...ac.save, dc: ac.save.dc + 2 }; } for (const k of Object.keys(t.rechargeReady)) t.rechargeReady[k] = true; this.log(`¡${t.name} entra en furia! Sus ataques mejoran y recupera sus poderes.`, 'sys'); this.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); }
     if (t.hp <= 0) {
       const over = -t.hp; t.hp = 0;
       const pcLike = !!t.pcId;
@@ -514,6 +525,29 @@ export class Battle {
     if (a.recharge) u.rechargeReady[a.id] = false;
     u.acted = true;
     return { ok: true };
+  }
+
+  /** Rasgos de jefe que actúan al comienzo de su turno (hidra, máscaras, inundación). */
+  bossStart(u: Unit) {
+    if (u.side !== 'foe') return;
+    if (u.traits.includes('hydra')) {
+      const n = this.units.filter(x => !x.dead && x.id === 'cuello_dahhak').length;
+      if (n < 3) { const p = this.freeNear(u); if (p) { this.summon(makeFoeLazy('cuello_dahhak', p.x, p.y), u, p); this.log(`Un nuevo cuello brota del cuerpo de ${u.name}.`, 'sys'); } }
+    }
+    if (u.traits.includes('mascaras')) {
+      const m = MASCARAS[(u.turnsTaken + Math.floor(rand() * 13)) % MASCARAS.length];
+      u.resist = [...m.res]; u.vuln = [m.vuln]; this.log(`${u.name} muestra la máscara de ${m.name}: resiste ${m.res.join(' y ')}, es vulnerable a ${m.vuln}.`, 'sys'); this.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y });
+    }
+    if (u.traits.includes('flood')) {
+      const w: P[] = []; for (let y = 0; y < this.grid.h; y++) for (let x = 0; x < this.grid.w; x++) { const t = this.grid.at(x, y)!; if ((t.kind === 'floor' || t.kind === 'diff') && !this.unitAt(x, y) && [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => this.grid.at(x + dx, y + dy)?.kind === 'water')) w.push({ x, y }); }
+      for (let i = 0; i < 3 && w.length; i++) { const k = Math.floor(rand() * w.length); const p = w.splice(k, 1)[0]; this.grid.setTile(p.x, p.y, '~'); this.emit({ t: 'tile', kind: 'build', x: p.x, y: p.y }); }
+      this.log(`${u.name} hace subir el agua: el campo se inunda.`, 'sys');
+      if (this.grid.at(u.x, u.y)?.kind === 'water' && u.hp < u.maxHp) { const g = Math.min(u.maxHp - u.hp, 8); u.hp += g; this.float(u, `+${g}`, 'heal'); this.log(`${u.name} se alimenta del agua (+${g}).`, 'sys'); }
+    }
+  }
+  freeNear(o: P): P | undefined {
+    for (let r = 1; r < 6; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = o.x + dx, y = o.y + dy; const t = this.grid.at(x, y); if (t && !t.blocked && !this.unitAt(x, y)) return { x, y }; }
+    return undefined;
   }
   xpValue() { return this.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).reduce((s, u) => s + u.xp, 0); }
   /** Refuerzo: entra al final del orden de iniciativa. */
