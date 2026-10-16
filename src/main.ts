@@ -21,6 +21,7 @@ import { DISTRICT_BY_ID } from './world/districts';
 import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from './world/pois';
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
+import { NOVEL } from './story/novel';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
@@ -68,6 +69,7 @@ class App {
     if (CHAPTER_SCRIPTS[id]) return CHAPTER_SCRIPTS[id];
     if (id.startsWith('q:')) return QUEST_BY_ID[id.slice(2)].script;
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
+    if (id.startsWith('cut:')) return NOVEL[id.slice(4)] ?? [];
     if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
     if (id.startsWith('inc:')) { const [ph, i] = id.slice(4).split('_').map(Number); return INCIDENTS[ph].scenes[i]; }
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
@@ -110,10 +112,21 @@ class App {
     for (; n && n <= 3; n = pendingLevel(c)) { c.lvl = n; last = n; }
     if (last) { c.journal.push(`Día ${c.day}: la compañía alcanza el nivel ${last}.`); saveGame(c); await this.runScript('lvl', 0, [{ t: 'fx', e: {}, note: `¡Subís al nivel ${last}! ${last === 2 ? 'Ganáis Canalizar Divinidad, Oleada de Acción, Ki y Acción Astuta.' : 'Cada personaje recibe su arquetipo.'}` }]); }
   }
+  /** Escena de novela entre capítulos o actos: se reproduce una sola vez. */
+  async cutscene(key: string) {
+    const c = this.camp; if (!NOVEL[key] || has(c, `nov_${key}`)) return;
+    applyEffect(c, { flags: [`nov_${key}`] }); await this.runScript('cut:' + key); saveGame(c);
+  }
+  /** Tras un capítulo principal: entreacto propio y, si cierra un acto, la portada del siguiente. */
+  async novel(qid: string) {
+    await this.cutscene(qid);
+    if (qid === 'm_cap5') await this.cutscene('acto2');
+    if (qid === 'm_cap10') await this.cutscene('acto3');
+  }
   async hubLoop() {
-    if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) { await this.runScript('cap0'); await this.prologueLevels(); }
-    if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); }
-    if (!has(this.camp, 'cap2_done')) await this.runScript('cap2');
+    if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) { await this.cutscene('acto1'); await this.runScript('cap0'); await this.prologueLevels(); await this.cutscene('cap0'); }
+    if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); await this.cutscene('cap1'); }
+    if (!has(this.camp, 'cap2_done')) { await this.runScript('cap2'); await this.cutscene('cap2'); }
     for (;;) {
       const due = this.camp.ecos.findIndex(x => x.due <= this.camp.day);
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
@@ -148,8 +161,8 @@ class App {
         if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: vuestra Ruta es el ${RUTA_LABEL[r]}.`); }
         this.camp.quests[q.id] = 'done'; this.camp.squad = []; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
         if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
-        this.advance(q.days); let nx = q.next;
-        while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
+        this.advance(q.days); await this.novel(q.id); let nx = q.next;
+        while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); await this.novel(nx); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
       }
       if (a.t === 'peek') {
         const dr = drawOracle(this.camp, a.district); this.camp.rumors -= 2; this.camp.peek = { district: a.district, n: dr.ev.n }; this.camp.journal.push(`Día ${this.camp.day}: los espías avisan: «${dr.ev.title}» en ${DISTRICT_BY_ID[a.district].name}.`); saveGame(this.camp); continue;
