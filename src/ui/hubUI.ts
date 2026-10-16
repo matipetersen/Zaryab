@@ -6,7 +6,7 @@ import { ROLES, TRAITS, RITUALS, projection, sermon, recruit, ritual, setRole, t
 import { MIRACLES, ABILITIES } from '../engine/abilities';
 import type { InvUI } from './invUI';
 import { LevelUI } from './levelUI';
-import { POIS, POI_BY_ID, PHASE, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
+import { ambient, POIS, POI_BY_ID, PHASE, PHASE_ICON, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
 import { BOND_NAME } from '../world/bonds';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
 
@@ -46,7 +46,7 @@ export class HubUI {
   }
   panel(d: District): HTMLElement {
     const c = this.camp; const open = d.open(c); const p = h('aside', { class: 'wpanel' });
-    p.append(h('h3', {}, d.name), h('div', { class: 'small' }, `Peligro ${'●'.repeat(Math.min(5, Math.ceil(d.danger / 2)))}${'○'.repeat(5 - Math.min(5, Math.ceil(d.danger / 2)))}`), h('p', { class: 'lore' }, d.blurb));
+    p.append(h('h3', {}, d.name), h('div', { class: 'small' }, `Peligro ${'●'.repeat(Math.min(5, Math.ceil(d.danger / 2)))}${'○'.repeat(5 - Math.min(5, Math.ceil(d.danger / 2)))}`), h('p', { class: 'lore' }, d.blurb), h('p', { class: 'small', style: { color: 'var(--secondary)' } }, `${PHASE_ICON[c.phase]} ${ambient(d.id, c.phase)}`));
     if (!open) { p.append(h('div', { class: 'tag bad' }, '🔒 ' + (d.lockedNote ?? 'Cerrado'))); return p; }
     const fr = c.front[d.id];
     if (fr) {

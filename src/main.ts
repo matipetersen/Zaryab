@@ -18,7 +18,7 @@ import { autoPicks } from './data/progression';
 import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
-import { POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from './world/pois';
+import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from './world/pois';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
@@ -66,7 +66,8 @@ class App {
     if (CHAPTER_SCRIPTS[id]) return CHAPTER_SCRIPTS[id];
     if (id.startsWith('q:')) return QUEST_BY_ID[id.slice(2)].script;
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
-    if (id.startsWith('poi:')) return POI_BY_ID[id.slice(4)].script;
+    if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
+    if (id.startsWith('inc:')) { const [ph, i] = id.slice(4).split('_').map(Number); return INCIDENTS[ph].scenes[i]; }
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
     return [];
   }
@@ -117,7 +118,9 @@ class App {
       if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
       if (a.t === 'poi') {
         const p = POI_BY_ID[a.id]; this.camp.poiCd[p.id] = this.camp.day + p.cd; this.camp.journal.push(`Día ${this.camp.day}: visitáis ${p.name}.`);
-        await this.runScript('poi:' + p.id); this.passPhase(); this.renderHud(); saveGame(this.camp); continue;
+        await this.runScript('poi:' + p.id);
+        const inc = INCIDENTS[this.camp.phase]; if (p.district !== 'santuario' && Math.random() < inc.chance) { const i = Math.floor(Math.random() * inc.scenes.length); await this.runScript('inc:' + this.camp.phase + '_' + i); }
+        this.passPhase(); this.renderHud(); saveGame(this.camp); continue;
       }
       if (a.t === 'roamer') {
         const r = this.camp.roamers.find(x => x.id === a.id); if (!r) continue; const won = await this.runBattle(ROAMER_ENC[r.kind]);

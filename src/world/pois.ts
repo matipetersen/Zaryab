@@ -158,3 +158,90 @@ export const poiState = (c: Campaign, p: Poi): 'ok' | 'night' | 'cd' | 'front' |
   if (closedByFront(c, p)) return 'front';
   return 'ok';
 };
+
+// ───────── La hora cambia lo que pasa ─────────
+/** Escenas alternativas de un lugar según la fase (sustituyen a `script`). */
+export const VARIANTS: Record<string, Partial<Record<number, Node[]>>> = {
+  aisha_cocina: {
+    0: [N('Antes del alba, Aisha enciende el horno sola. Amasa a oscuras, con los ojos cerrados.'), S('Aisha', 'A esta hora no me hace falta mentir. Siéntate.', 'bajito'), { t: 'fx', e: { food: 2, bond: { aisha: 1 } }, note: 'Pan recién hecho: +2 víveres, vínculo con Aisha.' }],
+    2: [N('De noche la cocina huele a ceniza y a nana. Aisha tararea la melodía entera, por primera vez, sin darse cuenta.'), { t: 'fx', e: { d: 1, bond: { aisha: 1 } }, note: 'Escucháis la nana completa: +1 Devoción, vínculo con Aisha.' }],
+  },
+  farid_calle: {
+    0: [N('Al amanecer Farid duerme sentado, abrazado al arpa. Alguien le ha dejado una manta.'), { t: 'fx', e: { bond: { farid: 1 }, rumors: 1 }, note: 'Lo cubrís con vuestra capa. Farid murmura un secreto en sueños: +1 rumor.' }],
+    2: [N('De noche Farid toca la cuarta nota. Solo una vez. Las lámparas del barrio parpadean al unísono.'), { t: 'fx', e: { d: 1, pf: 3, bond: { farid: 1 } }, note: 'La cuarta nota: +1 Devoción, +3 PF, vínculo con Farid.' }],
+  },
+  ea_puesto: {
+    0: [S('EaNassr', 'Aún no abro. Pero a ti, a esta hora, te vendo lo que sea al precio de ayer.', 'bostezando'), { t: 'fx', e: { gold: 15, bond: { ea: 1 } }, note: 'Un trato de madrugada: +15 PO, vínculo con EaNassr.' }],
+    2: [S('EaNassr', 'Lo que se vende de noche no se compra de día. Pasa, pasa.', 'bajando la voz'), { t: 'choice', prompt: 'Mercancía de contrabando.', options: [
+      { label: 'Comprar un secreto', hint: '−15 PO · +3 rumores', e: { gold: -15, rumors: 3, bond: { ea: 1 } }, result: ['EaNassr susurra un nombre y una dirección. Ninguno es suyo.'] },
+      { label: 'Venderle algo "encontrado"', hint: '+35 PO · +1 Alerta', e: { gold: 35, alert: 1, bond: { ea: 1 } }, result: ['No pregunta de dónde. Eso tiene un precio y él lo cobra después.'] },
+    ] }],
+  },
+  samira_cuartel: {
+    0: [S('Capitana Samira', 'Cambio de guardia. Es la única hora en la que nadie mira el registro.', 'ordenando papeles'), { t: 'fx', e: { alert: -1, bond: { samira: 1 } }, note: 'Samira "extravía" una hoja: −1 Alerta, vínculo.' }],
+  },
+  banos_olvidados: {
+    0: [N('El vapor del alba hace de las paredes un espejo borroso. Os veis, un momento, como erais antes de Zahir.'), { t: 'fx', e: { d: 1, alert: -1 }, note: 'Un baño al amanecer: +1 Devoción, −1 Alerta.' }],
+  },
+  nafisa_salon: {
+    1: [S('Lady Nafisa', 'De día soy anfitriona. Tomad el té y fingid que os importa la política.', 'sonriendo'), { t: 'fx', e: { rumors: 2, bond: { nafisa: 1 } }, note: 'Cotilleo de salón: +2 rumores, vínculo.' }],
+    2: [S('Lady Nafisa', 'De noche las máscaras caen y los nobles hablan. Escuchad detrás del biombo.', 'en un susurro'), { t: 'choice', prompt: 'Tras el biombo se oye una conversación.', options: [
+      { label: 'Escuchar con atención', check: { skill: 'percepcion', dc: 14 }, hint: 'Percepción CD 14 · +4 rumores · −2 Alerta', e: { rumors: 4, alert: -2, bond: { nafisa: 1 } }, result: ['Oís los planes de una patrulla. Sabréis esquivarla.'], fail: { e: { alert: 1 }, result: ['Crujen las tablas. Nafisa os cubre con una carcajada, pero algo se oyó.'] } },
+      { label: 'Salir a la terraza con ella', hint: 'vínculo ×2', e: { bond: { nafisa: 2 } }, result: ['Nafisa os habla del hombre que fue su marido. Es la primera vez que no usa abanico.'] },
+    ] }],
+  },
+  shub_trastienda: {
+    1: [S('Madam Shub', 'De día vendo espejos. Pregunta por los de la trastienda y pagarás el doble.', 'seca'), { t: 'fx', e: { gold: -8, rumors: 2, bond: { shub: 1 } }, note: '−8 PO, +2 rumores, vínculo.' }],
+  },
+  taberna_escorpion: {
+    1: [N('A mediodía la taberna es un mercado de oficios: tintoreros, soldados, un cantor ciego.'), { t: 'fx', e: { rumors: 1, gold: 8 }, note: 'Ayudáis a cargar barriles: +8 PO, +1 rumor.' }],
+  },
+  ring_punos: {
+    1: [N('De día el ring es una escuela. Panchi enseña a los críos a cerrar el puño sin odio.'), { t: 'fx', e: { d: 1, rep: { nomadas: 0 }, bond: { abril: 1 } }, note: '+1 Devoción, vínculo con Abril.' }],
+  },
+  mirador_plaza: {
+    0: [N('Desde el mirador, el alba tiñe de violeta la plaza. Las patrullas cambian de turno en perfecto orden. Tomáis nota.'), { t: 'fx', e: { alert: -2 }, note: 'Memorizáis el cambio de turno: −2 Alerta.' }],
+  },
+};
+
+const AMBIENT_GEN = [
+  'Amanecer: poca gente, panaderías abiertas y el Conclave aún bostezando. Buen momento para trabajos discretos.',
+  'Día: calles llenas, voces, mercados. Se hace comercio, y se oyen rumores a gritos.',
+  'Noche: faroles violetas, esquinas oscuras y lo que no sale de día. Más secretos… y más peligro.',
+];
+export const AMBIENT: Record<string, string[]> = {
+  zoco: ['Los toldos se despliegan uno a uno. Los vendedores aún regatean consigo mismos.', 'Tumulto de seda, pregones y esferas de cristal grabando contratos a la vista de todos.', 'Quedan los puestos "sin nombre": mercancía que no existe de día.'],
+  plaza: ['Cambio de guardia en el Capitolio. Las campanas suenan con más pereza.', 'Plaza llena: ejecuciones menores, proclamas y palomas de bronce.', 'Silencio de mármol. Solo los centinelas, y alguna sombra que no lo es.'],
+  jardin: ['Rocío en las rosas translúcidas. Los jardineros podan ciprés a ciprés.', 'Té, risas con máscara y puñales de abanico.', 'Faroles de cristal. Los invitados dejan de fingir.'],
+  pozo: ['Niebla sobre el cráter; el cielo invertido aún no se ha despertado.', 'El agua refleja un cielo que no es el de hoy.', 'La Lengua Muerta crece. Se oyen susurros desde el agua.'],
+  cementerio: ['Un frío blanco; las lápidas parecen más quietas.', 'Visitantes con flores. Los muertos no marchan de día… del todo.', 'Los muertos marchan en formación. Que no os vean.'],
+};
+export const ambient = (d: string, ph: number) => AMBIENT[d]?.[ph] ?? AMBIENT_GEN[ph];
+
+/** Incidentes de camino, distintos a cada hora. */
+export const INCIDENTS: Record<number, { chance: number; scenes: Node[][] }> = {
+  0: { chance: 0.25, scenes: [
+    [N('Un panadero madrugador os planta una hogaza en las manos: «Los clientes de ayer no vinieron».'), { t: 'fx', e: { food: 1 }, note: '+1 víveres.' }],
+    [N('Un niño os sigue unas calles, orgulloso de ser vuestro espía. Termina contándoos lo que oyó anoche.'), { t: 'fx', e: { rumors: 1 }, note: '+1 rumor.' }],
+    [N('En un portal vacío brilla una moneda. Y otra. Alguien las dejó para quien madrugue.'), { t: 'fx', e: { gold: 12 }, note: '+12 PO.' }],
+  ] },
+  1: { chance: 0.25, scenes: [
+    [N('En la multitud, una mano os roza el cinto. Cuando miráis, solo queda un perfume de especias.'), { t: 'choice', prompt: '¿Perseguís al ladrón?', options: [
+      { label: 'Perseguirlo', check: { skill: 'atletismo', dc: 12 }, hint: 'Atletismo CD 12', e: { gold: 20, d: 0 }, result: ['Lo alcanzáis y recuperáis la bolsa… con propina de disculpa.'], fail: { e: { gold: -12 }, result: ['Se pierde entre el gentío. La bolsa, también.'] } },
+      { label: 'Dejarlo', e: { gold: -5 }, result: ['Cinco monedas. Un precio barato por no perder el día.'] },
+    ] }],
+    [N('Un pregonero lee un edicto del Vizir a gritos. Hay descontento. Alguien entre la gente os mira y asiente.'), { t: 'fx', e: { rumors: 1, rep: { hijos: 1 } }, note: '+1 rumor, +1 rep. Hijos del Simurg.' }],
+    [N('Un mercader os para: «Prueben esto, gratis». Es té de menta. Realmente está buenísimo.'), { t: 'fx', e: { pf: 2 }, note: '+2 PF.' }],
+  ] },
+  2: { chance: 0.35, scenes: [
+    [N('En un callejón, tres sombras con tiza violeta en las manos os cierran el paso.'), { t: 'choice', prompt: 'Una emboscada nocturna.', options: [
+      { label: 'Plantar cara', hint: 'Combate · botín', e: {}, result: ['Los faroles se apagan de golpe.'], then: [{ t: 'battle', enc: 'infiltrado' }] },
+      { label: 'Esconderos', check: { skill: 'sigilo', dc: 14 }, hint: 'Sigilo CD 14', e: {}, result: ['Contenéis la respiración. Pasan de largo.'], fail: { e: { pf: -3, alert: 1 }, result: ['Os descubren: huís con el cristal temblando.'] } },
+    ] }],
+    [N('Una voz os llama desde un balcón oscuro: «Sois vosotros. Los que huelen a cristal».'), { t: 'choice', prompt: 'Una desconocida os ofrece algo.', options: [
+      { label: 'Escucharla', hint: '+2 rumores · +1 Corrupción', e: { rumors: 2, c: 1 }, result: ['Os vende una verdad a medias. La otra mitad la pagaréis luego.'] },
+      { label: 'Seguir de largo', hint: '+1 Devoción', e: { d: 1 }, result: ['La voz ríe. Algo en el cristal se calma.'] },
+    ] }],
+    [N('Un perro de arena del Conclave husmea vuestro rastro. Está solo.'), { t: 'fx', e: { alert: 1 }, note: '+1 Alerta: os ha olido.' }],
+  ] },
+};
