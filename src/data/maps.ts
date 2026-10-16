@@ -86,6 +86,18 @@ Object.assign(MAPS, {
       P(7, 14, '1'), P(8, 14, '2'), P(9, 14, '3'), P(10, 14, '4'), P(11, 14, '5'), P(12, 14, '6'),
     ]),
   },
+  dunas: {
+    id: 'dunas', name: 'Las Dunas Blancas', theme: 'crater',
+    objective: 'Sobrevive al ataque nocturno. Usa las rocas negras como cobertura.',
+    rows: paint(20, 14, [
+      ['fill', '.'],
+      R(2, 3, 5, 5, ','), R(13, 7, 17, 9, ','), R(8, 6, 11, 7, ','), P(10, 4, ','), P(4, 10, ','), P(15, 3, ','),
+      P(6, 5, 'C'), P(13, 5, 'C'), P(9, 8, 'C'), P(10, 8, 'C'), P(3, 8, 'C'),
+      P(7, 4, '*'), P(12, 6, '*'), P(8, 9, '*'), P(11, 9, '*'), P(15, 8, '*'),
+      P(4, 1, 'e'), P(8, 1, 'e'), P(12, 1, 'e'), P(16, 1, 'e'), P(2, 3, 'e'), P(17, 4, 'e'),
+      P(7, 12, '1'), P(8, 12, '2'), P(9, 12, '3'), P(10, 12, '4'), P(11, 12, '5'), P(12, 12, '6'),
+    ]),
+  },
   jardin: {
     id: 'jardin', name: 'Jardín de los Suspiros', theme: 'garden',
     objective: 'Cruza el laberinto de cipreses. Las rosas translúcidas tienen hambre.',
@@ -140,6 +152,8 @@ export interface Wave { round: number; every?: number; until?: number; foes: str
 export interface Encounter { defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
+  noche: { scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele vuestra comida desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
+    foes: [{ id: 'escorpion_obsidiana', slot: 0 }, { id: 'escorpion_obsidiana', slot: 2 }, { id: 'escorpion_obsidiana', slot: 4 }, { id: 'perro_arena', slot: 3 }] },
   linyera: { scale: { hp: 0.75, atk: -1 },
     map: 'callejon', intro: 'El viejo linyera se arranca la máscara de mendigo. Sus dientes son demasiado blancos. Silba, y el callejón se llena de armaduras de bronce.',
     foes: [{ id: 'linyera', slot: 2 }, { id: 'guardia_arena', slot: 0, suffix: ' I' }, { id: 'guardia_arena', slot: 1, suffix: ' II' }, { id: 'escorpion_obsidiana', slot: 4 }, { id: 'escorpion_obsidiana', slot: 5 }],

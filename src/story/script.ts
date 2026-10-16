@@ -5,10 +5,37 @@ import type { Node } from './types';
 //  árbol de nodos; las elecciones modifican Corrupción (c), Devoción (d), PF.
 // ──────────────────────────────────────────────────────────────────────────────
 
+export const CAP0: Node[] = [
+  { t: 'chapter', title: 'Prólogo — Cinco Días de Arena', sub: 'El desierto · Camino a Zaryab', bg: 'dunas' },
+  { t: 'narr', text: 'Un grupo formado por tanto viajar. Pact, Romain, Rabb, Joren, Zyr\'thar y Panchi han recorrido el desierto sin demasiados sobresaltos: algún bandido, alguna criatura oportunista que ataca de noche. Un viaje usual.' },
+  { t: 'say', who: 'Nadir', text: 'Cinco días. Cinco días más y llegamos. Lo he calculado dos veces… y las dos me ha salido lo mismo.', tone: 'el gnomo guía, frotándose la nariz' },
+  { t: 'narr', text: 'Acampáis al abrigo de unas rocas negras. La arena es blanca, fría. Alguien se queda de guardia. Alguien más no debería haberse dormido.' },
+  { t: 'battle', enc: 'noche' },
+  { t: 'narr', text: 'Los restos de los bichos humean junto a la fogata. Nadir revisa los camellos. Nadie hace el chiste que todos piensan: «un viaje usual».' },
+  { t: 'chapter', title: 'La Tormenta', sub: 'Tres días sin referencias', bg: 'tormenta' },
+  { t: 'narr', text: 'Todo cambia cuando empieza a soplar viento. Una leve brisa, una ventisca, luego ráfagas que levantan la arena hasta borrar el cielo. El grupo se junta para no perderse. Pasan tres días de tormenta sin una sola referencia: estáis perdidos.' },
+  { t: 'choice', prompt: 'Nadir ya no pretende saber dónde estáis.', options: [
+    { label: 'Atarse con una cuerda y avanzar en línea', hint: 'Lo más lento, lo más seguro.', e: { d: 1 }, result: ['Pasa un día más sin saber dónde. Nadie se pierde.'] },
+    { label: 'Dejar que Pact decida el rumbo', hint: 'Los aasimar ven donde otros no.', e: { flags: ['pact_guio'] }, result: ['Pact entrecierra los ojos y señala con un dedo. «Allí.» No explica por qué.'] },
+    { label: 'Racionar el agua y esperar a que amaine', hint: 'Cuesta víveres, no sangre.', e: { food: -1 }, result: ['La tormenta no cede, pero tampoco os rinde.'] },
+  ] },
+  { t: 'bg', id: 'dunas' },
+  { t: 'narr', text: 'De casualidad o por experiencia, Pact percibe a lo lejos lo que parecen cuatro pilares torcidos, rotos, azotados por la arena. Cuando el viento cae, el escenario se ve entero: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.' },
+  { t: 'narr', text: 'Un cielo gris de eclipse, sin sol ni estrellas, baña todo de una luz cenicienta sin sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas negras brotan líquenes violetas. De los pilares, el más alto se yergue torcido como un hueso mal soldado; otro está roto a media altura, como si algo enorme lo hubiera golpeado.' },
+  { t: 'narr', text: 'El aire huele a hierro oxidado, a ozono y, bajo ellos, a fruta podrida e incienso viejo que sube de las vetas violetas. Hay un zumbido muy bajo que se siente más en el pecho que en los oídos. El viento silba en las grietas de la piedra como un lamento.' },
+  { t: 'choice', prompt: 'No es un sitio donde nadie quiera montar tiendas. Pero es el único sitio.', options: [
+    { label: 'Tocar la arena violeta', hint: 'La estática recorre los dedos.', e: { c: 1, flags: ['toco_veta'] }, result: ['Un cosquilleo frío sube por el brazo. Por un segundo oís vuestro nombre dicho en una lengua que no conocéis.'] },
+    { label: 'Estudiar los relieves del suelo', hint: 'Espirales, geometrías, runas borradas.', e: { d: 1, flags: ['estudio_relieves'] }, result: ['Son marcas de un orden anterior al Conclave. Reconocéis una: la del Simurg, medio borrada.'] },
+    { label: 'Montar guardia y esperar', hint: 'Lo prudente.', result: ['El zumbido no cede en toda la noche. Tampoco nada se mueve.'] },
+  ] },
+  { t: 'narr', text: 'No terminan de bajar las carpas cuando oís ruido de cadenas, mecanismos de hierro. Una compuerta se abre en el suelo de piedra y un ascensor de mármol sube con tres figuras de ropas largas y máscaras de pájaro: ibis negros.' },
+  { t: 'narr', text: 'Os llevan abajo. Una cámara de piedra derretida y tallada, con una sola puerta. Intentáis escapar: Zyr\'thar la desbloquea… y del otro lado os esperan dos colosos de bronce y un humano que os maniata con sogas impregnadas de sal, que anulan la magia.' },
+  { t: 'fx', e: { flags: ['cap0_done'] } },
+];
+
 export const CAP1: Node[] = [
   { t: 'chapter', title: 'Capítulo I — El Juicio', sub: 'Plaza Central de Zaryab · Patio de las Verdades Retorcidas', bg: 'prison' },
-  { t: 'narr', text: 'Cinco días de marcha. Luego, el viento. Una brisa, una ventisca, ráfagas que levantan la arena hasta borrar el cielo. Tres días de tormenta sin referencias. Entonces, a lo lejos: cuatro pilares torcidos, rotos, azotados por la arena.' },
-  { t: 'narr', text: 'Un ruido de cadenas. Mecanismos de hierro. Una compuerta se abre y un ascensor de mármol sube con tres figuras de túnicas largas y máscaras de pájaro: ibis negros. Al final del pasillo esperan dos colosos de bronce. Los maniatan con sogas impregnadas de sal, que anulan la magia.' },
+  { t: 'narr', text: 'Os arrastran por pasillos de piedra derretida. Un ruido de cadenas. Los colosos de bronce marcan el paso. Al final, una celda con barrotes, y una sombra que os mira desde fuera.' },
   { t: 'bg', id: 'prison' },
   { t: 'say', who: 'Anciano Encapuchado', text: 'Luchen ahora y ardan… ríndanse y… (Extiende una mano llena de cicatrices de arena.) La muerte no es el final aquí… sólo el primer paso.', tone: 'voz cascada, entre dientes' },
   { t: 'choice', prompt: 'El anciano se asoma entre los barrotes.', options: [
@@ -36,6 +63,16 @@ export const CAP1: Node[] = [
   { t: 'say', who: 'Zahir', text: 'El Vizir Razul los asesinó… pero su muerte no fue un fin. Fue un sacrificio necesario. El mundo está enfermo. La gente ha olvidado al Simurg, el verdadero dios de la redención.' },
   { t: 'say', who: 'Zahir', text: '¿Crees que tu dios de tumbas y balanzas te escucha aquí, en las entrañas de Zaryab? Kelemvor juzga almas… pero el Conclave las convierte en arena.', tone: 'a Romain, con la arena girando a su alrededor' },
   { t: 'say', who: 'Zahir', text: '¿Sientes que tu espada respira, Rabb? Ella recuerda lo que tú olvidaste… el pacto que sellaste con mi especie.', tone: 'a Rabb; un espejo de arena le muestra a un desconocido con su misma arma' },
+  { t: 'say', who: 'Zahir', text: 'Ellos profanan el ciclo de la muerte: niños convertidos en ghuls, cadáveres cosidos con hilos de oro. ¿No es tu deber sagrado detener esa blasfemia? Yo sólo ofrezco el martillo para tu yunque divino.', tone: 'a Romain' },
+  { t: 'choice', prompt: 'Zahir espera a que Romain responda.', options: [
+    { label: 'Romain: «Mi dios juzga las intenciones, no los medios.»', e: { d: 1, flags: ['romain_fe'] }, result: ['Zahir ríe, y la arena forma un reloj roto: «Que tu fe sea el puñal que te desgarre, clérigo.»'] },
+    { label: 'Romain duda: «¿Qué es un pecado más en su tumba?»', e: { c: 1, flags: ['romain_duda'] }, result: ['«Eso. Eso es lo que quería oír», susurra Zahir. El cristal en el pecho de Romain late una vez.'] },
+  ] },
+  { t: 'say', who: 'Zahir', text: 'Buscar tu pasado es cavar tu tumba, Rabb. Pero juntos podemos desenterrar quién te robó la memoria. ¿Acaso no oyes a tu arma susurrar su nombre?', tone: 'a Rabb; el cristal en su pecho palpita con dolor' },
+  { t: 'choice', prompt: 'La espada de Rabb vibra apenas, como un animal que olfatea.', options: [
+    { label: 'Rabb: «¿Quién soy?»', e: { flags: ['rabb_pregunta'], c: 1 }, result: ['«Eres el vacío que devora recuerdos», dice Zahir. «Y en ese abismo duerme el poder que hizo temblar al Conclave.» La hoja zumba, muy bajo, en algún punto de la frase.'] },
+    { label: 'Rabb rechaza la oferta', e: { flags: ['rabb_rechaza'], d: 1 }, result: ['«Correr de la verdad es clavarte tu propia daga», dice Zahir, y se desvanece sobre arena que parece sangre. La espada no se calma.'] },
+  ] },
   { t: 'say', who: 'Zahir', text: 'Razul los usó como chivos expiatorios… pero yo les ofrezco algo mejor: volver. No serán mártires olvidados. Serán apóstoles.' },
   { t: 'narr', text: 'Zahir extiende las manos. Un contrato etéreo aparece ante vosotros: sin palabras, sólo un símbolo ardiente. El ojo del Simurg.' },
   { t: 'choice', prompt: '«Pueden aceptar mi ayuda… o quedarse aquí, en el olvido. ¿Realmente quieren morir como criminales?»', options: [

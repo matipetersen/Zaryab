@@ -2,7 +2,7 @@ import type { Node } from '../story/types';
 import type { Campaign, Effect } from '../state';
 import { has } from '../state';
 import { MORALES } from './morales';
-import { CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
+import { CAP0, CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
 
 export type QKind = 'main' | 'side' | 'personal' | 'faction';
 export interface QuestDef {
@@ -226,4 +226,4 @@ export const QUESTS: QuestDef[] = [
 ];
 QUESTS.push(...MORALES);
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
-export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap1: CAP1, cap2: CAP2 };
+export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap0: CAP0, cap1: CAP1, cap2: CAP2 };

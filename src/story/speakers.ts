@@ -31,6 +31,7 @@ export const SPEAKERS: Record<string, Speaker> = {
   'Inquisidor': { color: '#e6c25a', glyph: 'Ɨ' },
   'Golem': { color: '#a8744a', glyph: 'Ω' },
   'Niño': { color: '#f0d9a0', glyph: 'n' },
+  'Nadir': { color: '#9ab07a', glyph: 'n' },
   'Voz': { color: '#aaa', glyph: '·' },
   'Ladrón': { color: '#8a7a5a', glyph: 'l' },
   'Djinn': { color: '#9aa3b5', glyph: '~' },

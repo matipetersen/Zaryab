@@ -32,7 +32,7 @@ export const newCampaign = (): Campaign => ({
   day: 1, alert: 0, alertTick: 0, lastMainDay: 1,
   rep: { conclave: 0, hijos: 0, mercaderes: 0, inquisidores: 0, nomadas: 0, dahhak: 0, qilaat: 0 },
   quests: {}, followers: [], buildings: [], food: 6, mats: 0, rumors: 0, ticks: 0, sermonDay: 0, ritualCd: {}, peek: null, grants: {}, oracleSeen: [], journal: [],
-  main: 0, run: { script: 'cap1', idx: 0 }, battlesWon: 0, xp: 0,
+  main: 0, run: { script: 'cap0', idx: 0 }, battlesWon: 0, xp: 0,
   ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
 });
 const KEY = 'zaryab.save.v3';

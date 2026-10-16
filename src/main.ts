@@ -86,6 +86,7 @@ class App {
     await this.hubLoop();
   }
   async hubLoop() {
+    if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) await this.runScript('cap0');
     if (!has(this.camp, 'cap1_done')) await this.runScript('cap1');
     if (!has(this.camp, 'cap2_done')) await this.runScript('cap2');
     for (;;) {

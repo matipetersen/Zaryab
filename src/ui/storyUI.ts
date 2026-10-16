@@ -8,6 +8,8 @@ import { PARTY_BY_ID } from '../data/party';
 const BG: Record<string, string> = {
   prison: 'radial-gradient(ellipse at 50% 90%, #3a2a1a 0%, #140e0a 60%, #060404 100%)',
   coliseo: 'radial-gradient(ellipse at 50% 20%, #8a4a7a 0%, #3a1a40 40%, #0d0716 100%)',
+  dunas: 'radial-gradient(ellipse at 50% 70%, #d9d6e6 0%, #8d87a8 30%, #3b3258 65%, #120d1f 100%)',
+  tormenta: 'linear-gradient(180deg, #8a7a66 0%, #b59d7b 40%, #5d4c3a 100%)',
   limbo: 'radial-gradient(ellipse at 50% 40%, #f2eee4 0%, #b9b2d6 35%, #3b3260 80%, #120d24 100%)',
   bajo: 'linear-gradient(180deg, #2a1a40 0%, #5a3a5a 40%, #1a1020 100%)',
   choza: 'radial-gradient(ellipse at 50% 60%, #6a3a22 0%, #2a160e 55%, #0a0605 100%)',
