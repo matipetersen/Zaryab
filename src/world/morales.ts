@@ -183,6 +183,25 @@ const R_LADRONES: Node[] = [
   FX({ flags: ['q_r_ladrones'] }, 'Misión cumplida: Los Ladrones del Zoco.'),
 ];
 
+
+// ═══════════════ EL JANN ENGAÑADOR (criatura del bestiario del Acto I) ═══════════════
+const S_JANN: Node[] = [
+  T('El Jann Engañador', 'Zoco de los Mil Soplos · una estatua que mira', 'zoco'),
+  N('En un rincón del Zoco hay una estatua de arena que nadie recuerda haber visto. Tiene los ojos demasiado brillantes. Cada vez que pasa un comprador, parece inclinar un poco la cabeza.'),
+  { t: 'choice', prompt: 'La estatua os vigila: es un jann que roba secretos para el Conclave.', options: [
+    { label: 'Examinar las estatuas del rincón', hint: 'Percepción CD 15: detectar el Manto de Arena.', check: { skill: 'percepcion', dc: 15 }, e: {}, result: ['Una de las estatuas parpadea. Es el Jann. Os sonríe sin enseñar los dientes y se lleva un dedo a los labios.'], then: [{ t: 'battle', enc: 'jann_zoco' },
+      { t: 'choice', prompt: 'El Jann, herido, pide clemencia. Sabe lo que susurró cada comprador del Zoco.', options: [
+        { label: 'Reclutarlo como espía', hint: 'Un jann que habla con la arena. −1 rep. Conclave.', e: { follow: ['Jann Engañador'], rep: { conclave: -1 }, flags: ['jann_espia'] }, result: ['El jann se arrodilla. «Si cambio de bando, los secretos cambian de dueño.» No sonríe: calcula.'] },
+        { label: 'Acabar con él', hint: '+2 PF, +1 Corrupción.', e: { pf: 2, c: 1 }, result: ['La arena de su cuerpo se desmorona sobre el suelo. Nadie en el Zoco os mira.'] },
+        { label: 'Dejarlo huir', hint: 'Avisará al Conclave.', e: { alert: 1 }, result: ['El jann se funde en una columna de arena y desaparece entre dos puestos.'] },
+      ] }],
+      fail: { e: { alert: 1 }, result: ['Pasáis de largo. Cuando os alejáis, la estatua inclina la cabeza y escribe algo con un dedo de arena en la pared.'] } },
+    { label: 'Susurrar una mentira a la estatua', hint: 'Engaño CD 14: darle información falsa al Conclave.', check: { skill: 'engano', dc: 14 }, e: { alert: -1, flags: ['jann_enganado'] }, result: ['Le susurráis un plan falso. La estatua parpadea una sola vez. Dos días después, una patrulla del Conclave busca al enemigo equivocado.'], fail: { e: { alert: 1 }, result: ['El jann sonríe: «Qué mal mentís.» Lo apunta todo.'] } },
+    { label: 'Ignorar la estatua', hint: 'Los secretos se pierden.', e: { alert: 1 }, result: ['No pasa nada. Hasta que pasa.'] },
+  ] },
+  FX({ flags: ['q_s_jann'] }, 'Misión cumplida: El Jann Engañador.'),
+];
+
 export const MORALES: QuestDef[] = [
   { id: 'm_nino', title: 'El Niño y el Escorpión', kind: 'side', district: 'bajo', giver: 'Un niño llora', blurb: 'Un niño picado por un escorpión doméstico. El veneno corre.', when: open('m_nino', 'q_m_nino'), days: 1, script: M_NINO, reward: 'Devoción · eco en 3 días' },
   { id: 'm_ladron', title: 'El Ladrón Arrepentido', kind: 'side', district: 'zoco', giver: 'Un ladrón', blurb: 'Te roban… y vuelven con la bolsa en las manos.', when: open('m_ladron', 'q_m_ladron'), days: 1, script: M_LADRON, reward: 'Devoción o un seguidor' },
@@ -190,6 +209,7 @@ export const MORALES: QuestDef[] = [
   { id: 'm_inq', title: 'El Inquisidor Arrepentido', kind: 'side', district: 'plaza', giver: 'Un banco de la plaza', blurb: 'Un Inquisidor quiere desertar. Ha quemado a ciento tres personas.', when: open('m_inq', 'q_m_inq'), days: 1, script: M_INQ, reward: 'Aliado · información · o Corrupción' },
   { id: 'm_marid', title: 'El Pacto con el Marid', kind: 'side', district: 'pozo', giver: 'El agua del lago', blurb: 'Un Marid ofrece un fragmento del meteorito a cambio de un recuerdo.', when: open('m_marid', 'q_m_marid'), days: 1, script: M_MARID, reward: 'Fragmento de meteorito · irreversible' },
   { id: 'm_juicio', title: 'El Juicio del Pueblo', kind: 'side', district: 'bajo', giver: 'Una soga en el acueducto', blurb: 'El barrio ha capturado a un guardia corrupto. Todos esperan una señal.', when: open('m_juicio', 'q_m_juicio'), days: 1, script: M_JUICIO, reward: 'Seguidores · Corrupción/Devoción' },
+  { id: 's_jann', title: 'El Jann Engañador', kind: 'side', district: 'zoco', giver: 'Una estatua que mira', blurb: 'Un jann camuflado como estatua roba secretos del Zoco para el Conclave.', when: open('s_jann', 'q_s_jann'), days: 1, script: S_JANN, reward: 'Un espía o información falsa para el Conclave' },
   { id: 'f_motin', title: 'El Motín de los Esclavos', kind: 'faction', district: 'zoco', giver: 'Shib (Hijos del Simurg)', blurb: 'Veinte djinns encadenados en las mazmorras de la Ciudadela.', when: c => has(c, 'cap3_done') && has(c, 'q_s_lago') && !has(c, 'q_f_motin'), days: 2, alert: 1, script: F_MOTIN, reward: '+5 PF · Shib' },
   { id: 'f_caravana', title: 'La Caravana Perdida', kind: 'faction', district: 'zoco', giver: 'EaNassr (Mercaderes)', blurb: 'Una caravana de seda negra atacada por ghuls.', when: open('f_caravana', 'q_f_caravana'), days: 2, script: F_CARAVANA, reward: '+150 / +250 PO · aliado' },
   { id: 'f_impuesto', title: 'El Impuesto de Sangre', kind: 'faction', district: 'bajo', giver: 'Aisha (Conclave)', blurb: 'El Conclave exige tres niños para el Ritual del Eclipse.', when: open('f_impuesto', 'q_f_impuesto'), days: 1, script: F_IMPUESTO, reward: '+5 PF o +1 Devoción' },

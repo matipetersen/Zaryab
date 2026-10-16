@@ -93,6 +93,18 @@ export const MONSTERS: Record<string, MonsterDef> = {
     actions: [{ id: 'garras', name: 'Garras Venenosas', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d4+2', type: 'piercing' }, { dice: '1d6', type: 'poison' }], save: { ab: 'con', dc: 12, cond: 'poisoned', turns: 2 } }],
     xp: 450, color: '#6d7a4e', glyph: 'G', sprite: 'undead', lore: 'Criatura demacrada de piel de reptil y dedos alargados para cavar tumbas.',
   },
+  jann_enganador: {
+    id: 'jann_enganador', name: 'Jann Engañador', type: 'elemental', cr: '1/2', hp: 18, ac: 13, speed: 30, mods: m(0, 2, 1, 1, 1, 3), prof: 2, resist: ['poison'], traits: ['capaArena', 'flees50'],
+    actions: [
+      { id: 'garra', name: 'Garra de arena', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '1d6+2', type: 'slashing' }] },
+      { id: 'susurro', name: 'Susurro Hipnótico', kind: 'save', reach: 6, save: { ab: 'cha', dc: 12, cond: 'charmed', turns: 2 }, recharge: 5 },
+    ], xp: 200, color: '#c9a86a', glyph: 'j', sprite: 'djinn', lore: 'Humanoide de arena movediza con ojos brillantes. Se camufla como estatua (empieza invisible) y roba secretos para el Conclave.',
+  },
+  gusano_martillo: {
+    id: 'gusano_martillo', name: 'Gusano de Cabeza de Martillo', type: 'monstruosidad', cr: '5', hp: 120, ac: 15, speed: 30, mods: m(4, 0, 4, -4, 0, -4), prof: 3, size: 2, condImmune: ['stunned', 'paralyzed'], regen: 10,
+    actions: [{ id: 'mordisco', name: 'Cabezas de martillo', kind: 'melee', toHit: 8, reach: 1, dmg: [{ dice: '2d8+5', type: 'piercing' }] }], multiattack: ['mordisco', 'mordisco'], xp: 1800, color: '#8a6a4a', glyph: 'W', sprite: 'serpent',
+    lore: 'Emerge del suelo con múltiples cabezas que atacan a quien se siente amenazado. Recupera 10 PG al inicio de su turno mientras le quede 1.',
+  },
   ghul_invocado: {
     id: 'ghul_invocado', name: 'Ghul Invocado', type: 'no-muerto', cr: '1', hp: 25, ac: 12, speed: 30, mods: m(3, 2, 3, -2, 0, -2), prof: 2, undead: true,
     actions: [{ id: 'garras', name: 'Garras', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d4+2', type: 'slashing' }] }],
