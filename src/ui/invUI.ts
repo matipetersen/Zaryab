@@ -2,6 +2,7 @@ import { h } from './dom';
 import { ITEM, ITEMS, RECIPES, SHOP_STOCK, type Slot } from '../data/items';
 import { PARTY_BY_ID } from '../data/party';
 import { has, progOf, type Campaign } from '../state';
+import { ARC_BY_PC } from '../data/arcs';
 import { TRACKS, featuresUpTo, optionById, getPick } from '../data/progression';
 
 const SLOTS: [Slot, string][] = [['arma', '⚔ Arma'], ['armadura', '🛡 Armadura'], ['talisman', '✦ Talismán']];
@@ -33,6 +34,8 @@ export class InvUI {
         paths.length ? h('div', {}, h('span', { class: 'tag mag' }, `Arquetipo: ${paths[paths.length - 1]}`)) : h('div', { class: 'small' }, 'Aún sin evolución de arquetipo (se elige al nivel 5, 9 y 13).'));
       const feats = featuresUpTo(this.who, prog); if (!feats.length) b.append(h('div', { class: 'small' }, 'Nivel 3: rasgos de la ficha original.'));
       for (const f of feats) b.append(h('div', { class: 'jq' }, h('span', { class: `tag ${f.kind === 'path' ? 'mag' : f.kind === 'auto' ? 'good' : ''}` }, `Nv ${f.level}`), h('b', {}, ' ' + f.name), h('div', { class: 'small' }, f.desc)));
+      const arc = ARC_BY_PC[this.who];
+      if (arc) { b.append(h('div', { class: 'sec' }, `Arco: ${arc.title}`), h('div', { class: 'small lore' }, arc.premise)); for (const bt of arc.beats) { const done = bt.done(c); const oc = done ? bt.outcome?.(c) : null; b.append(h('div', { class: 'small' }, h('span', { class: `tag ${done ? 'good' : ''}` }, done ? '✔' : '○'), ` ${bt.label} · ${bt.where}${oc ? ' — ' + oc : ''}`)); } }
       const nx = t.tiers.find(x => x.level > prog.level); if (nx) b.append(h('div', { class: 'small', style: { marginTop: '8px' } }, `Próxima evolución de arquetipo: nivel ${nx.level} (${nx.title}).`));
     } else if (tab === 'equipo') {
       b.append(h('div', { class: 'tabs' }, ...party.map(p => h('button', { class: `tabbtn ${this.who === p ? 'on' : ''}`, onClick: () => { this.who = p; refresh(); } }, PARTY_BY_ID[p].name))));

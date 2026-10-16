@@ -46,6 +46,8 @@ export const SPEAKERS: Record<string, Speaker> = {
   'Mordec': { color: '#8a8a6a', glyph: 'M' },
   'Seraphel': { color: '#e8d8a0', glyph: 'S' },
   'Jann': { color: '#c9a86a', glyph: 'j' },
+  'Nythra Vel\'Shara': { color: '#3d3858', glyph: 'N' },
+  'Azuran': { color: '#e8e0b0', glyph: 'A' },
   'Voz': { color: '#aaa', glyph: '·' },
   'Ladrón': { color: '#8a7a5a', glyph: 'l' },
   'Djinn': { color: '#9aa3b5', glyph: '~' },

@@ -46,6 +46,7 @@ export type Pending = { id: string } | null;
 /** Devuelve el evento del reloj que toca disparar, si hay alguno. */
 export function pendingEvent(c: Campaign): string | null {
   if (!has(c, 'cap2_done')) return null;
+  if (has(c, 'ev_noche3_done') && has(c, 'conoce_ellie') && !has(c, 'ev_qadir_done')) return 'qadir';
   for (const [after, ev] of [['cap7_done', 'noche1'], ['cap9_done', 'noche2'], ['cap10_done', 'noche3'], ['cap11_done', 'noche4']] as const) if (has(c, after) && !has(c, `ev_${ev}_done`)) return ev;
   if (c.alert >= 10 && !has(c, 'ev_cacería_done') && !built(c, 'torre')) return 'cacería';
   if (c.alert >= 7 && !has(c, 'ev_asalto_done')) return 'asalto';

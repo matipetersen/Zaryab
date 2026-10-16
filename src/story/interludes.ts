@@ -58,7 +58,13 @@ export const INTERLUDES: Record<string, Node[]> = {
       { label: 'Escucharlo sin decir nada', e: { d: 1 }, result: ['Romain habla durante una hora. De un templo, de un incendio, de la voz que lo llamó «Siervo». No pide respuestas.'] },
       { label: 'Decirle que Kelemvor sigue pesando', hint: 'Una frase de fe.', e: { d: 1, flags: ['romain_consolado'] }, result: ['Romain sonríe por primera vez en días. «Eso me lo dijo mi maestra. Gracias por recordármelo.»'] },
     ] },
-    FX({ flags: ['ev_noche2_done'] }, 'Una noche de confidencias. Samira, un cuaderno de Abril y las dudas de Romain.'),
+    N('Más tarde, en la cocina, Panchi amasa pan con una furia que Aisha observa con respeto. «Es la primera masa que sobrevive a sus manos», dice. Panchi gruñe: «Es una masa muy bien educada.» Por un momento, Aisha se ríe, y es el sonido más raro de la noche.'),
+    S('Pact Risen', 'Samira, ¿qué se jura, cuando se jura lealtad a un Vizir?', 'de guardia en la puerta, sin mirarla'),
+    { t: 'choice', prompt: 'Pact y Samira, un aasimar y una soldado, hablan de promesas.', options: [
+      { label: 'Contarle lo de Azuran', hint: 'Compartir una partición propia.', e: { d: 1, flags: ['pact_contó_azuran'] }, result: ['Samira escucha sin interrumpir. «Mi padre decía que un hombre partido por la mitad sigue siendo un hombre entero si sabe dónde está cada mitad.» Pact sonríe, agradecido.'] },
+      { label: 'Hablar sólo del Conclave', e: {}, result: ['Samira asiente. Es lo suyo. Se entienden por lo que no dicen.'] },
+    ] },
+    FX({ flags: ['ev_noche2_done'] }, 'Una noche de confidencias. Samira, un cuaderno de Abril, las dudas de Romain, el pan de Panchi y la promesa de Pact.'),
   ],
 
   // ───────── tras Al-Mazhar ─────────
@@ -80,13 +86,19 @@ export const INTERLUDES: Record<string, Node[]> = {
       { label: '«¿Qué eres, Zahir?»', hint: 'Una pregunta directa.', e: { flags: ['zahir_pregunta'] }, result: ['Zahir tarda en contestar. «Un fragmento. Lo sé desde el principio. Os lo diré cuando el último esté en su sitio.»'] },
       { label: '«No necesitamos tus gracias.»', e: { c: 1, flags: ['zahir_rechazo_2'] }, result: ['«Claro que no.» Zahir se desvanece. Esa noche el cristal no late.'] },
     ] },
-    FX({ flags: ['ev_noche3_done'] }, 'Una nana desafinada y un dios que dice gracias.'),
+    S('Zyr\'thar', 'Mi hermana mayor me enseñó a lanzar un cuchillo sin ruido. También me enseñó que a quien te enseña, hay que enterrarlo antes de que te supere.', 'en el tejado, afilando'),
+    S('Joren Hell', 'Mala enseñanza.', 'sin dejar de mirar las estrellas'),
+    S('Zyr\'thar', 'Buena para sobrevivir.', 'con una media sonrisa que no llega a los ojos'),
+    S('Panchi', '¿Se puede tener un hermano al que se quiere y se odia a la vez?', 'sentado en la escalera, sin mirar a nadie'),
+    N('Nadie contesta. Todos lo saben.'),
+    FX({ flags: ['ev_noche3_done'] }, 'Una nana desafinada, un dios que dice gracias y tres personas que hablan de hermanos.'),
   ],
 
   // ───────── tras Gul-Amarat ─────────
   noche4: [
     T('La Víspera', 'Última noche antes de la Ciudadela', 'choza'),
     N('Mañana subiréis a la Ciudadela de los Susurros. Nadie lo dice. Aisha ha preparado el último pan con un gesto de despedida y los seguidores han dejado de cantar. Cada uno encuentra su manera de pasar la noche.'),
+    IF('dibujo_residencial', [S('Farid', 'Ese dibujo… lo hice yo. Lo hice antes de enfermarme. ¿Dónde estaba?', 'sosteniendo el papel con las dos manos'), N('Nadie contesta. Aisha lo abraza. El pájaro torcido, con seis siluetas encima, queda sobre la mesa junto al pan.')]),
     IF('conoce_ellie', [
       N('Una sombra entra por el tejado: Sifra la Silente, con la venda de lino que dio a Panchi enroscada en la muñeca.'),
       S('Sifra (Ellie)', 'Un pacto sólo se rompe desde dentro. Cuando Zahir esté completo, sólo hay un instante: cuando cree que ha ganado. Si me traéis ese instante, lo rompo.', 'tres frases, la primera en meses'),
@@ -107,5 +119,24 @@ export const INTERLUDES: Record<string, Node[]> = {
       { label: 'Callar y escuchar', e: {}, result: ['Zahir no necesita que contestéis. Sabe que habéis oído.'] },
     ] },
     FX({ flags: ['ev_noche4_done'] }, 'La víspera: cada uno despidió a alguien. Zahir hizo su mejor oferta.'),
+  ],
+
+  // ───────── Panchi · Qadir-Kalmah (sólo si conoce a Ellie) ─────────
+  qadir: [
+    T('El Monasterio que se Mueve', 'Qadir-Kalmah · ruinas que caminan', 'hammam'),
+    N('Sifra la Silente llega al amanecer, sin avisar, y deja caer una cuerda desde el tejado. «Panchi. Sólo tú. Ya.» Panchi la sigue sin preguntar. Cuando el sol está alto, la ciudad queda atrás y la arena empieza a vibrar bajo los pies.'),
+    N('Qadir-Kalmah no está quieta. Es una ciudad de piedra blanca, de claustros y torres cortadas, que camina muy despacio sobre pies de arena. A veces se detiene a descansar y los pájaros se posan en sus almenas. A veces se pone en marcha y los monjes que no han muerto salen a barrer las losas.'),
+    S('Sifra (Ellie)', 'Éste fue tu monasterio. Tu maestro me enseñó lo que sé. Tú ya habías huido cuando se cayó la última torre. Yo no.', 'por primera vez, una frase larga, con voz muy cansada'),
+    S('Panchi', 'Lo sé. Lo supe siempre. No lo dije.', 'mirando una puerta cerrada'),
+    IF('golem_aliado', [N('Detrás de Panchi, el golem Defectuoso se queda inmóvil a la entrada. Una runa se ilumina en su frente: reconoce el lugar.'), { t: 'choice', prompt: 'El golem fue la última obra del monasterio. ¿Se lo devolvéis?', options: [
+      { label: 'Dejar que el golem entre', hint: 'Volverá a ser lo que fue.', e: { d: 1, flags: ['qadir_visto', 'qadir_golem'] }, result: ['El golem cruza el umbral. En el claustro, los monjes se detienen. Uno, muy viejo, le toca la frente con dos dedos. «Hijo.»'] },
+      { label: 'Traerlo de vuelta con vosotros', hint: 'Sigue siendo tuyo.', e: { flags: ['qadir_visto', 'qadir_solo'] }, result: ['El golem no se mueve. Ellie lo mira, asiente. «Es tuyo. Siempre lo fue.»'] },
+    ] }], [
+      { t: 'choice', prompt: 'Ellie lo mira. La puerta del claustro está entreabierta.', options: [
+        { label: 'Entrar', hint: 'Enfrentar lo que dejó atrás.', e: { d: 1, flags: ['qadir_visto', 'qadir_solo'] }, result: ['Panchi cruza el umbral. Una hora después sale con los ojos rojos y una piedra en la mano. No dice nada. Ellie tampoco.'] },
+        { label: 'No atreverse todavía', e: { flags: ['qadir_visto', 'qadir_rechazo'] }, result: ['Panchi se da la vuelta. Ellie no lo detiene. «Cuando quieras.» La ciudad sigue caminando.'] },
+      ] }]),
+    S('Sifra (Ellie)', 'Cuando llegue el Eclipse, vendré. No hay otra manera de romper un pacto que estando allí.', 'entregándole la venda otra vez'),
+    FX({ flags: ['ev_qadir_done'] }, 'Qadir-Kalmah: el monasterio que se mueve. Ellie promete aparecer en el Eclipse.'),
   ],
 };
