@@ -60,3 +60,19 @@ Se abre al terminar el Cap. V. Guion en `src/story/cap6.ts`.
 | Cierre | Venda de Ellie (objeto clave), `conoce_ellie`, pista de que Ellie sabe romper pactos. Pact queda para el Cap. VII (Prueba de Azuran) |
 
 **Sistemas nuevos:** contador de **Ruta** (`orden`/`pueblo`/`sombra`, `Campaign.ruta`) que suma cada decisión del Acto II y se calculará al final del Cap. VIII; regla de **duelo** (`Encounter.duel`: límite de rondas, grupo restringido, derrota sin penalización); combate «blando» (`battle.soft`) que no se reintenta.
+
+## Actos II–III (v0.4): capítulos VII–XIII
+Guiones en `src/story/acts.ts`; finales y Ruta en `src/story/endings.ts`.
+
+| Cap. | Falso dios / jefe | Combate | Decisión de cierre |
+|---|---|---|---|
+| VII Iglesia del Simurg | Dahhak (cuellos que rebrotan) | `dahhak_final` | Matar / perdonar a cambio de secreto / devorar. Prueba de Azuran (Pact) |
+| VIII Visita del Vizir | Razul (en persona) | `asalto` | Defender / evacuar / negociar. **Calcula la Ruta** |
+| IX Jardín de los Suspiros | El Marid (inunda el campo) | `marid` | Liberar / atar / dejar dormir. Sombra de Zyr'thar |
+| X Hijo del Lago | Al-Mazhar (13 máscaras) | `al_mazhar` | Descanso / seguidores / destruir a los trece huérfanos. Balanza de Romain, Pacto de Rabb |
+| XI Veta Maldita | Gul-Amarat (brazos protegen al cuerpo) | `huida_mina` (8 rondas) + `gusano` | Sacrificio o combate |
+| XII Ciudadela | Razul ibn Tameer | `razul_final` | Silencio o muerte. Verdadero Culpable de Joren |
+| XIII Ritual del Eclipse | Zahir como Simurg | `eclipse` | Seis desenlaces (Liberación, Gobernar, Espiral, Destrucción, Silencio, Equilibrio) más el Sacrificio |
+
+**Secundarias nuevas:** `s_tigre` (Tigre Alado de las Tormentas, compañero de combate si se domina) y `s_cementerio` (no muertos).
+**Mecánicas de jefe nuevas:** `hydra`, `mascaras`, `flood`, `shielded` + `brazo`, `enrage`; encuentros de supervivencia (`Encounter.survive`).
