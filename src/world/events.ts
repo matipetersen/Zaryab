@@ -1,3 +1,4 @@
+import { ECOS } from './morales';
 import type { Node } from '../story/types';
 import type { Campaign } from '../state';
 import { has, built } from '../state';
@@ -39,6 +40,7 @@ export const EVENTS: Record<string, Node[]> = {
   ],
 };
 
+Object.assign(EVENTS, ECOS);
 export type Pending = { id: string } | null;
 /** Devuelve el evento del reloj que toca disparar, si hay alguno. */
 export function pendingEvent(c: Campaign): string | null {

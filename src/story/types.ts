@@ -1,5 +1,9 @@
 import type { Effect } from '../state';
-export interface Opt { label: string; hint?: string; disabled?: string; e?: Effect; result?: string[]; then?: Node[]; if?: string }
+export type Skill = 'persuasion' | 'engano' | 'intimidar' | 'sigilo' | 'medicina' | 'percepcion' | 'arcanos' | 'religion' | 'atletismo';
+/** Prueba de habilidad: el mejor de la compañía tira d20 + mod. Éxito → e/result/then; fallo → fail. */
+export interface Check { skill: Skill; dc: number; pc?: string }
+export interface Fail { e?: Effect; result?: string[]; then?: Node[] }
+export interface Opt { label: string; hint?: string; disabled?: string; e?: Effect; result?: string[]; then?: Node[]; if?: string; check?: Check; fail?: Fail }
 export type Node =
   | { t: 'chapter'; title: string; sub: string; bg?: string }
   | { t: 'bg'; id: string }

@@ -93,13 +93,19 @@ export class StoryUI {
     const avail = options.filter(o => !o.if || has(this.camp, o.if));
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
-      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
+      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} CD ${o.check.dc} · mejor: ${bestFor(this.camp, o.check)}`) : null, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
       this.show(null, prompt ?? 'Elegid.', undefined, wrap);
     });
-    const lines = applyEffect(this.camp, picked.e); this.hud();
-    for (let i = 0; i < (picked.result?.length ?? 0); i++) { await this.show(null, picked.result![i], undefined, i === picked.result!.length - 1 && lines.length ? this.badges(lines) : null); await this.pause(); }
-    if (!picked.result?.length && lines.length) { await this.show(null, '…', undefined, this.badges(lines)); await this.pause(); }
-    if (picked.then) await this.play(picked.then);
+    let branch: { e?: Effect; result?: string[]; then?: Node[] } = picked;
+    if (picked.check) {
+      const r = rollCheck(this.camp, picked.check); const ok = r.total >= picked.check.dc;
+      await this.show(null, `${PARTY_BY_ID[r.pc].name} — ${SKILL_LABEL[picked.check.skill]} (CD ${picked.check.dc}): d20 ${r.d20} ${r.mod >= 0 ? '+' : ''}${r.mod} = ${r.total}. ${r.d20 === 20 ? '¡Crítico! ' : r.d20 === 1 ? 'Pifia. ' : ''}${ok ? 'ÉXITO.' : 'FALLO.'}`, undefined); await this.pause();
+      if (!ok) branch = picked.fail ?? {};
+    }
+    const lines = applyEffect(this.camp, branch.e); this.hud();
+    for (let i = 0; i < (branch.result?.length ?? 0); i++) { await this.show(null, branch.result![i], undefined, i === branch.result!.length - 1 && lines.length ? this.badges(lines) : null); await this.pause(); }
+    if (!branch.result?.length && lines.length) { await this.show(null, '…', undefined, this.badges(lines)); await this.pause(); }
+    if (branch.then) await this.play(branch.then);
   }
 
   // ---------- puzzle de las seis marcas ----------
@@ -125,3 +131,4 @@ export class StoryUI {
   }
 }
 export type { Effect };
+import { rollCheck, bestFor, SKILL_LABEL } from '../world/checks';

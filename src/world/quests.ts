@@ -1,6 +1,7 @@
 import type { Node } from '../story/types';
 import type { Campaign, Effect } from '../state';
 import { has } from '../state';
+import { MORALES } from './morales';
 import { CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
 
 export type QKind = 'main' | 'side' | 'personal' | 'faction';
@@ -223,5 +224,6 @@ export const QUESTS: QuestDef[] = [
   { id: 'p_joren', title: 'El Manifiesto de La Marca', kind: 'personal', pc: 'joren', district: 'zoco', giver: 'Joren', blurb: 'Un sello de su vieja célula en el Zoco. Parte del cargamento fue a Medinat al-Rih.', when: done('cap3_done'), days: 1, alert: 1, script: P_JOREN, reward: 'Gancho: Medinat al-Rih' },
   { id: 'p_zyr', title: "Los Cuchillos de Vel'Shara", kind: 'personal', pc: 'zyrthar', district: 'zoco', giver: "Zyr'thar", blurb: 'Un espía de la Casa Vel\'Shara lo ha reconocido en el Zoco.', when: done('cap3_done'), days: 1, script: P_ZYR, reward: 'Información · tiempo' },
 ];
+QUESTS.push(...MORALES);
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
 export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap1: CAP1, cap2: CAP2 };

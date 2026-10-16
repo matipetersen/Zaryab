@@ -80,6 +80,7 @@ export class HubUI {
     }
     b.append(h('div', { class: 'sec' }, 'Reputación'));
     for (const [k, v] of Object.entries(c.rep)) b.append(h('div', { class: 'small' }, `${FACTIONS[k] ?? k}: ${v >= 0 ? '+' : ''}${v}`));
+    if (c.huellas.length) { b.append(h('div', { class: 'sec' }, 'Huellas · lo que dejáis atrás')); for (const x of c.huellas) b.append(h('div', { class: 'small lore' }, '• ' + x)); }
     if (c.journal.length) { b.append(h('div', { class: 'sec' }, 'Diario')); for (const j of c.journal.slice(-12).reverse()) b.append(h('div', { class: 'small' }, j)); }
     this.openModal('Diario de misiones', b);
   }
