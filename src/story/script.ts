@@ -1,0 +1,182 @@
+import type { Node } from './types';
+
+// ──────────────────────────────────────────────────────────────────────────────
+//  Guion basado en el canon de la campaña (Sesiones 1–3). Cada capítulo es un
+//  árbol de nodos; las elecciones modifican Corrupción (c), Devoción (d), PF.
+// ──────────────────────────────────────────────────────────────────────────────
+
+const CAP1: Node[] = [
+  { t: 'chapter', title: 'Capítulo I — El Juicio', sub: 'Plaza Central de Zaryab · Patio de las Verdades Retorcidas', bg: 'prison' },
+  { t: 'narr', text: 'Cinco días de marcha. Luego, el viento. Una brisa, una ventisca, ráfagas que levantan la arena hasta borrar el cielo. Tres días de tormenta sin referencias. Entonces, a lo lejos: cuatro pilares torcidos, rotos, azotados por la arena.' },
+  { t: 'narr', text: 'Un ruido de cadenas. Mecanismos de hierro. Una compuerta se abre y un ascensor de mármol sube con tres figuras de túnicas largas y máscaras de pájaro: ibis negros. Al final del pasillo esperan dos colosos de bronce. Los maniatan con sogas impregnadas de sal, que anulan la magia.' },
+  { t: 'bg', id: 'prison' },
+  { t: 'say', who: 'Anciano Encapuchado', text: 'Luchen ahora y ardan… ríndanse y… (Extiende una mano llena de cicatrices de arena.) La muerte no es el final aquí… sólo el primer paso.', tone: 'voz cascada, entre dientes' },
+  { t: 'choice', prompt: 'El anciano se asoma entre los barrotes.', options: [
+    { label: '«¿Quién eres?»', result: ['«Un espectador… como tú pronto lo serás.» Desaparece dejando un puñado de arena que forma el símbolo de Zahir.'], e: { flags: ['vio_simbolo_zahir'] } },
+    { label: 'Ignorarlo', result: ['«Moriréis como corderos, entonces.» Se desvanece. Los guardias llegan para llevaros al juicio.'] },
+  ] },
+  { t: 'bg', id: 'coliseo' },
+  { t: 'narr', text: 'Un coliseo de mosaicos violetas. La multitud pide sangre. Sobre un trono de mármol violeta, alto y esquelético, con una túnica dorada que murmura versos en lengua djinn, el Vizir Razul gira un reloj de arena.' },
+  { t: 'say', who: 'Vizir Razul', text: '¡Miren, oh fieles, a estos miserables que osaron manchar el nombre sagrado de nuestro orden! ¡Blasfemos, sediciosos, enemigos de la verdad divina!', tone: 'teatral; levita al hablar' },
+  { t: 'say', who: 'Vizir Razul', text: 'Ah… los traidores despiertan. «Conspiración contra el Velo Sagrado, blasfemia, comercio con efrits…» ¿Alguna última mentira antes de que la arena os juzgue?' },
+  { t: 'say', who: 'Vizir Razul', text: 'Tú, que te llamas siervo de la muerte… ¿acaso no es blasfemia pretender que tu dios es más justo que el mío? ¿O es que la muerte no es también… un capricho de los poderosos?', tone: 'a Romain' },
+  { t: 'say', who: 'Vizir Razul', text: 'Un ángel caído, ¿verdad? O quizás… un impostor. Tus alas son pálidas imitaciones de la verdadera gloria divina.', tone: 'a Pact Risen' },
+  { t: 'say', who: 'Vizir Razul', text: 'Así que el cazador se convierte en presa. Tus flechas ignoran la cobertura… pero la justicia no.', tone: 'a Joren' },
+  { t: 'say', who: 'Vizir Razul', text: 'Ah… el «instrumento» sin memoria. Solo eres el mango de una daga manchada por otro. Pobre títere sin hilos… hasta tu violencia es prestada.', tone: 'a Rabb, con los ojos dorados clavados en él' },
+  { t: 'say', who: 'Vizir Razul', text: 'La ley es clara: blasfemia se paga con fuego. Sedición, con la espada. Pero para ustedes… he preparado algo especial.', tone: 'falsa compasión' },
+  { t: 'choice', prompt: 'Cadenas mágicas se enroscan en vosotros. La multitud ruge. ¿Qué hacéis?', options: [
+    { label: 'Intentar escapar durante el juicio', hint: 'Conoceréis las defensas de la Ciudadela.', e: { c: 1, flags: ['conoce_defensas'] }, result: ['Rompéis una cadena y corréis por los pasillos del coliseo. Veis las runas giratorias, los puestos de los golems, las rutas de patrulla. No llegáis lejos… pero lo habéis visto todo.'] },
+    { label: 'Aceptar el juicio y esperar', hint: 'Dejar que la verdad hable.', e: { d: 1 }, result: ['Calláis. La multitud se ríe de vuestro silencio. Razul sonríe: la paciencia es lo único que no sabe castigar.'] },
+    { label: 'Negociar con Razul', hint: 'Una oportunidad… y una marca.', e: { flags: ['marcados_por_razul'] }, result: ['«Os dejaré una oportunidad», murmura el Vizir. Con un dedo dibuja una runa en el aire. Os arde bajo la piel: ahora os reconocerá en cualquier multitud.'] },
+  ] },
+  { t: 'narr', text: 'El Vizir maneja a las masas mientras os tortura, uno a uno, hasta dejaros inconscientes. «Que dure para siempre», susurra. El mundo se apaga.' },
+  { t: 'bg', id: 'limbo' },
+  { t: 'narr', text: 'Un vacío blanco, sin dolor, sin heridas. Frente a vosotros, una figura alta y andrógina, vestida con ropajes que parecen plumas doradas.' },
+  { t: 'say', who: 'Zahir', text: 'Ah… por fin despiertan. No teman, no es el infierno. Aunque… tampoco es el cielo.', tone: 'suave pero inquietante' },
+  { t: 'say', who: 'Zahir', text: 'El Vizir Razul los asesinó… pero su muerte no fue un fin. Fue un sacrificio necesario. El mundo está enfermo. La gente ha olvidado al Simurg, el verdadero dios de la redención.' },
+  { t: 'say', who: 'Zahir', text: '¿Crees que tu dios de tumbas y balanzas te escucha aquí, en las entrañas de Zaryab? Kelemvor juzga almas… pero el Conclave las convierte en arena.', tone: 'a Romain, con la arena girando a su alrededor' },
+  { t: 'say', who: 'Zahir', text: '¿Sientes que tu espada respira, Rabb? Ella recuerda lo que tú olvidaste… el pacto que sellaste con mi especie.', tone: 'a Rabb; un espejo de arena le muestra a un desconocido con su misma arma' },
+  { t: 'say', who: 'Zahir', text: 'Razul los usó como chivos expiatorios… pero yo les ofrezco algo mejor: volver. No serán mártires olvidados. Serán apóstoles.' },
+  { t: 'narr', text: 'Zahir extiende las manos. Un contrato etéreo aparece ante vosotros: sin palabras, sólo un símbolo ardiente. El ojo del Simurg.' },
+  { t: 'choice', prompt: '«Pueden aceptar mi ayuda… o quedarse aquí, en el olvido. ¿Realmente quieren morir como criminales?»', options: [
+    { label: 'Aceptar el pacto sin cuestionar', hint: 'Un cristal en el pecho. Poder inmediato.', e: { pf: 5, flags: ['cristal_zahir', 'hueso_djinn'] }, result: ['Zahir sonríe. Un cristal violeta se incrusta en vuestros pechos y pulsa como un segundo corazón. Os entrega un fragmento de hueso de djinn: podréis ordenar a un Jann una vez al día.'] },
+    { label: 'Preguntar por el precio', hint: 'La duda también es un arma.', e: { pf: 3, d: 1, flags: ['cristal_zahir', 'sabe_simurg_dividido'] }, result: ['Zahir ríe. «Solo lo que ya diste: tu inocencia.» Tarda demasiado en responder cuando le preguntáis qué gana el Simurg: «La salvación de todos… empezando por la suya.»', 'Notáis que el vacío blanco se ondula cuando camina, como si le obedeciera.'] },
+    { label: 'Negarse', hint: 'Nadie se niega a un djinn.', e: { c: 1, flags: ['cristal_zahir', 'desconfianza_zahir'] }, result: ['«Lástima. Pero no importa… otros tomarán su lugar.» Os deja desvanecer en la nada… hasta que un poder os arrastra de vuelta igual. El cristal ya late en vuestro pecho. Zahir no volverá a fiarse de vosotros.'] },
+  ] },
+  { t: 'say', who: 'Zahir', text: 'Recuerden: el Simurg los eligió. No fue casualidad… fue destino. Id al Bajo Zaryab. Encontrad a Farid. Cuando su familia se una a vosotros… escucharéis mi primer secreto.', tone: 'ya desvaneciéndose' },
+  { t: 'narr', text: 'Despertáis en un callejón, con carteles de «SE BUSCAN HEREJES» y el sonido de campanas lejanas. Vuestras heridas están cerradas. En el reflejo de un charco, por un instante, veis alas oscuras a vuestras espaldas.' },
+];
+
+const CAP2: Node[] = [
+  { t: 'chapter', title: 'Capítulo II — Las Ocho Casas', sub: 'Bajo Zaryab · El Distrito de las Mentiras', bg: 'bajo' },
+  { t: 'narr', text: 'El Bajo Zaryab no es un barrio… es una herida abierta. Las casas se apilan como cadáveres, sus paredes transpiran un líquido violeta. Faroles de vidrio roto proyectan sombras que se retuercen demasiado lento. Y el aire huele a mentira fermentada.' },
+  { t: 'narr', text: 'Ocho casas idénticas, marcadas con runas distorsionadas. Una es la de Aisha. Y todo el barrio miente.' },
+  { t: 'say', who: 'Voz', text: '¡La casa con el techo roto! ¡Esa es, forastero! ¡Esa es! (Un borracho se tambalea.) ¡Que me parta un rayo si miento!', tone: 'un borracho' },
+  { t: 'say', who: 'Voz', text: 'Donde las flores cantan, hijo mío… donde las flores cantan.', tone: 'una anciana' },
+  { t: 'choice', prompt: '¿Qué casa investigáis?', options: [
+    { label: 'La del techo rojo, con la alfombra voladora en la entrada', hint: 'Demasiado fácil.', e: { pf: -1 }, result: ['La alfombra os eleva… y os arroja desde el techo. Caéis a un balcón con más dignidad que daño. Pierdes tiempo y el rastro de un seguidor.'] },
+    { label: 'La del jardín de flores negras que cantan', hint: 'Un cadáver fresco susurra: «La casa correcta… huele a jazmín y miedo».', e: { c: 1 }, result: ['El cadáver os roba un aliento al tocarlo. Pero su pista, aunque envenenada, apunta en la dirección correcta.'] },
+    { label: 'La casa cuya sombra en la ventana no se mueve como las demás', hint: 'Los detalles son la verdad.', e: { d: 1 }, result: ['Las sombras de esa ventana no se mueven como las otras. Es la Casa 5. Y cerca, alguien os observa sonriendo con dientes demasiado blancos.'] },
+  ] },
+  { t: 'say', who: 'Viejo Linyera', text: 'Pssst… vosotros no tenéis pinta de creyentes. ¿Qué os prometió Zahir? ¿Poder? ¿Venganza? (Escupe al suelo; la saliva se convierte en arena.)', tone: 'susurrando, limpiando un cuchillo oxidado' },
+  { t: 'choice', prompt: 'El viejo os corta el paso.', options: [
+    { label: '«¿Quién sos, viejo?»', result: ['«Un espectador profesional. El Conclave paga bien por información… pero a veces juego a dos bandos.» Rasguña el muro dejando una runa que sólo vosotros veis. Su sonrisa se ensancha. Silba.'] },
+    { label: 'Ignorarlo', result: ['«Mmm… mal cálculo. Ojalá sobreviváis lo suficiente para arrepentiros.» Os da la espalda. Y silba.'] },
+    { label: 'Atacarlo', e: { c: 1 }, result: ['«¡Ja! Matar a un pobre viejo… ¿así queréis ganar seguidores?» Esquiva con agilidad antinatural. Su silbido llena el callejón de armaduras de bronce.'] },
+  ] },
+  { t: 'battle', enc: 'linyera' },
+  { t: 'narr', text: 'El Linyera se disuelve en una nube de arena, dejando un frasco de veneno del Pozo del Silencio. En el aire flota su última frase: «Recordad: en Zaryab, hasta las paredes susurran… y yo escucho.»' },
+  { t: 'fx', e: { flags: ['frasco_veneno', 'linyera_vivo'] }, note: 'Obtenido: frasco de veneno del Pozo del Silencio.' },
+  { t: 'bg', id: 'choza' },
+  { t: 'narr', text: 'La choza de Aisha es un ataúd de adobe. Farid respira con dificultad en una estera, su piel translúcida como papel mojado. Aisha, con los nudillos blancos de aferrarse a su hijo, os mira con ojos que ya no saben llorar. La arena del suelo forma círculos alrededor de vuestros pies, como si Zahir observara.' },
+  { t: 'say', who: 'Aisha', text: 'Los sacerdotes del Conclave vinieron anoche. Dijeron que Farid tenía el alma sucia… Le dieron a beber algo del Pozo del Silencio. Ahora veo cosas moviéndose bajo su piel.', tone: 'voz ronca, pausas largas; se toca un amuleto de hueso' },
+  { t: 'say', who: 'Aisha', text: 'Los dioses nos han abandonado… ¿Vos también lo haréis?', tone: 'suplicante' },
+  { t: 'say', who: 'Farid', text: 'Soñé con un pájaro que lloraba sangre… ¿Sois un ángel?', tone: 'débil, pero curioso' },
+  { t: 'choice', prompt: 'Farid tose arena violeta. Su sombra no coincide con sus movimientos; cuando tose, la sombra ríe.', options: [
+    { label: 'Curar a Farid con vuestra propia magia', hint: 'El cristal absorberá algo de vosotros.', e: { d: 1, pf: 5, flags: ['aisha_devota', 'farid_curado'] }, result: ['La magia cierra algo en el niño… y el cristal de Zahir os chupa un pedazo de vida. Aisha se arrodilla: «Sois un enviado de los dioses de arena.» Besa el suelo frente a vosotros.'] },
+    { label: 'Usar métodos pragmáticos: sangre de djinn', hint: 'Más rápido. Más sucio.', e: { c: 2, pf: 3, flags: ['farid_voces', 'farid_curado'] }, result: ['Farid se cura… pero ahora escucha voces. Aisha nota que algo está mal y, si la intimidáis, se une por miedo. El niño os mira como si supiera lo que hicisteis.'] },
+    { label: 'Mostrarle el frasco de veneno del Conclave', hint: 'La verdad como arma.', if: 'frasco_veneno', e: { d: 1, pf: 4, flags: ['aisha_venganza', 'tres_padres'] }, result: ['Aisha jura venganza y recluta a otros tres padres con hijos enfermos. Leales hasta la muerte.'] },
+    { label: 'Negaros a ayudar', e: { d: -1 }, result: ['«Sois como ellos», susurra Aisha. Pero si volvéis con pruebas del Conclave, quizá escuche.'], then: [{ t: 'fx', e: { flags: ['aisha_maldice'] } }] },
+  ] },
+  { t: 'bg', id: 'limbo' },
+  { t: 'say', who: 'Zahir', text: 'Habéis cumplido… pero esto es sólo el primer latido del corazón del culto. Aquí, donde el Conclave enterró los Huesos del Primer Pacto, construiréis mi altar.', tone: 'un gigante de arena bajo un eclipse sangriento' },
+  { t: 'say', who: 'Zahir', text: 'Cada ladrillo será una mentira que derribasteis… cada sacrificio, un latido más fuerte. El Conclave enviará sus bestias de arena. Pero recordad: yo soy la tormenta.' },
+  { t: 'narr', text: 'Establecéis la biblioteca como base y primera iglesia del Simurg. Aisha y Farid cuidan del santuario. Con vuestros primeros adeptos, el cristal de Zahir os otorga poderes nuevos.' },
+];
+
+const CAP3: Node[] = [
+  { t: 'chapter', title: 'Capítulo III — Los Pecados Bajo el Agua', sub: 'Zoco de los Mil Soplos · Viejo hammam · Acueductos del oeste', bg: 'zoco' },
+  { t: 'narr', text: 'El Zoco de los Mil Soplos: tiendas de seda púrpura sostenidas por columnas de mármol veteadas de oro. Faroles de vidrio morado proyectan hologramas de alfombras voladoras. Esferas de cristal graban contratos. Todo el mundo vende algo. Todo el mundo escucha.' },
+  { t: 'bg', id: 'zoco' },
+  { t: 'say', who: 'EaNassr', text: 'Dicen que matás sin hablar… como debe ser. Tengo algo que te hará rico, si sobrevivís: un Efrit se esconde en los baños antiguos del oeste. No está solo. Se reúne con un Mirad y un Jann… tres reliquias que el Conclave debería haber borrado. Lo quiero muerto. No preguntes por qué.', tone: 'a Zyr\'thar, en la sala de espejos' },
+  { t: 'say', who: 'EaNassr', text: 'Cuando el fuego muera… los deformes sabrán que ha llegado su hora.', tone: 'frase envenenada al despedirse' },
+  { t: 'bg', id: 'taller' },
+  { t: 'narr', text: 'Aisha os lleva a un taller oculto entre cortinas raídas, incienso barato y alfombras flotantes mal remendadas. Al-Khush, anciano sordomudo de barba desgastada, repara alfombras mágicas con delicadeza obsesiva. Su propia alfombra viviente traduce sus emociones con movimientos.' },
+  { t: 'say', who: 'Aisha', text: 'Este hombre… este artesano… es mucho más de lo que aparenta. Cuando Farid estaba enfermo y los templos no querían atenderlo, Khush trajo una alfombra que nos llevó volando a un pozo oculto. Lo salvó. No aceptó pago, solo pidió respeto.' },
+  { t: 'narr', text: 'Al-Khush repara una alfombra dañada del grupo porque Aisha se lo pide con el alma. Mientras trabaja, proyecta imágenes: en su juventud tejía alfombras para djinns libres. Sus ojos se humedecen cuando su dedo roza una runa antigua del Simurg bordada en los hilos. La alfombra ahora guarda un fragmento de su poder.' },
+  { t: 'bg', id: 'hammam' },
+  { t: 'narr', text: 'Un viejo hammam subterráneo, oculto bajo el oeste de Zaryab. Las paredes rezuman humedad, las brasas están apagadas y hay tres tronos circulares tallados en piedra, reunidos en torno a una fuente rota.' },
+  { t: 'say', who: 'Shul-Avar', text: '¿Han venido por mi fuego… o por mi cabeza? Da igual. Ambos están vacíos. Ya no sé cómo volver a arder.', tone: 'Efrit, fuego apagado y resignado' },
+  { t: 'say', who: 'Riyam', text: 'Fui el canto de las lluvias. Ahora me usan para enfriar las salas de los nobles. Me piden agua con miel.', tone: 'Mirad, voz melancólica' },
+  { t: 'say', who: 'Tadhem', text: 'Mi reino era el viento indomable. Hoy barro los patios de los magos. Y si me niego… me encierran en botellas.', tone: 'Jann, ojos erráticos' },
+  { t: 'choice', prompt: 'Tres djinns esclavizados esperan vuestra decisión.', options: [
+    { label: 'Estafar a EaNassr', hint: 'Simular la muerte de Shul-Avar y ayudarlos a huir.', e: { d: 2, flags: ['gema_fuego_sellado', 'djinns_libres', 'efrit_vivo'] }, result: ['Los djinns aceptan fingir. Os entregan una Gema de Fuego Sellado como prueba: foco mágico que lanza Manos Ardientes una vez al día. A cambio, los ayudáis a huir. Los tres desaparecen con una sonrisa.'] },
+    { label: 'Matar solo al Efrit', hint: 'Cumplir el contrato sin preguntar.', e: { c: 1, flags: ['guanteletes_ira', 'efrit_muerto'] }, result: ['«Hazlo. La muerte es más dulce que el uso que me dan.» Shul-Avar no se resiste. Riyam y Tadhem retroceden, horrorizados, y se desvanecen en agua y arena prometiendo volver. Panchi recibe los Guanteletes de la Ira Rígida: sueña que está encadenado, quemándose lentamente.'] },
+    { label: 'Pelear con los tres djinns', hint: 'Combate CR 5–8 contra un grupo de nivel 3.', disabled: 'Aún no disponible: requiere balance (Shul-Avar es CR 8). Llegará en la v0.2.' },
+  ] },
+  { t: 'bg', id: 'espejos' },
+  { t: 'narr', text: 'Esa noche, todos los espejos, aguas quietas y superficies pulidas se enturbian. La voz de Zahir, profunda y arenosa, susurra desde todos ellos.' },
+  { t: 'say', who: 'Zahir', text: 'Debajo de la ciudad, duerme el hierro del cielo. Una herida del firmamento… enterrada en el barro y la sed. El fragmento les llama, como me llamó a mí. Vayan. Antes que otros lo corrompan.' },
+  { t: 'bg', id: 'acueducto' },
+  { t: 'narr', text: 'Entrada a un acueducto olvidado. Humedad, moho, una puerta mágica oxidada. El fragmento del meteorito está sellado en la cerradura. En una cámara lateral, rodeado de mosaicos rotos, un cartel de piedra: «Solo la mentira libera a la mente.»' },
+  { t: 'say', who: 'Oráculo de las Mil Lenguas', text: 'Los pasillos están tan seguros como el abrazo de una víbora. No está bajo tus pies ni tras esta puerta. Nunca lo encontrarán donde lo buscan.', tone: 'no puede decir sí ni no; todo lo que dice es falso' },
+  { t: 'choice', prompt: 'El oráculo miente por oficio. ¿Cómo interpretáis su advertencia?', options: [
+    { label: 'Entenderlo al revés: hay peligro, y el fragmento está justo en la cerradura', e: { d: 1 }, result: ['Invertís cada frase. El fragmento está tras la puerta. Y los pasillos… no son seguros en absoluto. Os preparáis.'], then: [{ t: 'fx', e: { flags: ['oraculo_resuelto'] } }] },
+    { label: 'Ignorar al oráculo y tocar el fragmento', result: ['Vuestra mano toca la cerradura sin precaución alguna.'] },
+  ] },
+  { t: 'narr', text: 'Al tocar el fragmento, las piletas rotas escupen ghuls. Los espectros se multiplican a su alrededor, alimentados por el poder celestial del Simurg: más veloces, y algunos estallan al morir en necroarena.' },
+  { t: 'battle', enc: 'acueducto' },
+  { t: 'narr', text: 'Los ghuls caen… pero llegan más. Corréis por tramos inundados, derrumbes, sombras que se mueven. La alfombra remendada de Al-Khush se lanza hacia una compuerta rota para cerrarla y frenar a la horda. Se enrolla como si os saludara antes de desaparecer.' },
+  { t: 'choice', prompt: 'La alfombra se ha sacrificado por vosotros.', options: [
+    { label: 'Honrar su memoria: recoger los hilos y llevárselos a Al-Khush', hint: 'Un gesto sin recompensa.', e: { d: 1 }, result: ['Recogéis un puñado de hilos dorados chamuscados. Al-Khush no puede hablar, pero apoya la mano sobre vuestro hombro un largo rato.'] },
+    { label: 'No hay tiempo para sentimentalismos', result: ['Seguís corriendo. Detrás de vosotros, los hilos se apagan.'] },
+  ] },
+  { t: 'narr', text: 'Una cámara circular. El fragmento flota sobre agua sólida. Para tomarlo se necesita un sacrificio emocional.' },
+  { t: 'say', who: 'Zahir', text: 'Ese fuego no es tuyo… pero puede quemar lo que te ata.', tone: 'susurra a Rabb' },
+  { t: 'choice', prompt: '¿Qué ofrecéis al agua sólida?', options: [
+    { label: 'Un recuerdo feliz', hint: 'Quemado en el agua.', e: { pf: 5, d: 1, flags: ['fragmento_2', 'sacrificio_recuerdo'] }, result: ['El recuerdo se disuelve. Sabéis que existió, pero ya no podéis verlo. El fragmento cae en vuestras manos, tibio.'] },
+    { label: 'Vuestra voz durante 24 horas', hint: 'Silencio a cambio de poder.', e: { pf: 5, flags: ['fragmento_2', 'sacrificio_voz'] }, result: ['Un día sin palabras. El agua sólida cede. El fragmento pulsa con vuestro propio ritmo.'] },
+    { label: 'Un rasgo abandonado', hint: 'Una parte de quien fuisteis.', e: { pf: 5, c: 1, flags: ['fragmento_2', 'sacrificio_rasgo'] }, result: ['Algo en vosotros se afloja, como un nudo que ya no importa. El fragmento es vuestro.'] },
+  ] },
+  { t: 'narr', text: 'De vuelta a la superficie, tres figuras envueltas en velo y humo os rodean sin hacer ruido: perfumadas de incienso, con tatuajes vivos moviéndose por la piel. Las Si\'lats.' },
+  { t: 'say', who: "Si'lat", text: 'El fuego ha muerto. Y con él, el sello se ha roto. Los deformes ya no se arrastran.', tone: 'la primera' },
+  { t: 'say', who: "Si'lat", text: 'Dahhak los guía… desde las ruinas de Medinat al-Rih. Ciudad de los olvidados. Los cuellos torcidos ya están erguidos.', tone: 'la segunda, de ojos blancos como sal' },
+  { t: 'say', who: "Si'lat", text: 'Tú… no deberías estar aquí. Ni siquiera deberías… ser recordado. Yo serví a uno como tú, antes de que Zahhak corrompiera los nombres sagrados. Tú eras Azuran. El Portador del Segundo Aliento. ¿Quién te amarró a esta carne rota?', tone: 'la tercera, frente a Pact Risen' },
+  { t: 'say', who: "Si'lat", text: 'Tus ojos eran antorchas. Quemaban nuestra mentira con verdad. Pero tú… no quemaste nuestras hijas. Por eso te advertimos: no sigas el canto de los cuellos torcidos. Dahhak no da poder. Él devora historia.', tone: 'la mayor' },
+  { t: 'narr', text: 'Al pronunciarse el nombre de Azuran, una llamarada de energía dorada fracturada surge del cuerpo de Pact Risen. El fragmento vibra. Todos ven una corona de fuego invertido sobre su cabeza, sólo por un instante.' },
+  { t: 'fx', e: { flags: ['pact_azuran'] }, note: 'Pact Risen recupera un eco de su identidad celestial: Azuran.' },
+  { t: 'if', flag: 'efrit_muerto', then: [{ t: 'narr', text: 'Esa noche soñáis con el eco de la voz de Shul-Avar. Los Guanteletes de la Ira Rígida pesan más de lo que deberían.' }], else: [{ t: 'narr', text: 'Esa noche soñáis con el Simurg sobre una ciudad de huesos, y con tres djinns libres que miran hacia el este.' }] },
+];
+
+const CAP4: Node[] = [
+  { t: 'chapter', title: 'Capítulo IV — El Reflejo se Rompe', sub: 'Plaza Central · El Cubo de los Mil Reflejos', bg: 'limbo' },
+  { t: 'narr', text: 'Una grieta negra se abre en el suelo. De ella brota Zahir, ya sin forma humana: piel de papel calcinado flotando en humo, ojos de estrellas muertas. Cada palabra suya deja un eco de fiebre en la lengua.' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'He visto reinos colapsar por menos que una duda. Ustedes… hablaron con Razul. Ustedes… consideraron a Dahhak como aliado. ¡Ya han traicionado el fuego!', tone: 'las marcas del Simurg queman en vuestra piel' },
+  { t: 'say', who: 'Zahir (Caído)', text: '¿Creen que el Simurg es una idea? ¿Un símbolo? El Simurg es la última palabra antes de que el mundo se calle para siempre. Y ustedes… ¡hablan con la serpiente que devora nombres!' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'Sombra que corta sin pensar. ¿Vas a seguir órdenes de quien cambia de piel como de máscara? ¿O vas a recordar por qué naciste entre cuchillos?', tone: "a Zyr'thar" },
+  { t: 'say', who: 'Zahir (Caído)', text: 'Miras al cielo por respuestas… y aun así dudaste ante un mentiroso con corona. ¿Tu dios pesa el alma, o la acomoda en el oro?', tone: 'a Romain' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'Amnesia no es excusa. Te vendiste dos veces: una por olvido, otra por miedo. ¿Quién sos cuando no hay nadie mirando?', tone: 'a Rabb' },
+  { t: 'say', who: 'Zahir (Caído)', text: '¿Creés que podés seguir cargando con cadáveres invisibles? Uno de ellos respira todavía, y está en Medinat. ¿Qué harás cuando te mire y no te reconozca?', tone: 'a Joren' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'El Portador del Segundo Aliento… ¿y ya pensás en rendirte al primer canto falso? Tu nombre fue partido porque era peligroso. ¿Vas a usarlo, o vas a temerle otra vez?', tone: 'a Pact Risen' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'Golpeás sin pensar. Eso te hizo útil. Pero el fuego ya no busca puños: busca voluntad.', tone: 'a Panchi' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'La historia está escrita con los huesos de los tibios. Si no cumplen el pacto… desaparecerán. Como si nunca hubieran existido. Ahora vayan. El meteorito está en la plaza central, bajo un cubo sellado. Tómenlo antes de que despierte a los dioses falsos.' },
+  { t: 'bg', id: 'cubo' },
+  { t: 'narr', text: 'Un cubo de mármol blanco, sin inscripciones, custodiado por hombres del Vizir. Un pozo oculto en el centro os lleva a una cámara descendente. Sala 1: seis espejos de bronce oscuro, cada uno con el nombre de uno de vosotros… mal escrito.' },
+  { t: 'say', who: 'Reflejo', text: '«Me uní al culto por poder.» «Yo dejé morir a ese niño.» «Nunca creí en el Simurg.»', tone: 'susurran los espejos del pasillo de las Lenguas Muertas' },
+  { t: 'narr', text: 'Sala 3 — Geometría del Dolor. Un cubo perfecto, sin puertas, con un pedestal vacío. Inscripción en caligrafía cambiante: «Para que se abra el final, seis deben ser uno… y uno debe ser seis.» Seis marcas en el suelo brillan, cada una alineada con la esencia verdadera de un alma.' },
+  { t: 'puzzle', id: 'marks' },
+  { t: 'bg', id: 'cubo' },
+  { t: 'narr', text: 'La puerta se abre. En la Cámara del Engaño Divino, el meteorito flota sobre una fuente invertida. Alrededor, estatuas de dioses humanos… que en los espejos del fondo reflejan djinns: un Simurg fragmentado; Dahhak, el Portador de Cuellos, serpiente sin boca; Gul-Amarat, el Gusano de las Cuevas, espiral de brazos humanos; y Al-Mazhar al-Khalid, el Lich de las Trece Caras.' },
+  { t: 'say', who: 'El Simurg', text: 'La fe es un arma. Y los djinns… son fabricantes de espadas disfrazadas de oráculos.', tone: 'una voz emerge del meteorito' },
+  { t: 'fx', e: { pf: 10, flags: ['fragmento_3', 'cubo_superado', 'rabb_recuerda'] }, note: 'Fragmento del meteorito recuperado. Pact: puede declarar «Una Verdad». Rabb oye su nombre en una lengua no hablada.' },
+  { t: 'narr', text: 'Pact ve su nombre verdadero y la corona de fuego arde un instante. Rabb escucha un nombre en una lengua que nadie habla, y algo dentro de él intenta recordar lo que nunca vivió. Juez y error. Estructura y anomalía.' },
+  { t: 'bg', id: 'plaza' },
+  { t: 'narr', text: 'La puerta de obsidiana se cierra con un eco húmedo, como de garganta tragando cristal. La Plaza Central baña todo en un rojo viscoso. Los pájaros han huido. Una sirena se activa por primera vez en siglos: un canto grave de múltiples voces sintetizadas.' },
+  { t: 'say', who: 'Dahhak', text: '¿Tanto metal para frenar el alma? Pobre Vizir… aún cree que puede contener lo inevitable.', tone: 'en lo alto de una torre rota, hombros en espiral, cabellos de serpientes vivas' },
+  { t: 'narr', text: 'Los Qilaat se alinean en anillos alrededor del Capitolio: «Protocolo 900. La Divinidad No Es Bienvenida». Y entonces, las columnas del Capitolio se abren como pétalos. Emerge un coloso de hierro bruñido y oro opaco, tan alto como cuatro edificios, con bolas de pinchos por brazos. Dahhak trepa por su espalda, le susurra algo hueco y antiguo… y las gemas se encienden en púrpura enfermizo.' },
+  { t: 'say', who: 'Dahhak', text: '¿Querían un dios? Les traje uno. Uno con músculos de metal y alma de locura. Lucharán. O serán historia enterrada bajo la historia.' },
+  { t: 'end', title: 'Continuará…', text: 'El Coloso de Dahhak avanza. Este es el final de la versión 0.1: el combate del Coloso, el torneo de Panchi con Ellie en Medinat al-Rih, la misión del Vizir a Romain y la sombra del Lich llegarán en las próximas versiones.' },
+];
+
+export const CHAPTERS: Node[][] = [CAP1, CAP2, CAP3, CAP4];
+
+// Puzzle de las seis marcas: cada alma ↔ su marca verdadera (canon de la Sesión 3).
+export const MARKS = [
+  { id: 'balanza', name: 'La Balanza Rota' },
+  { id: 'cuchilla', name: 'La Cuchilla Silenciosa' },
+  { id: 'espejo', name: 'El Espejo Hueco' },
+  { id: 'senda', name: 'La Senda sin Rostro' },
+  { id: 'fuego', name: 'El Fuego Olvidado' },
+  { id: 'eco', name: 'El Eco Incontrolado' },
+];
+export const MARK_ANSWER: Record<string, string> = { romain: 'balanza', zyrthar: 'cuchilla', rabb: 'espejo', joren: 'senda', pact: 'fuego', panchi: 'eco' };
