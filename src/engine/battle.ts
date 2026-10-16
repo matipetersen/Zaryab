@@ -1,8 +1,9 @@
 import { Grid, P, cheb, key } from './grid';
-import { d20, roll, avg, rand, pick } from './dice';
+import { d20, roll, avg, rand, pick, addFlat } from './dice';
 import type { Unit, Weapon, MAction, BEvent, CondId, Status, DmgType, DmgPart, Ab, Side } from './types';
 import { ABILITIES } from './abilities';
 import './abilities2';
+import { onGuardDeath, stepTrap, OBJECTS, cubeRound, cubeInit, type CubeState } from './cube';
 
 import { makeFoe as makeFoeLazy } from '../data/monsters';
 const MASCARAS: { name: string; res: DmgType[]; vuln: DmgType }[] = [
@@ -17,7 +18,7 @@ export const COND_LABEL: Record<CondId, string> = {
   stunned: 'Aturdido', restrained: 'Inmovilizado', invisible: 'Invisible', burning: 'En llamas', dodging: 'Esquiva', bless: 'Bendecido',
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
-  guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
+  guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
   taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche',
 };
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
@@ -32,7 +33,8 @@ export class Battle {
   grid: Grid; units: Unit[]; order: Unit[] = []; idx = -1; round = 0;
   events: BEvent[] = []; over = false; result?: 'victory' | 'defeat'; nextUid = 1000;
   flags: Record<string, any> = {};
-  maxRounds = 0; surviveRounds = 0; inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
+  maxRounds = 0; surviveRounds = 0; goalOnly = false; goal?: { x: number; y: number }; goalMsg = '';
+  cube?: CubeState; carry: Record<string, boolean> = {}; storyFlags = new Set<string>(); storyFlagsOut = new Set<string>(); scaleFoe?: (u: Unit) => void; scripts: ((b: Battle, round: number) => void)[] = []; inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
   pfPool = 0; pfSpent = 0; onRound?: (b: Battle, round: number) => void;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
 
@@ -233,6 +235,8 @@ export class Battle {
     this.emit({ t: 'move', uid: u.uid, path });
     const tile = this.grid.at(x, y);
     if (tile?.kind === 'hazard' && !u.fly) { const rr = roll('1d6'); this.log(`${u.name} pisa terreno peligroso (${rr.total}).`, 'dmg'); this.damage(u, rr.total, 'fire', undefined); }
+    if (this.cube) stepTrap(this, u);
+    if (this.goal && u.pcId && !u.dead && u.x === this.goal.x && u.y === this.goal.y) this.win(this.goalMsg || 'Alcanzáis la salida.');
     return { ok: true };
   }
 
@@ -286,6 +290,7 @@ export class Battle {
   }
   damage(t: Unit, amt: number, type: DmgType, src?: Unit, o: { quiet?: boolean; silent?: boolean; crit?: boolean } = {}): number {
     if (t.dead || amt <= 0) return 0;
+    if (t.traits.includes('dormant')) this.flags['w' + t.uid] = 1;
     let a = amt;
     if (t.immune.includes(type)) a = 0;
     else { if (t.resist.includes(type)) a = Math.floor(a / 2); if (t.vuln.includes(type)) a *= 2; }
@@ -304,6 +309,9 @@ export class Battle {
     const absorbed = Math.min(t.temp, a); t.temp -= absorbed; a -= absorbed;
     if (t.hp - a <= 0 && this.has(t, 'deathWard')) { this.removeStatus(t, 'deathWard'); t.hp = 1 + a; this.log(`La Protección contra la Muerte salva a ${t.name}.`, 'heal'); }
     const before = t.hp; t.hp -= a;
+    if (t.traits.includes('zombieFort') && t.hp <= 0 && type !== 'radiant' && !o.crit) { const dc = 5 + a; if (this.save(t, 'con', dc, '(Fortaleza de No-muerto)')) { t.hp = 1; this.log(`${t.name} se mantiene en pie.`, 'sys'); } }
+    if (t.traits.includes('frenzy') && t.hp > 0 && t.hp <= t.maxHp * 0.4 && !this.flags['frz' + t.uid]) { this.flags['frz' + t.uid] = 1; for (const ac of t.actions) if (ac.toHit != null) ac.toHit += 2; t.ac -= 2; this.log(`¡${t.name} entra en frenesí!`, 'sys'); }
+    if (t.traits.includes('split') && t.hp >= 4 && (type === 'slashing' || type === 'lightning') && this.units.filter(x => x.id === t.id && !x.dead).length < 8) { const half = Math.floor(t.hp / 2); const p2 = this.freeNear(t); if (p2) { t.hp -= half; const c = makeFoeLazy(t.id, p2.x, p2.y); c.hp = half; c.maxHp = Math.max(half, c.maxHp); if (this.scaleFoe) this.scaleFoe(c); c.hp = half; this.summon(c, t, p2); this.log(`${t.name} se parte en dos.`, 'sys'); } }
     if (t.traits.includes('enrage') && t.hp > 0 && t.hp <= t.maxHp / 2 && !this.flags['enr' + t.uid]) { this.flags['enr' + t.uid] = 1; for (const ac of t.actions) { if (ac.toHit != null) ac.toHit += 2; if (ac.save) ac.save = { ...ac.save, dc: ac.save.dc + 2 }; } for (const k of Object.keys(t.rechargeReady)) t.rechargeReady[k] = true; this.log(`¡${t.name} entra en furia! Sus ataques mejoran y recupera sus poderes.`, 'sys'); this.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); }
     if (t.hp <= 0) {
       const over = -t.hp; t.hp = 0;
@@ -330,6 +338,7 @@ export class Battle {
     this.emit({ t: 'death', uid: t.uid });
     this.log(`${t.name} cae${t.side === 'pc' ? ' y muere' : ''}.`, 'dmg');
     this.breakConc(t);
+    onGuardDeath(this, t);
     if (t.traits.includes('pilon')) for (const co of this.units.filter(x => !x.dead && x.traits.includes('pilonRegen'))) { this.log(`El pilón estalla y el Coloso recibe la sacudida.`, 'dmg'); this.damage(co, 18, 'force', src); }
     if (t.traits.includes('boss')) for (const f of this.units.filter(x => !x.dead && x.traits.includes('flees50'))) this.flee(f);
     if (src) { const hc = this.status(src, 'hexCurse'); if (hc && hc.val === t.uid) { const h = src.mods.cha + 3; this.heal(src, h, src, true); this.log(`${src.name} se cura ${h} (Maldición Hexblade).`, 'heal'); } }
@@ -350,6 +359,8 @@ export class Battle {
   heal(t: Unit, amt: number, src?: Unit, quiet = false): number {
     if (t.dead || amt <= 0) return 0;
     if (t.undead) return 0;
+    if (this.has(t, 'noHeal')) { if (!quiet) this.log(`${t.name} no puede curarse (Maldición de Herida).`, 'sys'); return 0; }
+    if (this.has(t, 'noHeal')) { if (!quiet) this.log(`${t.name} no puede curarse (Maldición de Herida).`, 'sys'); return 0; }
     if (t.down) { t.down = false; t.stable = false; t.death = { succ: 0, fail: 0 }; t.hp = amt; this.log(`${t.name} recupera el conocimiento.`, 'heal'); }
     else t.hp = Math.min(t.maxHp, t.hp + amt);
     if (!quiet) this.float(t, '+' + amt, 'heal');
@@ -361,7 +372,7 @@ export class Battle {
     const bosses = this.units.filter(u => u.traits.includes('boss'));
     const foes = bosses.length ? bosses.filter(u => !u.dead) : this.units.filter(u => u.side === 'foe' && !u.dead && !u.summoned && u.sprite !== 'wall' && !u.traits.includes('objective-ignore'));
     const pcs = this.units.filter(u => !!u.pcId && !u.dead && !u.down);
-    if (!foes.length) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
+    if (!foes.length && !this.goalOnly) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
     else if (!pcs.length) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); }
   }
 
@@ -417,6 +428,8 @@ export class Battle {
       if (this.has(u, 'ensnare') && !ranged) { this.removeStatus(u, 'ensnare'); if (!this.save(t, 'str', u.spellDC, '(Golpe Enredador)')) this.addStatus(t, { id: 'restrained', turns: 5, src: u.uid }); }
       for (const [tr, dice, type] of [['divineStrike', u.level >= 14 ? '2d8' : '1d8', 'necrotic'], ['radStrike', u.level >= 14 ? '2d8' : '1d8', 'radiant']] as const) if (u.traits.includes(tr) && !ranged && !this.flags[`${tr}${u.uid}_${this.round}`]) { this.flags[`${tr}${u.uid}_${this.round}`] = 1; ex.push({ dice, type }); }
       if (u.traits.includes('lifedrinker') && !ranged) ex.push({ dice: String(Math.max(1, u.spellMod)), type: 'necrotic' });
+      if (t.traits.includes('acidBody') && !ranged) { const ac = roll('2d8').total; this.log(`El ácido del ${t.name} abrasa a ${u.name} (${ac}).`, 'dmg'); this.damage(u, ac, 'acid', undefined); }
+      if (t.traits.includes('corrosion') && !w.magic && !ranged) { const k = 'corr' + u.uid; const n = (this.flags[k] ?? 0); if (n < 5) { this.flags[k] = n + 1; w.dmg = [{ ...w.dmg[0], dice: addFlat(w.dmg[0].dice, -1) }, ...w.dmg.slice(1)]; this.log(`El arma de ${u.name} se corroe (−${n + 1}).`, 'sys'); } }
       const all = this.rollParts([...parts, ...ex], r.crit);
       let total = 0; const txt: string[] = [];
       const enf = this.has(u, 'enfeebled');
@@ -451,6 +464,7 @@ export class Battle {
     let L = lvl ?? 0;
     if (ab.slot) { const lv = this.slotLevels(u, ab.slot); L = lvl && lv.includes(lvl) ? lvl : lv[0]; }
     const v = ab.validate?.(this, u, target as any, L); if (v && !v.ok) return v;
+    if (target && (target as Unit).uid && (target as Unit).traits?.includes('absorbSpell') && (ab.tag === 'attack' || ab.tag === 'control') && ab.cost !== 'free' && (ab.slot ?? 0) <= 3 && !ab.id.startsWith('item_') && ab.id !== 'dash') { const tg = target as Unit; const h = roll('4d8').total; if (ab.slot) u.res['slot' + L]--; if (ab.use) u.res[ab.use]--; if (ab.cost === 'action') { this.spendAction(u); u.attacksMade = 99; } if (ab.cost === 'bonus') u.bonusUsed = true; tg.hp = Math.min(tg.maxHp, tg.hp + h); this.log(`${tg.name} absorbe ${ab.name} y se cura ${h}.`, 'sys'); u.acted = true; return { ok: true }; }
     if (ab.conc) this.breakConc(u);
     if (ab.cost === 'action') { this.spendAction(u); u.attacksMade = 99; }
     if (ab.cost === 'bonus') u.bonusUsed = true;
@@ -510,6 +524,7 @@ export class Battle {
         for (const p of parts) { const amt = enf ? Math.floor(p.amt / 2) : p.amt; total += this.damage(tu, amt, p.type, u, { crit: r.crit, silent: true }); txt.push(`${amt} ${p.type}`); }
         this.log(`${u.name} usa ${a.name} contra ${tu.name}${r.adv ? ' (ventaja)' : r.dis ? ' (desventaja)' : ''}${r.crit ? ' ¡CRÍTICO!' : ''}: ${r.nat}→${r.total} vs CA ${r.ac}. Daño ${total} (${txt.join(' + ')}).`, 'dmg');
         if (total > 0) this.float(tu, String(total), r.crit ? 'crit' : 'dmg');
+        if (u.traits.includes('woundCurse') && !this.flags['wc' + u.uid] && !tu.dead) { this.flags['wc' + u.uid] = 1; this.addStatus(tu, { id: 'noHeal', turns: 600, src: u.uid }); this.log(`${tu.name} sufre la Maldición de Herida: no puede curarse.`, 'sys'); }
         if (a.save && !tu.dead) { if (!this.save(tu, a.save.ab, a.save.dc, `(${a.name})`) && a.save.cond) this.addStatus(tu, { id: a.save.cond, turns: a.save.turns ?? 1, src: u.uid, dot: a.save.dot }); }
       }
     } else if (a.kind === 'save') {
@@ -526,7 +541,7 @@ export class Battle {
     } else if (a.kind === 'heal') {
       const tu = (t as Unit) ?? u; const r = roll(a.heal ?? '1d6'); this.heal(tu, r.total, u); this.log(`${u.name} usa ${a.name} y cura ${r.total} a ${tu.name}.`, 'heal');
     } else if (a.kind === 'buff') {
-      this.log(`${u.name} usa ${a.name}.`, 'roll'); if (a.save?.cond) this.addStatus(u, { id: a.save.cond, turns: a.save.turns ?? 3, src: u.uid });
+      this.log(`${u.name} usa ${a.name}.`, 'roll'); if (a.note === 'alarma' && this.cube) { import('./cube').then(c => c.raiseAlert(this, 2, 'El aprendiz lanza Alarma')); } if (a.save?.cond) this.addStatus(u, { id: a.save.cond, turns: a.save.turns ?? 3, src: u.uid });
     }
     if (a.recharge) u.rechargeReady[a.id] = false;
     u.acted = true;
@@ -569,6 +584,22 @@ export class Battle {
     for (let r = 1; r < 6; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = o.x + dx, y = o.y + dy; const t = this.grid.at(x, y); if (t && !t.blocked && !this.unitAt(x, y)) return { x, y }; }
     return undefined;
   }
+
+  win(msg: string) { if (this.over) return; this.log(msg, 'sys'); this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
+  /** Interacción con un objeto del mapa (tomo, calaveras, jaulas…). Cuesta la acción. */
+  interact(u: Unit, x: number, y: number, choice?: string): Res {
+    const t = this.grid.at(x, y); if (!t?.obj) return { ok: false, msg: 'No hay nada con lo que interactuar.' };
+    if (cheb(u, { x, y }) > 1) return { ok: false, msg: 'Acércate.' };
+    if (!this.hasAction(u)) return { ok: false, msg: 'No te queda acción.' };
+    const o = OBJECTS[t.obj]; if (!o) return { ok: false, msg: 'Nada que hacer.' };
+    if (!this.spendAction(u)) return { ok: false };
+    u.attacksMade = 99; u.acted = true; u.moveLeft = Math.min(u.moveLeft, 1); // un turno completo
+    const id = t.obj; const msg = o.run(this, u, { x, y }, choice); this.log(`${u.name}: ${o.label}. ${msg}`, 'sys');
+    if (o.once && t.obj === id && !msg.startsWith('✗')) t.obj = undefined;
+    return { ok: true };
+  }
+  /** Los efectos de rasgos al terminar de actuar (script del encuentro). */
+  runScripts(round: number) { for (const f of this.scripts) f(this, round); }
   xpValue() { return this.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).reduce((s, u) => s + u.xp, 0); }
   /** Refuerzo: entra al final del orden de iniciativa. */
   reinforce(u: Unit, p: P) { u.initiative = -1; this.spawn(u, p); this.order.push(u); this.log(`¡Llegan refuerzos: ${u.name}!`, 'sys'); }

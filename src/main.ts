@@ -104,7 +104,7 @@ class App {
       if (a.t === 'quest') {
         const q = QUEST_BY_ID[a.id]; if (a.id === 'm_cap13') applyEffect(this.camp, { flags: finalFlags(this.camp) }); await this.runScript('q:' + a.id);
         if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: vuestra Ruta es el ${RUTA_LABEL[r]}.`); }
-        this.camp.quests[q.id] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
+        this.camp.quests[q.id] = 'done'; this.camp.squad = []; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
         if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
         this.advance(q.days); let nx = q.next;
         while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
@@ -126,25 +126,27 @@ class App {
 
   // ───────── combate ─────────
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
-    const e = ENCOUNTERS[enc]; const c = this.camp; const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : c.party.filter(p => !c.dead.includes(p));
+    const e = ENCOUNTERS[enc]; const c = this.camp; const alive = c.party.filter(p => !c.dead.includes(p)); const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : (c.squad?.length ? c.squad.filter(p => alive.includes(p)) : alive);
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
     const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');
+    if (enc === 'd4_defensa') { if (has(c, 'mz_seraphel_libre')) allies.push('seraphel_aliada'); if (has(c, 'mz_grethak_aliado')) allies.push('grethak_aliado'); if (has(c, 'mz_esclavos_libres')) allies.push('esclavo', 'esclavo'); }
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party) });
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')) });
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
-    const duel = !!e.duel; const won = res.result === 'victory' || duel;
+    const duel = !!e.duel; const soft = !!e.soft; const victory = res.result === 'victory'; const won = victory || duel || soft;
+    if (e.soft || e.script) { const fl = [...(res.flagsOut ?? []).map(f => 'mz_' + f), ...(res.carry ?? []).map(f => 'mz_carry_' + f)]; if (res.cubeAlert) fl.push('mz_alerta_' + res.cubeAlert); if (!victory && !duel) fl.push('mz_capturados'); applyEffect(c, { flags: fl }); }
     if (duel) { const pct = res.foeHpPct ?? 1; if (pct <= 0.55) applyEffect(c, { flags: ['torneo_digno'] }); }
     setMonsterXp(Object.fromEntries(Object.values(MONSTERS).map(m => [m.id, m.xp])));
     for (const [k, n] of Object.entries(res.used)) c.inv[k] = Math.max(0, (c.inv[k] ?? 0) - n);
-    const loot = won && !duel ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
-    const overlay = duel ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, res.result === 'victory' ? 'Ganas el combate' : 'Panchi cae'), h('div', { class: 'res' }, h('div', {}, `Rondas: ${res.rounds}. Sifra ${Math.round((res.foeHpPct ?? 1) * 100)} % en pie.`)), h('button', { class: 'btn' }, 'Continuar'))) : this.resultOverlay(res, loot); this.battleEl.append(overlay);
+    const loot = victory && !duel ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
+    const overlay = (soft && !victory && !duel) ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, 'Capturados'), h('div', { class: 'res' }, h('div', {}, 'El Cubo —o Kethras— os ha cercado. Nadie ha muerto todavía.')), h('button', { class: 'btn' }, 'Continuar'))) : duel ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, res.result === 'victory' ? 'Ganas el combate' : 'Panchi cae'), h('div', { class: 'res' }, h('div', {}, `Rondas: ${res.rounds}. Sifra ${Math.round((res.foeHpPct ?? 1) * 100)} % en pie.`)), h('button', { class: 'btn' }, 'Continuar'))) : this.resultOverlay(res, loot); this.battleEl.append(overlay);
     await new Promise<void>(r => overlay.querySelector('button')!.addEventListener('click', () => r()));
     ui.destroy(); overlay.remove(); this.battleEl.innerHTML = ''; this.show('story');
     c.pf = Math.max(0, c.pf - res.pfSpent);
-    if (won && !duel) {
+    if (victory && !duel) {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
       for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }

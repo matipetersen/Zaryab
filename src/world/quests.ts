@@ -5,6 +5,7 @@ import { MORALES } from './morales';
 import { CAP6 } from '../story/cap6';
 import { CAP7, CAP8, CAP9, CAP10, CAP11, CAP12, CAP13 } from '../story/acts';
 import { ACT2 } from './act2quests';
+import { MAUNATOR } from '../story/maunator';
 import { CAP0, CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
 
 export type QKind = 'main' | 'side' | 'personal' | 'faction';
@@ -234,6 +235,6 @@ export const QUESTS: QuestDef[] = [
   { id: 'p_joren', title: 'El Manifiesto de La Marca', kind: 'personal', pc: 'joren', district: 'zoco', giver: 'Joren', blurb: 'Un sello de su vieja célula en el Zoco. Parte del cargamento fue a Medinat al-Rih.', when: done('cap3_done'), days: 1, alert: 1, script: P_JOREN, reward: 'Gancho: Medinat al-Rih' },
   { id: 'p_zyr', title: "Los Cuchillos de Vel'Shara", kind: 'personal', pc: 'zyrthar', district: 'zoco', giver: "Zyr'thar", blurb: 'Un espía de la Casa Vel\'Shara lo ha reconocido en el Zoco.', when: done('cap3_done'), days: 1, script: P_ZYR, reward: 'Información · tiempo' },
 ];
-QUESTS.push(...MORALES, ...ACT2);
+QUESTS.push(...MORALES, ...ACT2, { id: 'o_maunator', title: 'El Inventario de Maunator', kind: 'side', district: 'zoco', giver: 'EaNassr', blurb: 'Robar un tomo de escribas de los muertos de un consulado extranjero. Un sótano que se mueve, un mago que prepara un magnicidio divino y una salida con tres medallones.', when: c => has(c, 'cap8_done') && !has(c, 'q_o_maunator'), days: 3, alert: 1, script: MAUNATOR, reward: 'Tomo · Sello de Helm · Seraphel · Kethras como enemigo futuro' });
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
 export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap0: CAP0, cap1: CAP1, cap2: CAP2 };

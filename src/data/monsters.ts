@@ -301,6 +301,8 @@ export const MONSTERS: Record<string, MonsterDef> = {
   },
 };
 
+import { MAUNATOR_MONSTERS } from './maunator';
+Object.assign(MONSTERS, MAUNATOR_MONSTERS);
 export function makeFoe(id: string, x: number, y: number, nameSuffix = '', side: 'foe' | 'pc' = 'foe'): Unit {
   const d = MONSTERS[id]; if (!d) throw new Error('Monstruo desconocido ' + id);
   const saves: Mods = { ...d.mods, ...(d.saves ?? {}) } as Mods;

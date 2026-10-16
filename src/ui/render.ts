@@ -82,6 +82,7 @@ export class Renderer {
       if (e.t === 'move') { const v = this.vis.get(e.uid); if (v) v.path.push(...e.path.slice(1)); }
       else if (e.t === 'float') { const u = this.b!.byUid(e.uid); if (u) { const v = this.vis.get(e.uid)!; this.floats.push({ x: v.x, y: v.y, text: e.text, cls: e.cls, t: 0, dx: (Math.random() - .5) * 18 }); } }
       else if (e.t === 'hit') { const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = 1; } this.shake = Math.max(this.shake, .5); }
+      else if (e.t === 'snap') { const v = this.vis.get(e.uid); if (v) { v.x = e.x; v.y = e.y; v.path = []; } this.shake = Math.max(this.shake, .8); }
       else if (e.t === 'death') { const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) this.burst(u.x, u.y, '#d8b27a', 18); }
       else if (e.t === 'spawn') { const u = this.b!.byUid(e.uid); if (u) this.vis.set(e.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 1, dead: 0, wobble: 0 }); }
       else if (e.t === 'fx') this.fx(e);
@@ -142,6 +143,7 @@ export class Renderer {
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo
     for (let d = 0; d < g.w + g.h - 1; d++) for (let y = 0; y < g.h; y++) { const x = d - y; if (x < 0 || x >= g.w) continue; const t = g.tiles[y][x]; this.drawFloor(x, y, t.kind, s); }
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
     if (this.hover && g.inb(this.hover.x, this.hover.y)) { const t = g.tiles[this.hover.y][this.hover.x]; const p = this.proj(this.hover.x, this.hover.y, t.kind === 'high' ? ELEV : 0); this.diamond(p.x, p.y, s, 'rgba(255,255,255,.10)', 'rgba(255,255,255,.7)'); }

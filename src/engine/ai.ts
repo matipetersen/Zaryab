@@ -72,6 +72,11 @@ function fleeTile(b: Battle, u: Unit, src: Unit | undefined): P | undefined {
 /** Turno completo de una unidad controlada por IA. */
 export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bias): Promise<void> {
   if (u.dead || u.down) return;
+  if (u.traits.includes('inert')) return;
+  if (u.traits.includes('dormant') && !b.flags['w' + u.uid]) return;
+  if (u.side === 'foe' && b.cube && b.cube.alert < 1 && (u.traits.includes('guard') || u.traits.includes('zombieFort')) && !candidateTargets(b, u).some(t => cheb(u, t) <= 6 && b.canSee(u, t).visible)) return;
+  if (u.side === 'foe' && b.cube && (b.cube.alert < 2) && u.actions.some(a => a.note === 'alarma') && candidateTargets(b, u).some(t => b.canSee(u, t).visible)) { const a = u.actions.find(a => a.note === 'alarma')!; if (!u.actionUsed) { b.monsterAct(u, a, u); u.actionUsed = true; return; } }
+  if (u.side === 'pc' && !u.pcId && await allyHeal(b, u, pause)) return;
   if (b.has(u, 'frightened')) {
     const s = b.status(u, 'frightened')!; const src = s.src ? b.byUid(s.src) : undefined;
     const t = fleeTile(b, u, src); if (t) await doMove(b, u, t, pause); b.log(`${u.name} huye aterrado.`, 'sys'); return;
@@ -125,3 +130,11 @@ function pickTarget(b: Battle, u: Unit, a: MAction): Unit | undefined {
   return fs.sort((x, y) => (b.expectedDamage(u, a, y) * (y.down ? .3 : 1)) - (b.expectedDamage(u, a, x) * (x.down ? .3 : 1)) || x.hp - y.hp)[0];
 }
 void key; void avg;
+
+/** Aliados curanderos (Seraphel): se acercan al aliado más herido y lo curan. */
+async function allyHeal(b: Battle, u: Unit, pause: Pause): Promise<boolean> {
+  const a = u.actions.find(x => x.kind === 'heal' && (!x.recharge || u.rechargeReady[x.id])); if (!a || u.actionUsed) return false;
+  const hurt = b.alliesOf(u).filter(x => !x.dead && !x.down && x.sprite !== 'wall' && x.hp < x.maxHp * 0.6).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (!hurt) return false;
+  if (cheb(u, hurt) > a.reach) { const tiles = [...b.reach(u).values()].filter(v => !v.occ && cheb(v, hurt) <= a.reach).sort((p, q) => p.cost - q.cost); if (!tiles.length) return false; await doMove(b, u, { x: tiles[0].x, y: tiles[0].y }, pause); }
+  b.monsterAct(u, a, hurt); u.actionUsed = true; return true;
+}

@@ -22,7 +22,7 @@ export interface Campaign {
   run: { script: string; idx: number } | null;   // guion en curso (se reanuda al cargar)
   battlesWon: number; xp: number;
   ruta: Record<string, number>; ecos: { id: string; due: number }[]; huellas: string[];
-  lvl: number; picks: Record<string, string[]>;
+  lvl: number; picks: Record<string, string[]>; squad: string[];
   gold: number; inv: Record<string, number>; equip: Record<string, string[]>;
 }
 export const FACTIONS: Record<string, string> = {
@@ -35,12 +35,12 @@ export const newCampaign = (): Campaign => ({
   rep: { conclave: 0, hijos: 0, mercaderes: 0, inquisidores: 0, nomadas: 0, dahhak: 0, qilaat: 0 },
   quests: {}, followers: [], buildings: [], food: 6, mats: 0, rumors: 0, ticks: 0, sermonDay: 0, ritualCd: {}, peek: null, grants: {}, oracleSeen: [], journal: [],
   main: 0, run: { script: 'cap0', idx: 0 }, battlesWon: 0, xp: 0,
-  lvl: 3, picks: {}, ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
+  lvl: 3, picks: {}, squad: [], ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
 });
 const KEY = 'zaryab.save.v3';
 export function saveGame(c: Campaign) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch { /* sin storage */ } }
 export function loadGame(): Campaign | null {
-  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 3; c.picks ??= {}; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; return c; } catch { return null; }
+  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 3; c.picks ??= {}; c.squad ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; return c; } catch { return null; }
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* */ } }
 export const has = (c: Campaign, f: string) => c.flags.includes(f);

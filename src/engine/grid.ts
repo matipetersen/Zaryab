@@ -20,7 +20,7 @@ export class Grid {
   w: number; h: number; tiles: Tile[][] = [];
   spawns: { pc: P[]; foe: P[]; ally: P[]; wave: P[] } = { pc: [], foe: [], ally: [], wave: [] };
   marks: P[] = [];
-  constructor(rows: string[]) {
+  constructor(rows: string[], objs: { x: number; y: number; id: string }[] = []) {
     this.h = rows.length; this.w = rows[0].length;
     const pcSlots: [number, P][] = [];
     rows.forEach((row, y) => {
@@ -39,6 +39,7 @@ export class Grid {
       this.tiles.push(line);
     });
     this.spawns.pc = pcSlots.sort((a, b) => a[0] - b[0]).map(s => s[1]);
+    for (const o of objs) { const t = this.tiles[o.y]?.[o.x]; if (t) t.obj = o.id; }
   }
   /** Sustituye una casilla (terreno modificable). */
   setTile(x: number, y: number, ch: string, turns?: number) {

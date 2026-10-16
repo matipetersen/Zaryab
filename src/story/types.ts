@@ -12,6 +12,7 @@ export type Node =
   | { t: 'choice'; prompt?: string; options: Opt[] }
   | { t: 'battle'; enc: string; foeCount?: number; title?: string; soft?: boolean }
   | { t: 'puzzle'; id: 'marks' }
+  | { t: 'squad'; n: number; label?: string }
   | { t: 'fx'; e: Effect; note?: string }
   | { t: 'if'; flag: string; then: Node[]; else?: Node[] }
   | { t: 'end'; title: string; text: string };

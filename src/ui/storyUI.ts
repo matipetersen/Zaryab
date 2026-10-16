@@ -89,6 +89,7 @@ export class StoryUI {
       case 'choice': return this.choice(n.prompt, n.options);
       case 'battle': { let won = false; while (!won) { won = await this.battle(n.enc, n.foeCount); if (n.soft) break; } return; }
       case 'puzzle': return this.marksPuzzle();
+      case 'squad': return this.squadPick(n.n, n.label);
       case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); const b = h('button', { class: 'btn', style: { position: 'absolute', bottom: '14%', left: '50%', transform: 'translateX(-50%)' } }, 'Volver al mapa de Zaryab'); this.el.append(b); await new Promise<void>(r => b.addEventListener('click', () => r())); t.remove(); b.remove(); } return;
     }
   }
@@ -109,6 +110,18 @@ export class StoryUI {
     for (let i = 0; i < (branch.result?.length ?? 0); i++) { await this.show(null, branch.result![i], undefined, i === branch.result!.length - 1 && lines.length ? this.badges(lines) : null); await this.pause(); }
     if (!branch.result?.length && lines.length) { await this.show(null, '…', undefined, this.badges(lines)); await this.pause(); }
     if (branch.then) await this.play(branch.then);
+  }
+
+  // ---------- elección de escuadra ----------
+  async squadPick(max: number, label?: string) {
+    this.dlg.classList.add('hidden');
+    const alive = this.camp.party.filter(id => !this.camp.dead.includes(id)); const chosen = new Set<string>(alive.slice(0, max));
+    const box = h('div', { class: 'box' }, h('h3', {}, 'Escuadra'), h('p', {}, label ?? `Elegid hasta ${max} personajes.`));
+    const go = h('button', { class: 'btn', style: { marginTop: '14px' } }, 'Confirmar escuadra');
+    const draw = () => { for (const el of [...box.querySelectorAll('.rowp')]) el.remove(); for (const id of alive) { const d = PARTY_BY_ID[id]; const on = chosen.has(id); box.insertBefore(h('div', { class: 'rowp' }, h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, avatar(d.glyph, d.color, undefined, 34), h('div', {}, h('b', {}, d.name), h('div', { class: 'small' }, d.klass))), h('button', { class: `tabbtn ${on ? 'on' : ''}`, onClick: () => { if (on) chosen.delete(id); else if (chosen.size < max) chosen.add(id); draw(); } }, on ? '✔ Va' : 'Se queda')), go); } go.textContent = `Confirmar escuadra (${chosen.size}/${max})`; };
+    box.append(go); draw(); const ov = h('div', { class: 'puzzle' }, box); this.el.append(ov);
+    await new Promise<void>(res => go.addEventListener('click', () => { if (chosen.size >= 1) res(); }));
+    this.camp.squad = [...chosen]; ov.remove();
   }
 
   // ---------- puzzle de las seis marcas ----------

@@ -12,7 +12,8 @@ const PROF: Record<string, Skill[]> = {
 };
 export const skillMod = (pc: string, sk: Skill) => PARTY_BY_ID[pc].mods[AB[sk]] + (PROF[pc]?.includes(sk) ? 2 : 0);
 function best(c: Campaign, ck: Check) {
-  const pool = ck.pc && c.party.includes(ck.pc) && !c.dead.includes(ck.pc) ? [ck.pc] : c.party.filter(p => !c.dead.includes(p));
+  const alive = c.party.filter(p => !c.dead.includes(p)); const team = c.squad?.length ? alive.filter(p => c.squad.includes(p)) : alive;
+  const pool = ck.pc && team.includes(ck.pc) ? [ck.pc] : team;
   return pool.map(pc => ({ pc, mod: skillMod(pc, ck.skill) })).sort((a, b) => b.mod - a.mod)[0];
 }
 export const bestFor = (c: Campaign, ck: Check) => { const b = best(c, ck); return `${PARTY_BY_ID[b.pc].name} ${b.mod >= 0 ? '+' : ''}${b.mod}`; };

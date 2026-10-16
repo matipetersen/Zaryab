@@ -254,8 +254,9 @@ Object.assign(MAPS, {
   },
 });
 
+import { MAUNATOR_MAPS, CUBE } from './maunator';
 export interface Wave { round: number; every?: number; until?: number; foes: string[]; note?: string }
-export interface Encounter { survive?: number; duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
+export interface Encounter { objective?: boolean; script?: string; goal?: { x: number; y: number }; goalMsg?: string; soft?: boolean; scaleWaves?: boolean; survive?: number; duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
   noche: { scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele vuestra comida desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
@@ -339,3 +340,18 @@ export const ENCOUNTERS: Record<string, Encounter> = {
     foes: [{ id: 'coloso', slot: 0 }, { id: 'dahhak', slot: 1 }, { id: 'pilon', slot: 2 }, { id: 'pilon', slot: 3 }, { id: 'pilon', slot: 4 }],
     waves: [{ round: 3, every: 3, until: 9, foes: ['nasnas'], note: 'Los Nasnas de Dahhak cruzan las barricadas.' }] },
 };
+
+Object.assign(MAPS, MAUNATOR_MAPS);
+// ───── «El Inventario de Maunator» ─────
+Object.assign(ENCOUNTERS, {
+  cubo_maunator: { script: 'cubo', objective: true, soft: true, scale: { hp: 0.7, atk: -1 }, map: 'cubo_maunator', intro: 'El Cubo de Maunator: cuatro por cuatro habitaciones que se desplazan. Cada pocos minutos el suelo vibra seis segundos. Mantened la cabeza fría: la alarma tiene que sonar tarde o temprano.',
+    foes: CUBE.foes.map((f, i) => ({ id: f.id, slot: i, suffix: f.suffix })) },
+  d4_defensa: { script: 'd4', survive: 3, scale: { hp: 0.6, atk: -1 }, scaleWaves: true, map: 'd4_salida', intro: 'Tres medallones, tres cuencas, tres turnos. El pulso viaja por la roca: el Pudin y Kethras ya lo saben.',
+    foes: [{ id: 'black_pudding', slot: 0 }, { id: 'guardia_consulado', slot: 1 }], waves: [{ round: 2, foes: ['kethras', 'guardia_consulado', 'guardia_consulado'], note: 'Kethras entra en el mapa por D3 con refuerzos de guardia.' }] },
+  tuneles_a: { script: 'tuneles_a', objective: true, soft: true, goal: { x: 5, y: 0 }, goalMsg: 'Alcanzáis la bifurcación.', scale: { hp: 0.6, atk: -1 }, scaleWaves: true, map: 'tuneles_a', intro: 'Los túneles pre-simurgianos. Cada antorcha se apaga desde el sur: algo viene.',
+    foes: [], waves: [{ round: 2, foes: ['kethras'], note: 'Kethras os persigue por la galería.' }] },
+  tuneles_b: { script: 'tuneles_b', objective: true, soft: true, goal: { x: 4, y: 0 }, goalMsg: 'La reja cede: Los Muelles Bajos.', scale: { hp: 0.6, atk: -1 }, scaleWaves: true, map: 'tuneles_b', intro: 'El túnel se estrecha. Delante, algo negro avanza hacia la luz. Detrás, pasos de botas.',
+    foes: [{ id: 'black_pudding', slot: 0 }], waves: [{ round: 2, foes: ['kethras'], note: 'Kethras llega por detrás: el sándwich se cierra.' }] },
+  varreth: { scale: { hp: 0.8, atk: -1 }, map: 'zoco', intro: 'Varreth abre los ojos y grita. Se cubre con Armadura de Mago y desaparece de vuestra vista.', foes: [{ id: 'varreth', slot: 0 }] },
+  kethras_quemarropa: { survive: 4, soft: true, scale: { hp: 0.6, atk: -1 }, map: 'tuneles_b', intro: 'El trato se ha roto. Kethras os ataca a quemarropa: Bola de Fuego, Rayo de Frío, sin una palabra más.', foes: [{ id: 'kethras', slot: 0 }] },
+} as Record<string, Encounter>);
