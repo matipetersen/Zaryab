@@ -19,6 +19,8 @@ import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
 import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from './world/pois';
+import { computeEdge } from './world/edge';
+import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
@@ -174,10 +176,13 @@ class App {
     if (enc === 'd4_defensa') { if (has(c, 'mz_seraphel_libre')) allies.push('seraphel_aliada'); if (has(c, 'mz_grethak_aliado')) allies.push('grethak_aliado'); if (has(c, 'mz_esclavos_libres')) allies.push('esclavo', 'esclavo'); }
     if (enc === 'eclipse') { if (has(c, 'mz_seraphel_libre')) allies.push('seraphel_aliada'); if (has(c, 'mz_grethak_aliado')) allies.push('grethak_aliado'); if (has(c, 'marid_libre')) allies.push('djinn_menor'); if (has(c, 'razul_aliado')) allies.push('razul_aliado'); if (has(c, 'samira_confia')) allies.push('guardia_arena'); }
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')) });
+    const rated = DESIGN_LVL[enc] != null && !NO_CAL.has(enc) && !e.duel && !e.soft;
+    const edge = rated ? computeEdge(c, party, allies.length) : { points: 0, lines: [] as string[] };
+    const intro = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points });
     if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
-    const res = await ui.run(b, e.map, e.intro);
+    const res = await ui.run(b, e.map, intro);
     const duel = !!e.duel; const soft = !!e.soft; const victory = res.result === 'victory'; const won = victory || duel || soft;
     if (e.soft || e.script) { const fl = [...(res.flagsOut ?? []).map(f => 'mz_' + f), ...(res.carry ?? []).map(f => 'mz_carry_' + f)]; if (res.cubeAlert) fl.push('mz_alerta_' + res.cubeAlert); if (!victory && !duel) fl.push('mz_capturados'); applyEffect(c, { flags: fl }); }
     if (duel) { const pct = res.foeHpPct ?? 1; if (pct <= 0.55) applyEffect(c, { flags: ['torneo_digno'] }); }
