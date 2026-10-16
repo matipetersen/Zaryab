@@ -105,6 +105,11 @@ export const MONSTERS: Record<string, MonsterDef> = {
     actions: [{ id: 'mordisco', name: 'Cabezas de martillo', kind: 'melee', toHit: 8, reach: 1, dmg: [{ dice: '2d8+5', type: 'piercing' }] }], multiattack: ['mordisco', 'mordisco'], xp: 1800, color: '#8a6a4a', glyph: 'W', sprite: 'serpent',
     lore: 'Emerge del suelo con múltiples cabezas que atacan a quien se siente amenazado. Recupera 10 PG al inicio de su turno mientras le quede 1.',
   },
+  razul_aliado: {
+    id: 'razul_aliado', name: 'Vizir Razul (aliado)', type: 'humanoide (arcanista inmortal)', cr: '8', hp: 90, ac: 17, speed: 30, mods: m(1, 3, 4, 7, 5, 5), prof: 4, immune: ['poison'], condImmune: ['charmed', 'frightened'],
+    actions: [{ id: 'sentencia', name: 'Sentencia', kind: 'ranged', toHit: 9, reach: 8, dmg: [{ dice: '3d6', type: 'lightning' }] }, { id: 'baston', name: 'Bastón de Runas', kind: 'melee', toHit: 8, reach: 1, dmg: [{ dice: '1d6+1', type: 'bludgeoning' }, { dice: '1d8', type: 'lightning' }] }],
+    multiattack: ['sentencia', 'sentencia'], xp: 0, color: '#c9a227', glyph: 'R', sprite: 'humanoid', lore: 'Tres mil años cansados que, por una vez, luchan del lado de algo.',
+  },
   ghul_invocado: {
     id: 'ghul_invocado', name: 'Ghul Invocado', type: 'no-muerto', cr: '1', hp: 25, ac: 12, speed: 30, mods: m(3, 2, 3, -2, 0, -2), prof: 2, undead: true,
     actions: [{ id: 'garras', name: 'Garras', kind: 'melee', toHit: 4, reach: 1, dmg: [{ dice: '2d4+2', type: 'slashing' }] }],

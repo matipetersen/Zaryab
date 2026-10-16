@@ -195,6 +195,11 @@ export const CAP4: Node[] = [
   { t: 'say', who: 'Zahir (Caído)', text: 'El Portador del Segundo Aliento… ¿y ya pensás en rendirte al primer canto falso? Tu nombre fue partido porque era peligroso. ¿Vas a usarlo, o vas a temerle otra vez?', tone: 'a Pact Risen' },
   { t: 'say', who: 'Zahir (Caído)', text: 'Golpeás sin pensar. Eso te hizo útil. Pero el fuego ya no busca puños: busca voluntad.', tone: 'a Panchi' },
   { t: 'say', who: 'Zahir (Caído)', text: 'La historia está escrita con los huesos de los tibios. Si no cumplen el pacto… desaparecerán. Como si nunca hubieran existido. Ahora vayan. El meteorito está en la plaza central, bajo un cubo sellado. Tómenlo antes de que despierte a los dioses falsos.' },
+  { t: 'choice', prompt: 'Zahir Caído os ha acusado uno por uno. Es vuestro turno de responder.', options: [
+    { label: 'Dar la cara: «Hablamos con Razul porque queríamos entenderlo»', hint: 'Zahir recibe una verdad incómoda.', e: { d: 1, flags: ['respuesta_franca'] }, result: ['Zahir os mira, casi con respeto. «Es más de lo que esperaba.»'] },
+    { label: 'Bajar la cabeza: «Tienes razón, Zahir»', hint: 'La obediencia ciega.', e: { c: 1, pf: 3, ruta: { sombra: 1 }, flags: ['respuesta_sumisa'] }, result: ['Zahir sonríe. «Eso es lo que quería oír.» El cristal en vuestro pecho late con fuerza.'] },
+    { label: 'Plantarle cara: «No eres nuestro dueño»', hint: 'Zahir se enfurece… y se asusta.', e: { d: 1, c: 1, flags: ['respuesta_desafio'] }, result: ['Zahir se tambalea, sorprendido. «No… no os he llamado para esto.» Por un segundo se parece a un niño.'] },
+  ] },
   { t: 'bg', id: 'cubo' },
   { t: 'narr', text: 'Un cubo de mármol blanco, sin inscripciones, custodiado por hombres del Vizir. Un pozo oculto en el centro os lleva a una cámara descendente. Sala 1: seis espejos de bronce oscuro, cada uno con el nombre de uno de vosotros… mal escrito.' },
   { t: 'say', who: 'Reflejo', text: '«Me uní al culto por poder.» «Yo dejé morir a ese niño.» «Nunca creí en el Simurg.»', tone: 'susurran los espejos del pasillo de las Lenguas Muertas' },

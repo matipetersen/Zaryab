@@ -40,6 +40,11 @@ const PC_LINES: Node[] = [
 const END = (title: string, text: string): Node => ({ t: 'end', title, text });
 
 export const EPILOGUE: Node[] = [
+  IF('pacto_roto', [
+    N('El Pacto Roto. Ellie rompe el pacto en el instante en que Zahir cree haber ganado. Los cristales de vuestros pechos se apagan como brasas bajo el agua. Zahir cae de rodillas, pequeño, sin plumas: sólo una figura alta y cansada.'),
+    N('«No quería ser dios», dice. «Quería que alguien me cantara.» Aisha, desde el fondo de la sala, empieza a tararear la nana. Nadie se atreve a callarla.'),
+    ...PC_LINES, END('Fin · El Pacto Roto', 'Zahir sobrevive como un hombre cualquiera en una biblioteca. Ya no hay dioses; hay una nana desafinada y una ciudad que, por una vez, está sola.')
+  ], [
   IF('sacrificio_elegido', [N('El Sacrificio. Hay una puerta de piedra, en una mina que ya no existe, cerrada desde dentro. Quien la cerró no volvió. Su nombre quedó grabado en la biblioteca.')]),
   IF('final_espiral', [
     N('La Espiral. Zahir se alza como el Simurg completo, y por un instante todos creen que es una liberación. No lo es. El cielo de Zaryab se cierra como un puño.'),
@@ -60,4 +65,5 @@ export const EPILOGUE: Node[] = [
     N('Equilibrio. Ni dios ni tirano. Zahir queda en la biblioteca, vigilado por los seguidores; el Vizir, si vive, gobierna con una promesa. El Gusano duerme. La ciudad es frágil, pero está entera.'),
     ...PC_LINES, END('Fin · La Balanza', 'Un orden frágil que depende de que ninguno de vosotros se canse primero.')
   ])])])])]),
+  ]),
 ];

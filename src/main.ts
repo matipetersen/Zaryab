@@ -128,12 +128,14 @@ class App {
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
     const e = ENCOUNTERS[enc]; const c = this.camp; const alive = c.party.filter(p => !c.dead.includes(p)); const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : (c.squad?.length ? c.squad.filter(p => alive.includes(p)) : alive);
     let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
-    const miracles = MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
+    const miracles = has(c, 'razul_pacto') ? [] : MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');
     if (enc === 'd4_defensa') { if (has(c, 'mz_seraphel_libre')) allies.push('seraphel_aliada'); if (has(c, 'mz_grethak_aliado')) allies.push('grethak_aliado'); if (has(c, 'mz_esclavos_libres')) allies.push('esclavo', 'esclavo'); }
+    if (enc === 'eclipse') { if (has(c, 'mz_seraphel_libre')) allies.push('seraphel_aliada'); if (has(c, 'mz_grethak_aliado')) allies.push('grethak_aliado'); if (has(c, 'marid_libre')) allies.push('djinn_menor'); if (has(c, 'razul_aliado')) allies.push('razul_aliado'); if (has(c, 'samira_confia')) allies.push('guardia_arena'); }
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')) });
+    if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, e.intro);
     const duel = !!e.duel; const soft = !!e.soft; const victory = res.result === 'victory'; const won = victory || duel || soft;

@@ -1,0 +1,111 @@
+import type { Node } from './types';
+import type { Effect } from '../state';
+
+const N = (text: string): Node => ({ t: 'narr', text });
+const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
+const FX = (e: Effect, note?: string): Node => ({ t: 'fx', e, note });
+const IF = (flag: string, then: Node[], els?: Node[]): Node => ({ t: 'if', flag, then, else: els });
+const T = (title: string, sub: string, bg: string): Node => ({ t: 'chapter', title, sub, bg });
+const BG = (id: string): Node => ({ t: 'bg', id });
+
+/** Interludios de relajación entre jefes: se disparan solos en el hub (ver pendingEvent). */
+export const INTERLUDES: Record<string, Node[]> = {
+  // ───────── tras Dahhak ─────────
+  noche1: [
+    T('La Cena de la Biblioteca', 'Un respiro · la primera noche sin campanas', 'choza'),
+    N('Por primera vez desde que despertasteis en aquel callejón, no suena ninguna campana. Aisha ha puesto una mesa larga entre los estantes, con platos que no hacen juego y pan de arena que sabe un poco a ceniza. Los seguidores se sientan donde pueden: en los escalones, sobre cajas, en el suelo.'),
+    S('Aisha', 'Mi marido decía que la mesa es el único altar que no necesita dioses. Comed. Mañana habrá guerra. Hoy hay pan.', 'sirviendo con una cuchara de madera'),
+    { t: 'choice', prompt: 'La mesa está llena de gente que antes no sabía cómo estar en la misma habitación.', options: [
+      { label: 'Ayudar a Aisha en la cocina', hint: 'Los gestos pequeños fundan los cultos más sólidos.', e: { d: 1, flags: ['cena_cocina'] }, result: ['Aisha os pone un cuchillo en la mano sin decir nada. Es su manera de decir gracias.'] },
+      { label: 'Sentarse a escuchar a los seguidores', hint: 'Ranma, Cabernet y Apu tienen mucho que contar.', e: { pf: 2, flags: ['cena_escucha'] }, result: ['Cabernet cuenta cómo vendió una vez un vino sin alcohol a un Inquisidor. Apu jura que es mentira. Es verdad. Todos ríen.'] },
+      { label: 'Quedaros apartados mirando la sala', hint: 'La costumbre de los que han visto morir a otros.', e: {}, result: ['Veis a quienes protegéis cenar, discutir, tirarse miguitas. Es raro. Es bueno.'] },
+    ] },
+    S('Farid', 'Pact, ¿es verdad que tenés alas?', 'sentándose a su lado con el plato en equilibrio'),
+    { t: 'choice', prompt: 'Farid tiene la cara limpia por primera vez. Espera.', options: [
+      { label: '«A veces. Pero no las uso para huir.»', e: { d: 1 }, result: ['Farid asiente con una seriedad enorme. «Está bien. Yo tampoco huyo ya.»'] },
+      { label: '«Prefiero no hablar de eso.»', e: {}, result: ['Farid se encoge de hombros: «Yo tampoco hablaba, antes. Si querés, después.»'] },
+      { label: 'Mostrárselas un instante, en la sombra de los estantes', hint: 'Un secreto entre dos.', e: { flags: ['farid_vio_alas'] }, result: ['La luz sube por los estantes un segundo. Farid abre la boca. «¡Son como del pájaro del sueño!» Pact baja la mirada: no sabe si eso es bueno.'] },
+    ] },
+    N('En el tejado, Joren y Zyr\'thar hacen guardia sin hacer guardia: pasan una cantimplora de mano en mano.'),
+    S('Zyr\'thar', 'Dicen que el muerto que respira… ¿es verdad lo que se cuenta de él, o lo inventaron tus remordimientos?', 'sin mirarle'),
+    IF('q_p_joren', [{ t: 'choice', prompt: 'Joren tarda en contestar.', options: [
+      { label: '«Es verdad, y no sé si podré con ello.»', e: { d: 1, flags: ['joren_abierto'] }, result: ['Zyr\'thar le pasa la cantimplora otra vez. Es una forma de decir «aquí estoy».'] },
+      { label: '«No hablo de eso.»', e: {}, result: ['Zyr\'thar asiente. Los dos han vivido de callar. Callan.'] },
+    ] }], [N('Joren se encoge de hombros y mira las estrellas, que esta noche sí se ven.')]),
+    BG('limbo'),
+    S('Zahir', 'Os veo reír. No esperaba que me gustara.', 'una voz suave, sin el eco habitual'),
+    S('Zahir', 'Un uso de mi poder me sobra. Puedo devolver a Pact una de sus memorias: el nombre de quien le cosió las alas. Sólo tenéis que pedirlo.', 'casi tímido'),
+    { t: 'choice', prompt: 'Zahir ofrece un regalo sin precio visible.', options: [
+      { label: 'Aceptar: Pact recuerda un nombre', hint: 'Zahir gana confianza. El Sello se acerca.', e: { c: 1, pf: 3, ruta: { sombra: 1 }, flags: ['zahir_regalo_1'] }, result: ['Pact abre los ojos. «Mirabel.» Es todo lo que dice. Se sienta en el suelo con la cara entre las manos.'] },
+      { label: 'Rechazar: «Lo recordaré por mí mismo»', hint: 'Zahir calla un segundo de más.', e: { d: 1, ruta: { pueblo: 1 }, flags: ['zahir_rechazo_1'] }, result: ['Zahir ríe bajito. «Qué testarudos.» Se desvanece. No parece enfadado. Parece… tomado nota.'] },
+    ] },
+    FX({ flags: ['ev_noche1_done'] }, 'Descanso: el culto tiene una cena. Zahir, un primer regalo ofrecido.'),
+  ],
+
+  // ───────── tras el Marid ─────────
+  noche2: [
+    T('Lo que se Dice a Media Voz', 'Una visita inesperada en mitad de la noche', 'choza'),
+    N('Llaman a la puerta de la biblioteca a una hora en que nadie llama. Es Samira, la capitana de la Guardia Imperial, sin armadura y con un manto sobre los hombros. Lleva tres días sin dormir y no lo disimula.'),
+    S('Capitana Samira', 'He venido sola. Si alguien me sigue, no sé nada. Sabéis lo que hay bajo la Mina de Alabastro. Yo no. Quiero saberlo antes de que los Inquisidores lo sepan por mí.', 'sentándose sin que nadie se lo pida'),
+    S('Abril', 'Dibujé el primer nivel de memoria. Los mineros no volvían. Los que volvían no hablaban.', 'dejando un cuaderno sobre la mesa'),
+    { t: 'choice', prompt: 'Samira es leal al Conclave. O lo era. Os pide confianza.', options: [
+      { label: 'Contárselo todo', hint: 'Persuasión CD 14. Una aliada dentro de la Guardia.', check: { skill: 'persuasion', dc: 14 }, e: { rep: { conclave: 1 }, flags: ['samira_confia'] }, result: ['Samira escucha hasta el final sin interrumpir. Cuando acabáis, dice: «Si Razul sabía esto, no es el hombre que sirvo.» Se levanta. «Contad conmigo.»'], fail: { e: {}, result: ['Samira os mira con cautela: algo no cuadra. «Lo pensaré.» Se va antes del amanecer.'] } },
+      { label: 'Contarle sólo lo justo', hint: 'Ni confía ni se enemista.', e: { flags: ['samira_justo'] }, result: ['Samira asiente, sin darse por satisfecha. «Es más de lo que me han dicho mis superiores.»'] },
+      { label: 'Echarla: no hay nada que contar', hint: 'Samira os lo recordará.', e: { rep: { conclave: -1 }, flags: ['samira_hostil'] }, result: ['Samira se pone el manto despacio. «Qué lástima.» Cierra la puerta con cuidado.'] },
+    ] },
+    S('Romain', 'Samira dijo algo que no logro quitarme: «Los dioses no pesan lo mismo que los hombres.» Lo dijo ella. No yo.', 'esa noche, a solas, mirando una balanza vacía'),
+    { t: 'choice', prompt: 'Romain os pide un momento.', options: [
+      { label: 'Escucharlo sin decir nada', e: { d: 1 }, result: ['Romain habla durante una hora. De un templo, de un incendio, de la voz que lo llamó «Siervo». No pide respuestas.'] },
+      { label: 'Decirle que Kelemvor sigue pesando', hint: 'Una frase de fe.', e: { d: 1, flags: ['romain_consolado'] }, result: ['Romain sonríe por primera vez en días. «Eso me lo dijo mi maestra. Gracias por recordármelo.»'] },
+    ] },
+    FX({ flags: ['ev_noche2_done'] }, 'Una noche de confidencias. Samira, un cuaderno de Abril y las dudas de Romain.'),
+  ],
+
+  // ───────── tras Al-Mazhar ─────────
+  noche3: [
+    T('La Nana', 'La biblioteca vuelve a oírse', 'choza'),
+    IF('huerfanos_culto', [N('Los trece niños de Al-Mazhar duermen en un rincón de la biblioteca, tapados con mantas. No hablan. Nadie ha preguntado cuántos entienden lo que son.')], [N('La biblioteca está en silencio. Demasiado. Es el silencio que sigue a una canción de huesos.')]),
+    S('Farid', 'Aisha… ¿me cantás algo?', 'a media voz, desde el jergón'),
+    N('Aisha duda. No tiene voz de cantante. Empieza igualmente, con una nana de Qadir que sólo ella recuerda. Poco a poco, desde los estantes, se unen los demás seguidores. Es la nana más desafinada de la ciudad. No hay otro sonido igual.'),
+    { t: 'choice', prompt: 'Farid os mira. Sabe que algo le pasó en la cripta. Quiere preguntar.', options: [
+      { label: 'Decirle la verdad: el Lich cantaba para él', hint: 'Cuesta, pero es lo justo.', e: { d: 1, flags: ['farid_sabe'] }, result: ['Farid asiente. «Lo sabía. Lo oía en sueños. Gracias por no mentirme.» Se duerme antes de que acabe la nana.'] },
+      { label: 'Decirle que fue una pesadilla', hint: 'Protegerlo, por ahora.', e: { flags: ['farid_protegido'] }, result: ['«Está bien.» Farid cierra los ojos. Sonríe con la cara de quien prefiere creer.'] },
+    ] },
+    S('Rabb Locke', 'Mi espada dejó de susurrar hoy. Eso me asusta más que cuando susurraba.', 'afilando una hoja que no necesita ser afilada'),
+    IF('rabb_activado', [N('Rabb sabe lo que significa. No lo dice. Su arma tiene el filo de un recuerdo que no es suyo, y es suyo.')], [N('Rabb envaina la espada, despacio, como quien cierra un libro que no quiere leer todavía.')]),
+    BG('limbo'),
+    S('Zahir', 'Uno de mis fragmentos se rompió esta noche. Lo sentí en los huesos. No sabía que podía doler.', 'una voz muy baja'),
+    S('Zahir', 'Gracias por liberar a esos niños. Lo digo en serio. Es la primera vez que le digo gracias a alguien.', 'casi confuso'),
+    { t: 'choice', prompt: 'Zahir está distinto. Más humano. Más peligroso.', options: [
+      { label: '«¿Qué eres, Zahir?»', hint: 'Una pregunta directa.', e: { flags: ['zahir_pregunta'] }, result: ['Zahir tarda en contestar. «Un fragmento. Lo sé desde el principio. Os lo diré cuando el último esté en su sitio.»'] },
+      { label: '«No necesitamos tus gracias.»', e: { c: 1, flags: ['zahir_rechazo_2'] }, result: ['«Claro que no.» Zahir se desvanece. Esa noche el cristal no late.'] },
+    ] },
+    FX({ flags: ['ev_noche3_done'] }, 'Una nana desafinada y un dios que dice gracias.'),
+  ],
+
+  // ───────── tras Gul-Amarat ─────────
+  noche4: [
+    T('La Víspera', 'Última noche antes de la Ciudadela', 'choza'),
+    N('Mañana subiréis a la Ciudadela de los Susurros. Nadie lo dice. Aisha ha preparado el último pan con un gesto de despedida y los seguidores han dejado de cantar. Cada uno encuentra su manera de pasar la noche.'),
+    IF('conoce_ellie', [
+      N('Una sombra entra por el tejado: Sifra la Silente, con la venda de lino que dio a Panchi enroscada en la muñeca.'),
+      S('Sifra (Ellie)', 'Un pacto sólo se rompe desde dentro. Cuando Zahir esté completo, sólo hay un instante: cuando cree que ha ganado. Si me traéis ese instante, lo rompo.', 'tres frases, la primera en meses'),
+      FX({ flags: ['ellie_sabe'] }, 'Ellie os ha dado la clave: el instante en que Zahir cree haber ganado.'),
+    ]),
+    { t: 'choice', prompt: 'La noche es larga. ¿A quién buscáis?', options: [
+      { label: 'A Romain, en la capilla', hint: 'Está haciendo la ronda de las almas.', e: { d: 1, flags: ['vispera_romain'] }, result: ['Romain os enseña la balanza vacía. «Quiero que sea lo primero que mire mañana.»'] },
+      { label: 'A Pact, bajo el cristal roto del tejado', e: { d: 1, flags: ['vispera_pact'] }, result: ['Pact tiene la corona entre las manos. «Si muero mañana, que la use alguien más.»'] },
+      { label: 'A Panchi, vendándose los puños', e: { flags: ['vispera_panchi'] }, result: ['Panchi sonríe con medio labio. «Tráelo o no vengas. Voy a ir.»'] },
+      { label: 'A Aisha y a Farid, que no han ido a dormir', hint: 'Lo que dejáis atrás.', e: { d: 1, pf: 3, flags: ['vispera_aisha'] }, result: ['Aisha os abraza sin una palabra. Farid os da un dibujo: un pájaro, muy torcido, con seis personas encima.'] },
+    ] },
+    BG('limbo'),
+    S('Zahir', 'Mañana subís al Vizir. Os ofrezco algo que no pedí a ninguna otra compañía: una promesa.', 'serio'),
+    S('Zahir', 'Cuando los fragmentos estén juntos, Farid estará sano; la corona de Pact, perdonada; el nombre de Rabb, devuelto; el hijo de nadie, un hijo de alguien. Todo.', 'sin apartar la vista'),
+    { t: 'choice', prompt: 'Es la oferta más generosa que Zahir ha hecho nunca. Eso es lo que la hace sospechosa.', options: [
+      { label: 'Aceptar la promesa', hint: 'Zahir confía en vosotros del todo.', e: { c: 2, pf: 6, ruta: { sombra: 2 }, flags: ['zahir_promesa'] }, result: ['Zahir sonríe. Es la sonrisa de alguien que ve su casa al final del camino.'] },
+      { label: 'Pedirle que lo jure por el Simurg', hint: 'Una pregunta que no está en el guion.', e: { d: 1, flags: ['zahir_jura'] }, result: ['Zahir duda. «Lo juro por el Simurg.» La palabra suena rara en su boca, como un hueso en la sopa.'] },
+      { label: 'Callar y escuchar', e: {}, result: ['Zahir no necesita que contestéis. Sabe que habéis oído.'] },
+    ] },
+    FX({ flags: ['ev_noche4_done'] }, 'La víspera: cada uno despidió a alguien. Zahir hizo su mejor oferta.'),
+  ],
+};
