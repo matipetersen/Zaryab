@@ -80,7 +80,7 @@ export const PARTY: PCDef[] = [
     ],
     abilities: ['flurry', 'patient_defense', 'step_of_wind'], res: { ki: 3 }, spellAb: 'wis', traits: [], resist: ['poison'],
     blurb: 'Monje enano de mal genio, exiliado por violencia excesiva. Busca un enemigo digno de su furia.',
-    quest: 'Encontrar a Ellie (Sifra la Silente) y su venda: «Tráelo o no vengas».', sheet: 'estimada',
+    quest: 'Encontrar a Ellie (Sifra la Silente) y su venda: «Traelo o no vengas».', sheet: 'estimada',
     statusNote: 'Sin ficha en los archivos: stats estimados de un Monje enano nv3.',
   },
 ];

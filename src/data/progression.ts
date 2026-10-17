@@ -61,7 +61,7 @@ const ROMAIN: Track = {
     7: [F('r7', 'Destierro y Protección contra la Muerte', 'Conjuros de 4.º nivel.', { abilities: ['banishment', 'death_ward'] })],
     8: [F('r8', 'Golpe Divino', '+1d8 necrótico a tu primer golpe cada turno.', { traits: ['divineStrike'] })],
     9: [F('r9', 'Curar en Masa y Golpe de Llamas', 'Conjuros de 5.º nivel.', { abilities: ['mass_cure_wounds', 'flame_strike'] })],
-    10: [F('r10', 'Intervención Divina', 'Obtienes Juicio Final (1/día).', { abilities: ['juicio_final'] })],
+    10: [F('r10', 'Intervención Divina', 'Obtenés Juicio Final (1/día).', { abilities: ['juicio_final'] })],
     11: [F('r11', 'Sanar', 'Conjuro de 6.º nivel.', { abilities: ['heal_spell'] })],
     13: [F('r13', 'Mente Consagrada', '+1 a todas las salvaciones.', { saves: 1 })],
     14: [F('r14', 'Golpe Divino mejorado', 'El Golpe Divino pasa a 2d8.')],
@@ -86,11 +86,11 @@ const PACT: Track = {
   paths: { luz: 'Caballero de Azuran', sombra: 'Caballero de Obsidiana', neutro: 'Juez Imparcial' },
   slots: {}, res: { 7: { sd: 5 }, 9: { indomitable: 1 }, 13: { indomitable: 2 }, 15: { sd: 6 } },
   auto: {
-    5: [F('p5', 'Ataque Extra', 'Atacas dos veces con la acción de Atacar.', { attacks: 1 }), F('p5b', 'Maniobras: Derribo y Amenaza', 'Dos maniobras nuevas.', { abilities: ['trip_attack', 'menacing_attack'] })],
+    5: [F('p5', 'Ataque Extra', 'Atacás dos veces con la acción de Atacar.', { attacks: 1 }), F('p5b', 'Maniobras: Derribo y Amenaza', 'Dos maniobras nuevas.', { abilities: ['trip_attack', 'menacing_attack'] })],
     7: [F('p7', 'Dado de superioridad extra', 'Un dado más (5).')],
-    9: [F('p9', 'Indómito', 'Te libras de un estado una vez al día.', { abilities: ['indomitable'] })],
+    9: [F('p9', 'Indómito', 'Te librás de un estado una vez al día.', { abilities: ['indomitable'] })],
     10: [F('p10', 'Dados de superioridad d10', 'Los dados pasan a d10.', { traits: ['sd10'] })],
-    11: [F('p11', 'Ataque Extra (3)', 'Atacas tres veces con la acción de Atacar.', { attacks: 1 })],
+    11: [F('p11', 'Ataque Extra (3)', 'Atacás tres veces con la acción de Atacar.', { attacks: 1 })],
     13: [F('p13', 'Indómito (2)', 'Dos usos de Indómito.')],
     15: [F('p15', 'Imparable', 'Un dado de superioridad más (6).')],
   },
@@ -102,8 +102,8 @@ const PACT: Track = {
       O('luz', 'pl9', 'Aura de Valor', 'Los aliados cercanos se libran del miedo; +1 salvaciones.', { traits: ['auraValor'], saves: 1 }, { d: 4 }),
       O('sombra', 'ps9', 'Corona Invertida', 'Los enemigos a 2 casillas sufren daño necrótico al empezar su turno.', { traits: ['auraSombra'] }, { c: 4 }), NEUTRO(9)] },
     { level: 13, title: 'Evolución final', options: [
-      O('luz', 'pl13', 'Alas de Azuran', 'Vuelas siempre, +2 CA.', { fly: true, ac: 2 }, { d: 6 }),
-      O('sombra', 'ps13', 'Alas de Obsidiana', 'Vuelas siempre y resistes el daño no mágico.', { fly: true, resist: ['slashing', 'piercing', 'bludgeoning'] }, { c: 6 }), NEUTRO(13)] },
+      O('luz', 'pl13', 'Alas de Azuran', 'Volás siempre, +2 CA.', { fly: true, ac: 2 }, { d: 6 }),
+      O('sombra', 'ps13', 'Alas de Obsidiana', 'Volás siempre y resistís el daño no mágico.', { fly: true, resist: ['slashing', 'piercing', 'bludgeoning'] }, { c: 6 }), NEUTRO(13)] },
   ],
 };
 
@@ -114,8 +114,8 @@ const RABB: Track = {
   slots: WARLOCK, res: { 6: { specter: 1 }, 11: { arc6: 1 }, 13: { arc7: 1 }, 14: { curse: 2 } },
   auto: {
     4: [F('b4', 'Estallido Agónico', 'Tu Estallido Sobrenatural suma tu CAR al daño; Inmovilizar Persona.', { traits: ['agonizing'], abilities: ['hold_person'] })],
-    5: [F('b5', 'Ataque Extra (Pacto del Filo)', 'Atacas dos veces; 2 rayos de Estallido; espacios de 3.er nivel.', { attacks: 1, abilities: ['vampiric_touch', 'fear_spell'] })],
-    6: [F('b6', 'Espectro Maldito', 'Invoca un espectro aliado (1/día).', { abilities: ['accursed_specter'] })],
+    5: [F('b5', 'Ataque Extra (Pacto del Filo)', 'Atacás dos veces; 2 rayos de Estallido; espacios de 3.er nivel.', { attacks: 1, abilities: ['vampiric_touch', 'fear_spell'] })],
+    6: [F('b6', 'Espectro Maldito', 'Invocá un espectro aliado (1/día).', { abilities: ['accursed_specter'] })],
     7: [F('b7', 'Marchitar', 'Espacios de 4.º nivel.', { abilities: ['blight'] })],
     9: [F('b9', 'Inmovilizar Monstruo', 'Espacios de 5.º nivel.', { abilities: ['hold_monster'] })],
     10: [F('b10', 'Armadura de Maleficios', 'Tu maldición te protege: +1 CA.', { ac: 1 })],
@@ -133,7 +133,7 @@ const RABB: Track = {
       O('luz', 'bl9', 'Armadura de Voluntad', '+1 CA y resistencia psíquica.', { ac: 1, resist: ['psychic'] }, { d: 4 }),
       O('sombra', 'bs9', 'Sed del Hexblade', 'Tus golpes y rayos devoran: +1d8 necrótico en melé.', { extraDmg: { dice: '1d8', type: 'necrotic', applies: 'melee' } }, { c: 4 }), NEUTRO(9)] },
     { level: 13, title: 'Evolución final', options: [
-      O('luz', 'bl13', 'Pacto Roto', 'Un espacio de 5.º nivel adicional; resistes el daño necrótico.', { res: { slot5: 1 }, resist: ['necrotic'] }, { d: 6 }),
+      O('luz', 'bl13', 'Pacto Roto', 'Un espacio de 5.º nivel adicional; resistís el daño necrótico.', { res: { slot5: 1 }, resist: ['necrotic'] }, { d: 6 }),
       O('sombra', 'bs13', 'Mil Voces', '+2 a la CD y a los ataques de conjuro; ataque adicional con el arma.', { spellDC: 2, attacks: 1 }, { c: 6 }), NEUTRO(13)] },
   ],
 };
@@ -145,19 +145,19 @@ const JOREN: Track = {
   slots: HALF, res: { 11: { volley: 1 } },
   auto: {
     4: [F('j4', 'Golpe Enredador', 'Conjuro de 1.er nivel.', { abilities: ['ensnaring_strike'] })],
-    5: [F('j5', 'Ataque Extra', 'Atacas dos veces con la acción de Atacar.', { attacks: 1, abilities: ['zephyr_strike'] })],
+    5: [F('j5', 'Ataque Extra', 'Atacás dos veces con la acción de Atacar.', { attacks: 1, abilities: ['zephyr_strike'] })],
     7: [F('j7', 'Mente de Hierro', 'Competencia en salvaciones de SAB.', { saveProf: ['wis'] })],
     8: [F('j8', 'Paso del Explorador', '+1 casilla de movimiento.', { speed: 1 })],
     9: [F('j9', 'Lluvia de Flechas', 'Conjuro de 3.er nivel.', { abilities: ['conjure_barrage'] })],
     10: [F('j10', 'Esconderse a la Vista', '+2 a la iniciativa.', { init: 2 })],
-    11: [F('j11', 'Descarga', 'Ataca con el arco a todos los enemigos de una zona (1/día).', { abilities: ['volley'] })],
+    11: [F('j11', 'Descarga', 'Atacá con el arco a todos los enemigos de una zona (1/día).', { abilities: ['volley'] })],
     14: [F('j14', 'Desvanecerse', '+2 a la iniciativa.', { init: 2 })],
     15: [F('j15', 'Esquiva en las Sombras', 'Esquiva Asombrosa (reduce a la mitad el primer golpe de cada ronda).', { traits: ['uncanny'] })],
   },
   tiers: [
     { level: 5, title: 'Primera evolución', options: [
       O('luz', 'jl5', 'Ojo de Cazador', '+1 a ataques con arco y +1 al daño.', { weaponHit: 1, weaponDmg: 1 }, { d: 2 }),
-      O('sombra', 'js5', 'Penumbra', 'Empiezas cada combate invisible hasta que ataques.', { traits: ['capaArena'] }, { c: 2 }), NEUTRO(5)] },
+      O('sombra', 'js5', 'Penumbra', 'Empezás cada combate invisible hasta que ataques.', { traits: ['capaArena'] }, { c: 2 }), NEUTRO(5)] },
     { level: 9, title: 'Segunda evolución', options: [
       O('luz', 'jl9', 'Paso Ligero', '+2 casillas de movimiento.', { speed: 2 }, { d: 4 }),
       O('sombra', 'js9', 'Acechador Letal', '+1d6 de daño a distancia.', { extraDmg: { dice: '1d6', type: 'piercing', applies: 'ranged' } }, { c: 4 }), NEUTRO(9)] },
@@ -175,8 +175,8 @@ const ZYR: Track = {
   auto: {
     5: [F('z5', 'Esquiva Asombrosa', 'Reduce a la mitad el primer golpe de cada ronda. Ataque furtivo 3d6.', { traits: ['uncanny'] })],
     6: [F('z6', 'Pericia', '+1 a ataques.', { weaponHit: 1 })],
-    7: [F('z7', 'Evasión', 'Las salvaciones de DES de efectos de área: sin daño si pasas, mitad si fallas.', { traits: ['evasion'] })],
-    9: [F('z9', 'Hoja Envenenada', 'Unta tu hoja con veneno (1/día).', { abilities: ['poison_blade'] })],
+    7: [F('z7', 'Evasión', 'Las salvaciones de DES de efectos de área: sin daño si pasás, mitad si fallás.', { traits: ['evasion'] })],
+    9: [F('z9', 'Hoja Envenenada', 'Untá tu hoja con veneno (1/día).', { abilities: ['poison_blade'] })],
     11: [F('z11', 'Talento Fiable y Bomba de Humo', 'Bomba de Humo (1/día).', { abilities: ['smoke_bomb'] })],
     13: [F('z13', 'Impostor', '+1 a ataques.', { weaponHit: 1 })],
     14: [F('z14', 'Sentido Ciego', '+2 a la iniciativa.', { init: 2 })],
@@ -190,7 +190,7 @@ const ZYR: Track = {
       O('luz', 'zl9', 'Sombra Protectora', 'Aura de Valor: aliados libres de miedo.', { traits: ['auraValor'] }, { d: 4 }),
       O('sombra', 'zs9', 'Mano de Sombra', '+1d6 de daño en cada golpe.', { extraDmg: { dice: '1d6', type: 'slashing', applies: 'all' } }, { c: 4 }), NEUTRO(9)] },
     { level: 13, title: 'Evolución final', options: [
-      O('luz', 'zl13', 'Ángel de las Sombras', '+1 CA y resistes el daño no mágico.', { ac: 1, resist: ['slashing', 'piercing', 'bludgeoning'] }, { d: 6 }),
+      O('luz', 'zl13', 'Ángel de las Sombras', '+1 CA y resistís el daño no mágico.', { ac: 1, resist: ['slashing', 'piercing', 'bludgeoning'] }, { d: 6 }),
       O('sombra', 'zs13', 'Cuchillos de Vel\'Shara', '+2 a ataques y +2d6 de daño.', { weaponHit: 2, extraDmg: { dice: '2d6', type: 'slashing', applies: 'all' } }, { c: 6 }), NEUTRO(13)] },
   ],
 };
@@ -202,9 +202,9 @@ const PANCHI: Track = {
   slots: {}, res: { 6: { whole: 1 }, 15: { palm: 1 } },
   auto: {
     4: [F('m4', 'Caída Lenta', '+1 casilla de movimiento.', { speed: 1 })],
-    5: [F('m5', 'Ataque Extra y Golpe Aturdidor', 'Atacas dos veces; el dado de artes marciales pasa a d8.', { attacks: 1, abilities: ['stunning_strike'] })],
+    5: [F('m5', 'Ataque Extra y Golpe Aturdidor', 'Atacás dos veces; el dado de artes marciales pasa a d8.', { attacks: 1, abilities: ['stunning_strike'] })],
     6: [F('m6', 'Golpes Imbuidos de Ki', '+1 al daño desarmado, +1 casilla de movimiento y Plenitud Corporal.', { weaponDmg: 1, speed: 1, abilities: ['wholeness_of_body'] })],
-    7: [F('m7', 'Evasión y Quietud Mental', 'Evasión y no puedes ser hechizado ni aterrado.', { traits: ['evasion'], condImmune: ['charmed', 'frightened'] })],
+    7: [F('m7', 'Evasión y Quietud Mental', 'Evasión y no podés ser hechizado ni aterrado.', { traits: ['evasion'], condImmune: ['charmed', 'frightened'] })],
     10: [F('m10', 'Pureza Corporal', 'Inmune al veneno. +1 casilla de movimiento.', { immune: ['poison'], speed: 1 })],
     11: [F('m11', 'Artes marciales d10', 'El dado de artes marciales pasa a d10.')],
     13: [F('m13', 'Lengua del Sol y la Luna', '+1 a todas las salvaciones.', { saves: 1 })],
@@ -219,7 +219,7 @@ const PANCHI: Track = {
       O('luz', 'ml9', 'Palma Sanadora', 'Aliados a 2 casillas recuperan PG al empezar su turno.', { traits: ['auraVida'] }, { d: 4 }),
       O('sombra', 'ms9', 'Ira Rígida', '+1d6 de fuego a tus golpes desarmados.', { extraDmg: { dice: '1d6', type: 'fire', applies: 'melee' } }, { c: 4 }), NEUTRO(9)] },
     { level: 13, title: 'Evolución final', options: [
-      O('luz', 'ml13', 'Corazón de Piedra', '+1 CA y resistes el daño contundente.', { ac: 1, resist: ['bludgeoning'] }, { d: 6 }),
+      O('luz', 'ml13', 'Corazón de Piedra', '+1 CA y resistís el daño contundente.', { ac: 1, resist: ['bludgeoning'] }, { d: 6 }),
       O('sombra', 'ms13', 'Llama Estancada', '+2d6 de fuego a tus golpes desarmados.', { extraDmg: { dice: '2d6', type: 'fire', applies: 'melee' } }, { c: 6 }), NEUTRO(13)] },
   ],
 };

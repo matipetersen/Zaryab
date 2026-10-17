@@ -148,7 +148,7 @@ export const FRONT_COLOR: Record<string, string> = { conclave: '#c9a45c', nasnas
 export const FRONT_DISTRICTS = ['bajo', 'zoco', 'plaza', 'acueductos', 'medinat'];
 export const ROAMER_ENC: Record<string, string> = { conclave: 'recaudador', culto: 'infiltrado', nasnas: 'caravana' };
 
-/** ¿Cierra la facción hostil que domina el distrito los puestos de personajes? Con vínculo ≥3 los vecinos os ocultan. */
+/** ¿Cierra la facción hostil que domina el distrito los puestos de personajes? Con vínculo ≥3 los vecinos los ocultan. */
 export const closedByFront = (c: Campaign, p: Poi) => !!p.npc && HOSTILE.includes(c.front[p.district]) && (c.bond[p.npc] ?? 0) < 3;
 export const poiState = (c: Campaign, p: Poi): 'ok' | 'night' | 'cd' | 'front' | 'hidden' | 'locked' => {
   if (p.hidden && !c.found.includes(p.id)) return 'hidden';
@@ -231,17 +231,17 @@ export const INCIDENTS: Record<number, { chance: number; scenes: Node[][] }> = {
       { label: 'Dejarlo', e: { gold: -5 }, result: ['Cinco monedas. Un precio barato por no perder el día.'] },
     ] }],
     [N('Un pregonero lee un edicto del Vizir a gritos. Hay descontento. Alguien entre la gente los mira y asiente.'), { t: 'fx', e: { rumors: 1, rep: { hijos: 1 } }, note: '+1 rumor, +1 rep. Hijos del Simurg.' }],
-    [N('Un mercader os para: «Prueben esto, gratis». Es té de menta. Realmente está buenísimo.'), { t: 'fx', e: { pf: 2 }, note: '+2 PF.' }],
+    [N('Un mercader los para: «Prueben esto, gratis». Es té de menta. Realmente está buenísimo.'), { t: 'fx', e: { pf: 2 }, note: '+2 PF.' }],
   ] },
   2: { chance: 0.35, scenes: [
     [N('En un callejón, tres sombras con tiza violeta en las manos les cierran el paso.'), { t: 'choice', prompt: 'Una emboscada nocturna.', options: [
       { label: 'Plantar cara', hint: 'Combate · botín', e: {}, result: ['Los faroles se apagan de golpe.'], then: [{ t: 'battle', enc: 'infiltrado' }] },
       { label: 'Esconderse', check: { skill: 'sigilo', dc: 14 }, hint: 'Sigilo CD 14', e: {}, result: ['Contienen la respiración. Pasan de largo.'], fail: { e: { pf: -3, alert: 1 }, result: ['Los descubren: huyen con el cristal temblando.'] } },
     ] }],
-    [N('Una voz os llama desde un balcón oscuro: «Son ustedes. Los que huelen a cristal».'), { t: 'choice', prompt: 'Una desconocida les ofrece algo.', options: [
+    [N('Una voz los llama desde un balcón oscuro: «Son ustedes. Los que huelen a cristal».'), { t: 'choice', prompt: 'Una desconocida les ofrece algo.', options: [
       { label: 'Escucharla', hint: '+2 rumores · +1 Corrupción', e: { rumors: 2, c: 1 }, result: ['Les vende una verdad a medias. La otra mitad la pagarán después.'] },
       { label: 'Seguir de largo', hint: '+1 Devoción', e: { d: 1 }, result: ['La voz ríe. Algo en el cristal se calma.'] },
     ] }],
-    [N('Un perro de arena del Conclave husmea vuestro rastro. Está solo.'), { t: 'fx', e: { alert: 1 }, note: '+1 Alerta: los ha olido.' }],
+    [N('Un perro de arena del Conclave husmea su rastro. Está solo.'), { t: 'fx', e: { alert: 1 }, note: '+1 Alerta: los ha olido.' }],
   ] },
 };

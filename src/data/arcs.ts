@@ -52,7 +52,7 @@ export const ARCS: Arc[] = [
     { label: 'El Torneo de los Puños Cerrados', where: 'Cap. VI · Medinat', kind: 'clímax', done: any('torneo_perdido'), outcome: out([['torneo_digno', 'Perdió con dignidad: Ellie lo reconoció.']]) },
     { label: 'El Monasterio que se Mueve', where: 'Interludio · Qadir-Kalmah', kind: 'duda', done: any('qadir_visto'), outcome: out([['qadir_golem', 'Llevó el golem a Qadir-Kalmah.'], ['qadir_solo', 'Fue solo.'], ['qadir_rechazo', 'No se atrevió.']]) },
     { label: 'La clave de Ellie', where: 'Interludio · La Víspera', kind: 'clímax', done: any('ellie_sabe') },
-    { label: 'Tráelo o no vengas', where: 'Cap. XIII · Eclipse', kind: 'cierre', done: any('panchi_cierra', 'panchi_perdona', 'panchi_guarda'), outcome: out([['panchi_cierra', 'Cerró el puño.'], ['panchi_perdona', 'Abrió la mano.'], ['panchi_guarda', 'Guardó su rabia.']]) },
+    { label: 'Traelo o no vengas', where: 'Cap. XIII · Eclipse', kind: 'cierre', done: any('panchi_cierra', 'panchi_perdona', 'panchi_guarda'), outcome: out([['panchi_cierra', 'Cerró el puño.'], ['panchi_perdona', 'Abrió la mano.'], ['panchi_guarda', 'Guardó su rabia.']]) },
   ] },
 ];
 export const ARC_BY_PC = Object.fromEntries(ARCS.map(a => [a.pc, a]));

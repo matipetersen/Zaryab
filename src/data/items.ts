@@ -19,8 +19,8 @@ export const ITEMS: ItemDef[] = [
   I({ id: 'pocion', name: 'Poción de curación', icon: '🧪', kind: 'consumible', rarity: 'comun', desc: 'Cura 2d4+2 PG a un aliado adyacente (acción adicional).', price: 50, ability: 'item_pocion', stock: true }),
   I({ id: 'pocion_mayor', name: 'Poción de curación mayor', icon: '⚗️', kind: 'consumible', rarity: 'poco', desc: 'Cura 4d4+4 PG a un aliado adyacente (acción adicional).', price: 150, ability: 'item_pocion_mayor', stock: true }),
   I({ id: 'antidoto', name: 'Antídoto del Pozo', icon: '🧫', kind: 'consumible', rarity: 'comun', desc: 'Quita veneno, ceguera y parálisis a un aliado adyacente.', price: 50, ability: 'item_antidoto', stock: true }),
-  I({ id: 'frasco_fuego', name: 'Frasco de fuego', icon: '🔥', kind: 'consumible', rarity: 'comun', desc: 'Lanzas a 5 casillas: 2d6 de fuego en radio 1 (DES 12 mitad). Prende barriles y madera, deja fuego en el suelo.', price: 50, ability: 'item_fuego', stock: true }),
-  I({ id: 'frasco_acido', name: 'Frasco de ácido', icon: '🧪', kind: 'consumible', rarity: 'comun', desc: 'Lanzas a 5 casillas: 2d6 de ácido a un objetivo y 20 de daño a cobertura o muro frágil.', price: 25, ability: 'item_acido', stock: true }),
+  I({ id: 'frasco_fuego', name: 'Frasco de fuego', icon: '🔥', kind: 'consumible', rarity: 'comun', desc: 'Lanzás a 5 casillas: 2d6 de fuego en radio 1 (DES 12 mitad). Prende barriles y madera, deja fuego en el suelo.', price: 50, ability: 'item_fuego', stock: true }),
+  I({ id: 'frasco_acido', name: 'Frasco de ácido', icon: '🧪', kind: 'consumible', rarity: 'comun', desc: 'Lanzás a 5 casillas: 2d6 de ácido a un objetivo y 20 de daño a cobertura o muro frágil.', price: 25, ability: 'item_acido', stock: true }),
   I({ id: 'pergamino_muro', name: 'Pergamino: Muro de Piedra', icon: '📜', kind: 'consumible', rarity: 'poco', desc: 'Alza un muro de piedra de 3 casillas (cobertura de 30 PG) a 5 casillas.', price: 120, ability: 'item_muro', stock: true }),
   I({ id: 'pergamino_fe', name: 'Pergamino: Escudo de la Fe', icon: '📜', kind: 'consumible', rarity: 'poco', desc: '+2 CA a un aliado durante 10 rondas, sin concentración.', price: 80, ability: 'item_escudo_fe' }),
   I({ id: 'arena_negra', name: 'Polvo de arena negra', icon: '⚫', kind: 'consumible', rarity: 'poco', desc: 'Volverte invisible hasta que ataques (producto de los Hijos del Simurg).', price: 100, ability: 'item_arena_negra' }),
@@ -38,7 +38,7 @@ export const ITEMS: ItemDef[] = [
   I({ id: 'escudo_cedro', name: 'Escudo de cedro rúnico', icon: '🔰', kind: 'equipo', rarity: 'comun', slot: 'talisman', desc: '+1 CA.', price: 150, bonus: { ac: 1 }, stock: true }),
   I({ id: 'anillo_prot', name: 'Anillo de protección', icon: '💍', kind: 'equipo', rarity: 'raro', slot: 'talisman', desc: '+1 CA y +1 a todas las salvaciones.', price: 900, bonus: { ac: 1, saves: 1 } }),
   I({ id: 'botas_viento', name: 'Botas de los Cuatro Vientos', icon: '🥾', kind: 'equipo', rarity: 'poco', slot: 'talisman', desc: '+10 ft de velocidad.', price: 350, bonus: { speed: 2 }, stock: true }),
-  I({ id: 'capa_arena', name: 'Capa de Arena Viva', icon: '🧥', kind: 'equipo', rarity: 'raro', slot: 'talisman', desc: 'Camuflaje: empiezas cada combate invisible hasta que ataques o recibas daño.', grants: { traits: ['capaArena'] } }),
+  I({ id: 'capa_arena', name: 'Capa de Arena Viva', icon: '🧥', kind: 'equipo', rarity: 'raro', slot: 'talisman', desc: 'Camuflaje: empezás cada combate invisible hasta que ataques o recibas daño.', grants: { traits: ['capaArena'] } }),
   I({ id: 'gema_fuego', name: 'Gema de Fuego Sellado', icon: '💎', kind: 'equipo', rarity: 'raro', slot: 'talisman', desc: '1/día: Manos Ardientes (3d6 de fuego a enemigos a 2 casillas, DES 13 mitad).', grants: { abilities: ['manos_ardientes'], res: { gema: 1 } }, lore: 'Una llama que ya no sabe cómo apagarse.' }),
   I({ id: 'perla_violeta', name: 'Perla violeta de Farid', icon: '🔮', kind: 'equipo', rarity: 'poco', slot: 'talisman', desc: 'Almacena una Bendición: 1 vez por combate, bendice a 3 aliados sin gastar espacio.', grants: { abilities: ['bendicion_perla'], res: { perla: 1 } }, lore: 'Lo que dejó el parásito de arena al morir.' }),
   I({ id: 'amuleto_hueso', name: 'Amuleto de hueso', icon: '🦴', kind: 'equipo', rarity: 'comun', slot: 'talisman', desc: 'Resistencia necrótica. Era del esposo de Aisha.', bonus: { resist: ['necrotic'] } }),
@@ -52,8 +52,8 @@ export const ITEMS: ItemDef[] = [
   I({ id: 'nucleo_golem', name: 'Núcleo de golem', icon: '⚙', kind: 'material', rarity: 'poco', desc: 'Núcleo de energía rúnica.' }),
   I({ id: 'llave_bronce', name: 'Llave de bronce de la mazmorra', icon: '🗝', kind: 'clave', rarity: 'unico', desc: 'Abre las mazmorras de la Ciudadela.' }),
   I({ id: 'sello_helm', name: 'Sello de Helm', icon: '👁', kind: 'equipo', rarity: 'raro', slot: 'talisman', desc: '+2 a las salvaciones. Un aura de 3 casillas que retrasa los encantamientos enemigos (aproximada como +2 a salvaciones).', bonus: { saves: 2 }, lore: 'Medallón gris con el ojo de Helm en relieve. Suprime desde afuera.' }),
-  I({ id: 'venda_ellie', name: 'Venda de Ellie', icon: '🩹', kind: 'clave', rarity: 'unico', desc: '«Tráelo o no vengas.» Una venda de lino con un nudo que sólo Panchi sabe deshacer.' }),
-  I({ id: 'fragmento', name: 'Fragmento del meteorito', icon: '☄', kind: 'clave', rarity: 'unico', desc: 'Hierro del cielo. Pulsa cuando miras a Zahir.' }),
+  I({ id: 'venda_ellie', name: 'Venda de Ellie', icon: '🩹', kind: 'clave', rarity: 'unico', desc: '«Traelo o no vengas.» Una venda de lino con un nudo que sólo Panchi sabe deshacer.' }),
+  I({ id: 'fragmento', name: 'Fragmento del meteorito', icon: '☄', kind: 'clave', rarity: 'unico', desc: 'Hierro del cielo. Pulsa cuando mirás a Zahir.' }),
 ];
 export const ITEM: Record<string, ItemDef> = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 

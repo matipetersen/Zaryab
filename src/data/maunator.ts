@@ -146,12 +146,12 @@ export const CUBE = buildCube();
 export const A0_TILES: [number, number][] = [[11, 11], [12, 11], [11, 12], [12, 12]];
 
 export const MAUNATOR_MAPS: Record<string, MapDef> = {
-  cubo_maunator: { id: 'cubo_maunator', name: 'El Cubo de Maunator', theme: 'sanctum', objective: 'Encuentra el tomo (Archivo) y las tres calaveras (Altar, Golem, Sujeto) y llega a La Salida. El Cubo rota: cada sala viaja con sus puertas.', rows: CUBE.rows, objs: CUBE.objs },
-  d4_salida: { id: 'd4_salida', name: 'D4 · La Salida', theme: 'sanctum', objective: 'Aguanta 3 rondas mientras la puerta se abre. Kethras y el Pudin ya vienen.',
+  cubo_maunator: { id: 'cubo_maunator', name: 'El Cubo de Maunator', theme: 'sanctum', objective: 'Encuentren el tomo (Archivo) y las tres calaveras (Altar, Golem, Sujeto) y lleguen a La Salida. El Cubo rota: cada sala viaja con sus puertas.', rows: CUBE.rows, objs: CUBE.objs },
+  d4_salida: { id: 'd4_salida', name: 'D4 · La Salida', theme: 'sanctum', objective: 'Aguanten 3 rondas mientras la puerta se abre. Kethras y el Pudin ya vienen.',
     rows: ['xxxxxxxxxxxx', 'x..........x', 'x.1.2.3....x', 'x.4.5.6....x', 'x..........x', 'x....cc....x', 'x.e.....e..x', 'x..........x', 'x.w......w.x', 'xxxxxxxxxxxx'] },
-  tuneles_a: { id: 'tuneles_a', name: 'Túneles pre-Simurg · Z1–Z4', theme: 'mine', objective: 'Corre hacia la bifurcación. Kethras os sigue: cuidado con el fuego.',
+  tuneles_a: { id: 'tuneles_a', name: 'Túneles pre-Simurg · Z1–Z4', theme: 'mine', objective: 'Corran hacia la bifurcación. Kethras los sigue: cuidado con el fuego.',
     rows: ['#####*.#####', '#....,.....#', '#..........#', '#.,..cc....#', '#...........', '#...,.......', '#.....o.....', '#....##.....', '#...........', '#..,........', '#...........', '#.1.2.3.4.5.', '#.w.6.......', '############'] },
-  tuneles_b: { id: 'tuneles_b', name: 'Túneles pre-Simurg · Z5–Z6', theme: 'mine', objective: 'Llega a la reja. El Pudin os persigue: no pelees en el túnel estrecho.',
+  tuneles_b: { id: 'tuneles_b', name: 'Túneles pre-Simurg · Z5–Z6', theme: 'mine', objective: 'Lleguen a la reja. El Pudin los persigue: no peleen en el túnel estrecho.',
     rows: ['####*..*####', '#....e.....#', '#..........#', '#.,........#', '#..........#', '#....##....#', '#...........', '#..,........', '#...........', '#.1.2.3.4.5.', '#.w.6.......', '############'] },
 };
 

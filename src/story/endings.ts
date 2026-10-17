@@ -54,7 +54,7 @@ const END = (title: string, text: string): Node => ({ t: 'end', title, text });
 
 export const EPILOGUE: Node[] = [
   IF('pacto_roto', [
-    N('El Pacto Roto. Ellie rompe el pacto en el instante en que Zahir cree haber ganado. Los cristales de vuestros pechos se apagan como brasas bajo el agua. Zahir cae de rodillas, pequeño, sin plumas: sólo una figura alta y cansada.'),
+    N('El Pacto Roto. Ellie rompe el pacto en el instante en que Zahir cree haber ganado. Los cristales de sus pechos se apagan como brasas bajo el agua. Zahir cae de rodillas, pequeño, sin plumas: sólo una figura alta y cansada.'),
     N('«No quería ser dios», dice. «Quería que alguien me cantara.» Aisha, desde el fondo de la sala, empieza a tararear la nana. Nadie se atreve a callarla.'),
     ...PC_LINES, END('Fin · El Pacto Roto', 'Zahir sobrevive como un hombre cualquiera en una biblioteca. Ya no hay dioses; hay una nana desafinada y una ciudad que, por una vez, está sola.')
   ], [
@@ -63,7 +63,7 @@ export const EPILOGUE: Node[] = [
     N('La Espiral. Zahir se alza como el Simurg completo, y por un instante todos creen que es una liberación. No lo es. El cielo de Zaryab se cierra como un puño.'),
     ...PC_LINES, END('Fin · La Espiral', 'Zahir no es misericordioso. Lo fue sólo mientras necesitaba a alguien que le abriera la puerta.')
   ], [IF('final_gobernar', [
-    N('Gobernar Zaryab. Zahir se sienta en el trono del Vizir con un cristal violeta en el pecho. Los seguidores lo llaman señor. Vosotros sois los consejeros que él nunca tuvo, y los prisioneros que nunca pidió.'),
+    N('Gobernar Zaryab. Zahir se sienta en el trono del Vizir con un cristal violeta en el pecho. Los seguidores lo llaman señor. Ustedes son los consejeros que él nunca tuvo, y los prisioneros que nunca pidió.'),
     ...PC_LINES, END('Fin · El Trono de Arena', 'El Simurg sigue dividido y hambriento. Pero la ciudad ya no se queja: no queda nadie que se atreva.')
   ], [IF('final_liberar', [
     N('Liberación del Simurg. Los fragmentos giran y se funden en un ave de luz cálida que despliega las alas sobre toda Zaryab. Los djinns esclavos rompen sus cadenas una a una. La ciudad, sin dueño, empieza a llorar.'),
@@ -76,7 +76,7 @@ export const EPILOGUE: Node[] = [
     ...PC_LINES, END('Fin · Los Fragmentos Rotos', 'Zaryab sobrevive. Pero la biblioteca se llena de nombres, y ninguno de ellos es el de un dios.')
   ], [
     N('Equilibrio. Ni dios ni tirano. Zahir queda en la biblioteca, vigilado por los seguidores; el Vizir, si vive, gobierna con una promesa. El Gusano duerme. La ciudad es frágil, pero está entera.'),
-    ...PC_LINES, END('Fin · La Balanza', 'Un orden frágil que depende de que ninguno de vosotros se canse primero.')
+    ...PC_LINES, END('Fin · La Balanza', 'Un orden frágil que depende de que ninguno de ustedes se canse primero.')
   ])])])])]),
   ]),
 ];
