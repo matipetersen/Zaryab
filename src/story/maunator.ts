@@ -93,7 +93,7 @@ export const MAUNATOR: Node[] = [
     { t: 'battle', enc: 'tuneles_a', soft: true },
     IF('mz_capturados', [
       N('Un muro de fuerza cae del techo y parte al grupo en dos. Kethras llega por la izquierda con una sonrisa cansada.'),
-      FX({ flags: ['mz_final_captura'], c: 1 }, 'Kethras gana la persecución. Captura.'),
+      FX({ flags: ['mz_final_captura', 'q_o_maunator'], c: 1 }, 'Kethras gana la persecución. Captura.'),
     ], [
       // ══════════ 5 · NEGOCIACIÓN EN Z4 ══════════
       N('En la bifurcación, un símbolo de El Que Acecha. Kethras os alcanza, jadeante, con la túnica rota, pero las manos no le tiemblan: ha usado Muralla de Fuerza para partir al grupo y ahora quiere hablar.'),
@@ -114,7 +114,7 @@ export const MAUNATOR: Node[] = [
         ]),
       ], [N('Sin el tomo no hay palanca: Kethras sólo os mira. «Entonces no tenéis nada que me interese. Pero sí que sabéis demasiado.» Alza la mano.')]),
       { t: 'battle', enc: 'tuneles_b', soft: true },
-      IF('mz_capturados', [FX({ flags: ['mz_final_captura'], c: 1 }, 'El Pudin y Kethras os cierran el paso. Captura.')], [
+      IF('mz_capturados', [FX({ flags: ['mz_final_captura', 'q_o_maunator'], c: 1 }, 'El Pudin y Kethras os cierran el paso. Captura.')], [
         // ══════════ 6 · MUELLES BAJOS ══════════
         T('Los Muelles Bajos de Medinat al-Rih', 'La barcaza · lo que lleváis y quién vive', 'plaza'),
         N('La reja oxidada cede bajo los medallones. Al otro lado, un muelle de piedra negra y una barcaza que cabecea sobre un río de ceniza. Medinat al-Rih no sabe de vuestra llegada. Todavía.'),
@@ -123,9 +123,9 @@ export const MAUNATOR: Node[] = [
         IF('mz_tomo_destruido', [FX({ flags: ['mz_final_destruido'], gold: 0 }, 'Zarpáis con las cenizas del tomo. EaNassr pierde el trato y no vuelve a hablar del asunto.')], [
           IF('mz_carry_tomo', [
             IF('mz_tomo_perdido', [FX({ flags: ['mz_final_fuga'], rep: { mercaderes: -1 } }, 'Final FUGA: Kethras se llevó el tomo. Sólo el recuerdo de su rostro.')], [
-              IF('mz_trato_limpio', [FX({ flags: ['mz_final_incompleto'], gold: 160, rep: { mercaderes: 1 } }, 'Final INCOMPLETO: el tomo sin las páginas. EaNassr está contento a medias.')], [
+              IF('mz_trato_limpio', [FX({ flags: ['mz_final_incompleto', 'mz_tomo_conserva'], gold: 160, rep: { mercaderes: 1 } }, 'Final INCOMPLETO: el tomo sin las páginas. EaNassr está contento a medias.')], [
                 IF('mz_farol', [FX({ flags: ['mz_final_fuga'], alert: 1 }, 'Final FUGA: Kethras os dejó marchar tras la persecución, sin el tomo.')], [
-                  FX({ flags: ['mz_final_completo'], gold: 320, rep: { mercaderes: 2 }, pf: 6 }, 'Final COMPLETO: tomo y páginas. Kethras será un enemigo futuro.')]),
+                  FX({ flags: ['mz_final_completo', 'mz_tomo_conserva'], gold: 320, rep: { mercaderes: 2 }, pf: 6 }, 'Final COMPLETO: tomo y páginas. Kethras será un enemigo futuro.')]),
               ]),
             ]),
           ], [

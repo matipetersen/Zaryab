@@ -1,3 +1,5 @@
+import { RESURRECCION } from './arquetipos';
+import { X_MAZHAR_TOMO, X_MAZHAR_OPT, XI_SIMBOLO, XII_KETHRAS, XII_ROMAIN_OPT, XII_CYRIC } from './integra';
 import type { Node } from './types';
 import type { Effect } from '../state';
 import { EPILOGUE } from './endings';
@@ -134,8 +136,10 @@ export const CAP10: Node[] = [
   S('Al-Mazhar', 'Bienvenidos, hijos míos. Qué tarde llegáis. Ya estaba a punto de cenar.', 'una voz paternal, amable, calurosa'),
   S('Al-Mazhar', 'No temáis. Nadie aquí os hará daño. Sólo os pido que os sentéis… y que no os levantéis.', 'trece máscaras giran detrás de él, una por una'),
   IF('rabb_pregunta', [S('Al-Mazhar', 'Tú, el de la espada que susurra. Yo conocí al que te vendió. Siéntate: hay historias que cuestan una cena.', 'a Rabb, con una sonrisa que no es suya')]),
+  X_MAZHAR_TOMO,
   { t: 'choice', prompt: 'Al-Mazhar canta a coro con trece niños pálidos. Su canción levanta ghuls. Hay otra manera de enfrentarla.', options: [
     { label: 'Cantar la nana de Farid contra la canción del Lich', hint: 'Religión CD 16 (Romain). Si funciona, Al-Mazhar se apaga sin combate.', check: { skill: 'religion', dc: 16, pc: 'romain' }, e: { flags: ['mazhar_nana', 'frag_mazhar'], d: 2 }, result: ['Romain empieza a cantar la nana de la biblioteca, desafinada y torpe. Desde los estantes de arriba, desde la casa de Aisha, desde las voces de los seguidores, la nana sube por el cuerpo de Al-Mazhar como una hiedra. Las trece máscaras se paran, una por una. El Lich cae de rodillas.'], fail: { e: {}, result: ['La nana suena débil. El Lich sonríe, casi con ternura. «No, hijo mío. No así.»'], then: [{ t: 'battle', enc: 'al_mazhar' }] } },
+    X_MAZHAR_OPT,
     { label: 'Atacarlo', hint: 'Combate contra el Lich de las Trece Caras.', e: {}, result: ['Los ghuls cantan a coro.'], then: [{ t: 'battle', enc: 'al_mazhar' }] },
   ] },
   N('Al-Mazhar se apaga. Cada máscara cae al suelo, una tras otra, y de ellas surgen trece niños pálidos con arena negra en los ojos. No atacan. Sólo miran.'),
@@ -166,6 +170,7 @@ export const CAP11: Node[] = [
   T('Nivel 1 — Extracción', 'Picos clavados en la roca', 'prison'),
   N('El primer nivel huele a polvo viejo. Hay picos clavados en las paredes, vagonetas tumbadas, linternas apagadas con el aceite todavía fresco. Nadie ha limpiado nada: los mineros dejaron de trabajar de golpe. Abril camina con el cuaderno abierto, dibujando lo que ve sin hablar.'),
   IF('samira_confia', [S('Capitana Samira', 'Hace tres meses que no llega alabastro. Dijeron que se había agotado la veta. Mentían: se había agotado la gente.', 'con la mano en la empuñadura, mirando una vagoneta volcada')]),
+  ...XI_SIMBOLO,
   { t: 'choice', prompt: 'Al fondo del primer nivel, un silencio que no es natural.', options: [
     { label: 'Escuchar el silencio', hint: 'Percepción CD 13. Descubrir su patrón.', check: { skill: 'percepcion', dc: 13 }, e: { flags: ['gusano_patron'] }, result: ['El silencio tiene ritmo. Se aprieta y se afloja como una respiración muy lenta, cada doce latidos. Abril lo anota. Es un dato que podría valer una vida.'], fail: { e: {}, result: ['No oís nada. Y justamente eso inquieta.'] } },
     { label: 'Seguir sin pararse', e: {}, result: ['Bajáis. A veces es mejor no pensar lo que se oye.'] },
@@ -224,6 +229,7 @@ export const CAP12: Node[] = [
     { label: 'Un grito de pájaro', hint: 'El Simurg real, antes de dividirse.', e: { flags: ['voz_simurg'] }, result: ['Un grito que no es un grito: es el sonido que se hace cuando algo grande decide partirse en pedazos para no tener que decidir. Os duele el pecho. Reconocéis algo de Zahir en esa voz.'] },
     { label: 'La más reciente, de un niño', hint: 'Farid, cantando.', e: { flags: ['voz_farid'] }, result: ['Una melodía sencilla, muy desafinada. Es la nana de la biblioteca. Hasta aquí han llegado las voces de vuestra casa. Razul lo oye todo.'] },
   ] },
+  ...XII_KETHRAS,
   S('Inquisidor Kaelen', 'No hacía falta que subierais. Os dije en la plaza que no volviéramos a vernos.', 'una voz tranquila desde un balcón'),
   IF('joren_traicionado', [S('Joren Hell', 'A ti no te dije nada porque no hacía falta. Fuiste tú quien decidió.', 'sin mirar a Rabb')]),
   { t: 'choice', prompt: 'El Verdadero Culpable de Joren.', options: [
@@ -242,10 +248,12 @@ export const CAP12: Node[] = [
   S('Vizir Razul', 'Habéis llegado más lejos que los otros. Eso sólo significa que seréis olvidados más tarde.', 'su rostro es una máscara con otra máscara detrás'),
   S('Vizir Razul', 'Me llamé Razul ibn Tameer antes de llamarme Vizir. Fui arcanista, copista y un poco poeta. Había una niña, Yasmin, que sólo pedía que la ciudad no se quedara sin agua. Merab me dijo que sí. Merab me mintió. Yasmin murió de sed a los nueve años.', 'sin mirar atrás'),
   IF('voz_merab', [S('Vizir Razul', 'Habéis oído a Merab, ¿verdad? Os lo veo en la cara. Lloró al final. Lo supe. No lo perdoné.', 'en voz muy baja')]),
+  ...XII_CYRIC,
   S('Vizir Razul', 'Desde entonces tengo un trabajo: que ningún dios vuelva a prometer lo que no puede cumplir. Lo cumplo desde hace tres mil años. Lo cumpliré hasta que se me acabe la voz.', 'girándose por primera vez'),
   { t: 'choice', prompt: 'Romain da un paso al frente con la balanza vacía de Kelemvor en la mano. Ha llegado el momento de pesar a un hombre.', options: [
     { label: 'Pesar el alma de Razul con compasión', hint: 'Religión CD 14 (Romain).', check: { skill: 'religion', dc: 14, pc: 'romain' }, e: { d: 1, flags: ['romain_peso_santo'] }, result: ['La balanza oscila, se inclina… y se detiene a favor de Razul. Tres mil años de cansancio pesan menos que una niña muerta de sed. «Kelemvor no te juzga hoy», dice Romain. Razul baja la cabeza.'], fail: { e: {}, result: ['La balanza tiembla, no se decide. Romain la baja. «Me hace falta más tiempo.»'] } },
     { label: 'Pesarlo con justicia', hint: 'Lo que hizo con tres mil años de sed ajena.', e: { c: 1, flags: ['romain_peso_verdugo'] }, result: ['La balanza se inclina del lado contrario. Pesa lo que Razul ha hecho a todos los dioses, a todos los niños que no fueron Yasmin. «No es sólo tuyo, el dolor», dice Romain.'] },
+    XII_ROMAIN_OPT,
     { label: 'No pesarlo: no es su lugar', hint: 'Una duda como respuesta.', e: { flags: ['romain_peso_duda'] }, result: ['Romain baja la balanza vacía. «Hoy no. Hoy sólo quiero escucharlo.» Razul lo mira con una sombra de gratitud.'] },
   ] },
   S('Vizir Razul', 'Pero estoy cansado. Más de lo que podéis imaginar. Hay un Corazón Dormido bajo esta torre: cuando Zaryab no me necesite, se apagará. Ese día no ha llegado. Podría llegar hoy.', 'casi sonriendo'),
@@ -306,6 +314,7 @@ export const CAP13: Node[] = [
     { label: 'Firmar un contrato nuevo con el Simurg', hint: 'Sin olvido.', e: { d: 1, flags: ['rabb_firma'] }, result: ['Rabb firma con su propio nombre, el que se inventó. La espada se queda muda, y luego, muy bajito, repite el nombre.'] },
     { label: 'Romper el pacto', hint: 'Sólo con la clave de Ellie.', if: 'ellie_sabe', e: { d: 2, flags: ['rabb_rompe'] }, result: ['La espada se deshace en ceniza gris. Rabb sostiene una empuñadura vacía. Es la primera vez que se queda sin voz ajena. Llora, aunque no sabe por qué.'] },
   ] },
+  ...RESURRECCION,
   IF('sacrificio_elegido', [N('Y, desde algún rincón de las catacumbas, la puerta de la mina se cierra otra vez. Hay un precio que no se olvida.')]),
   N('Zahir abre las alas. Son de fuego y de mentira. El eclipse cae sobre la cámara y apaga las antorchas. Cuando se enciende otra vez, Zahir no es una silueta: es un ave del tamaño de un templo.'),
   S('Zahir', 'Yo soy el Simurg. Todos los demás sólo fueron pájaros.', 'una voz que viene de todas partes'),

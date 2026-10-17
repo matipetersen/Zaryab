@@ -22,6 +22,7 @@ import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from '.
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
+import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
 import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
 import { worldDay, ensureFronts } from './world/world';
@@ -73,6 +74,7 @@ class App {
     if (id === 'ev:gusano_caza') return gusanoScript(this.camp);
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
     if (id.startsWith('cut:')) return NOVEL[id.slice(4)] ?? [];
+    if (id.startsWith('arq:')) return ARQ[id.slice(4)] ?? [];
     if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
     if (id.startsWith('inc:')) { const [ph, i] = id.slice(4).split('_').map(Number); return INCIDENTS[ph].scenes[i]; }
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
@@ -122,15 +124,19 @@ class App {
     await this.runScript('cut:' + key, 0, [...NOVEL[key], ...r.nodes]); saveGame(c);
   }
   /** Tras un capítulo principal: entreacto propio y, si cierra un acto, la portada del siguiente. */
+  async arq(key: string) {
+    const c = this.camp; if (!ARQ[key] || has(c, `arq_${key}_done`)) return;
+    applyEffect(c, { flags: [`arq_${key}_done`] }); await this.runScript('arq:' + key); saveGame(c);
+  }
   async novel(qid: string) {
-    await this.cutscene(qid);
+    await this.cutscene(qid); await this.arq(qid);
     if (qid === 'm_cap5') await this.cutscene('acto2');
     if (qid === 'm_cap10') await this.cutscene('acto3');
   }
   async hubLoop() {
     if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) { await this.cutscene('acto1'); await this.runScript('cap0'); await this.prologueLevels(); await this.cutscene('cap0'); }
     if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); await this.cutscene('cap1'); }
-    if (!has(this.camp, 'cap2_done')) { await this.runScript('cap2'); await this.cutscene('cap2'); }
+    if (!has(this.camp, 'cap2_done')) { await this.runScript('cap2'); await this.cutscene('cap2'); await this.arq('cap2'); }
     for (;;) {
       const due = this.camp.ecos.findIndex(x => x.due <= this.camp.day);
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
@@ -178,7 +184,7 @@ class App {
         if (pk && pk.district === a.district) { const found = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === pk.n); if (found) dr = { ...dr, ev: found }; } this.camp.peek = null;
         const e: OEv = dr.ev; this.camp.oracleSeen.push(e.n);
         let nodes = eventScript(this.camp, dr);
-        if (built(this.camp, 'pozo_vis') || count(this.camp, 'visionario') > 0) nodes = [{ t: 'bg', id: 'oraculo' }, { t: 'say', who: 'Oráculo de las Mil Lenguas', text: `${built(this.camp, 'pozo_vis') ? 'El Pozo de Visiones me obliga' : 'Farid sueña por mí'} a decir la verdad: ${e.title}.`, tone: 'por primera vez, no miente' }, ...nodes.slice(2)];
+        if (built(this.camp, 'pozo_vis') || count(this.camp, 'visionario') > 0 || has(this.camp, 'oraculo_verdadero')) nodes = [{ t: 'bg', id: 'oraculo' }, { t: 'say', who: 'Oráculo de las Mil Lenguas', text: `${built(this.camp, 'pozo_vis') ? 'El Pozo de Visiones me obliga' : has(this.camp, 'oraculo_verdadero') ? 'Cyric calla, por fin, y yo me atrevo' : 'Farid sueña por mí'} a decir la verdad: ${e.title}.`, tone: 'por primera vez, no miente' }, ...nodes.slice(2)];
         await this.runScript('oracle:' + e.n, 0, nodes); void DISTRICT_BY_ID;
         if (!built(this.camp, 'alfombra')) this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: el Oráculo anuncia «${e.title}».`); this.renderHud(); saveGame(this.camp);
       }

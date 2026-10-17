@@ -47,3 +47,22 @@ Ya existen caminos Luz/Sombra/Equilibrio al subir de nivel; esto los vincularía
 ## Cómo implementarlo sin reescribir
 - Las historias 1–11 caben como **misiones secundarias** o **entreactos reactivos** (`src/story/novelReact.ts`) disparadas por el arquetipo dominante de cada PC.
 - Un marcador por PC (`arq_romain = caido|redentor|…`) que cambia con elecciones puntuales y alimenta el epílogo.
+
+---
+## Implementado (v0.4+)
+Archivo: `src/story/arquetipos.ts`. Cada personaje tiene dos polos (`Campaign.arq`): Romain *Juez compasivo ↔ Verdugo*, Pact *Redentor ↔ Tirano*, Rabb *Autor de sí mismo ↔ Herramienta*, Joren *Protector ↔ Cazador*, Zyr'thar *Guardiana ↔ Sombra*, Panchi *Maestro ↔ Llama*. Las historias nuevas se juegan **una vez, al cerrar el capítulo**, tras el entreacto de novela:
+| Tras | Escena | Arquetipo |
+|---|---|---|
+| Casas | El mentor que no era (Nadir: mentor, guía o heraldo del Conclave) | Mentor |
+| Cap. III | El guardián amigo (Shul-Avar, sólo si vive) | Guardián del umbral |
+| Cap. IV | La sombra de cada uno (seis elecciones, una por PC) | Sombra |
+| Cap. V | La vigilia (de qué huye cada uno) | Calvario |
+| Cap. VI | El heraldo (la carta de Ellie a Panchi) | Heraldo |
+| Cap. VII | El mentor falso (Dahhak ofrece a Pact la corona; sólo si vive) | Mentor falso |
+| Cap. VIII | El embaucador generoso (EaNassr) | Embaucador |
+| Cap. IX | Los cambiaformas (Nafisa o Seraphel) | Cambiaformas |
+| Cap. X | El niño divino (Farid) | Inocente |
+| Cap. XI | El aliado que se pierde (Abril) | Aliado |
+| Cap. XII | La sombra que habla (lo que cada uno comparte con Razul) | Sombra |
+| Cap. XIII | **La resurrección**: cada PC elige quién será (6 elecciones) | Resurrección |
+El epílogo añade «Quiénes fueron»: una línea por personaje según el rito o, si no hubo, el camino recorrido.

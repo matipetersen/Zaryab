@@ -90,6 +90,18 @@ export const NOVEL: Record<string, Node[]> = {
     N('El Marid había salido de su lago hacía una hora y el agua aún no había vuelto a su sitio. En la orilla, un pez plateado se debatía sobre la hierba. Nafisa lo recogió y lo devolvió al estanque con las dos manos, como se devuelve algo prestado.'),
   ],
 
+  // ───────────────────────── Hilos opcionales ─────────────────────────
+  o_maunator: [
+    T('Entreacto', 'El sótano que se mueve', 'cubo'),
+    N('Hay ciudades que se hunden. Maunator, la de los escribas de los muertos, se hundió con método: primero los libros, luego las casas, al final los propios escribas, de pie en sus mesas, tomando nota de cómo les llegaba el agua. Dos mil años después, bajo un consulado extranjero del Zoco, sus salas todavía se desplazan en un orden que nadie recuerda haber fijado.'),
+    N('Alguien en Zaryab dijo una vez que el Cubo no era un sótano, sino una frase larga que se escribía a sí misma. Si es verdad, vosotros habéis leído un párrafo.'),
+  ],
+  o_cyric: [
+    T('Entreacto', 'La mentira que sostenía la ciudad', 'oraculo'),
+    N('Durante generaciones, el Oráculo de las Mil Lenguas dijo lo contrario de lo que sabía, y Zaryab aprendió a vivir así: a leer entre líneas, a pagar por las verdades a medias, a sospechar de todo lo que sonara claro. Fue una buena escuela de ciudad.'),
+    N('Ahora alguien ha tocado el espejo. Por la mañana, en el Zoco, los vendedores de augurios han abierto sus puestos con la cara de los que no saben qué venden.'),
+  ],
+
   // ───────────────────────── ACTO III ─────────────────────────
   acto3: [
     T('ACTO III', 'El Eclipse', 'limbo'),

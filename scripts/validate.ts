@@ -9,6 +9,7 @@ import { POIS, POI_BY_ID, ROAMER_ENC } from '../src/world/pois';
 import { BOONS, BOND_NAME } from '../src/world/bonds';
 import { NOVEL } from '../src/story/novel';
 import { FRAGS } from '../src/story/novelReact';
+import { ARQ, RESURRECCION } from '../src/story/arquetipos';
 import { CAP1, CAP2 } from '../src/story/script';
 import { Grid } from '../src/engine/grid';
 import type { Node } from '../src/story/types';
@@ -25,6 +26,8 @@ for (const p of POIS) { check(p.script, 'poi:' + p.id); const j = JSON.stringify
 for (const e of Object.values(ROAMER_ENC)) if (!ENCOUNTERS[e]) err(`errante: encuentro ${e}`);
 for (const [k, v] of Object.entries(NOVEL)) check(v, 'novel:' + k);
 for (const x of FRAGS) check(x.nodes, 'frag:' + x.id);
+for (const [k, v] of Object.entries(ARQ)) check(v, 'arq:' + k);
+check(RESURRECCION, 'resurreccion');
 check(CAP1, 'cap1'); check(CAP2, 'cap2');
 for (const e of [...D100, ...Object.values(ZONES).flat()]) { if (e.enc && !ENCOUNTERS[e.enc]) err(`oráculo ${e.n}: encuentro ${e.enc}`); for (const o of e.opts ?? []) o.then && check(o.then, 'oráculo ' + e.n); }
 const nums = new Set(D100.map(e => e.n)); const missing: number[] = []; for (let i = 1; i <= 100; i++) if (!nums.has(i)) missing.push(i);

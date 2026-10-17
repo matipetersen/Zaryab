@@ -1,4 +1,5 @@
 import type { Node } from './types';
+import { ARQ_EPILOGO } from './arquetipos';
 import type { Campaign } from '../state';
 import { has } from '../state';
 
@@ -24,6 +25,7 @@ export function finalFlags(c: Campaign): string[] {
   if (c.seal >= 60 || has(c, 'dahhak_devorado')) f.push('puede_espiral');
   if (has(c, 'razul_silencio') || (has(c, 'huerfanos_descansan') && has(c, 'frag_gusano'))) f.push('puede_silencio');
   if (c.c >= 4 && c.c <= 6 && c.d >= 4 && c.d <= 6) f.push('puede_equilibrio');
+  for (const pc of ['romain', 'pact', 'rabb', 'joren', 'zyrthar', 'panchi']) { const v = c.arq[pc] ?? 0; if (v > 0) f.push(`arq_${pc}_a`); else if (v < 0) f.push(`arq_${pc}_b`); }
   f.push(c.gusano.power >= 10 ? 'gusano_abismal' : c.gusano.power >= 6 ? 'gusano_colosal' : c.gusano.power >= 3 ? 'gusano_adulto' : 'gusano_cria');
   return f;
 }
@@ -36,6 +38,7 @@ const PC_LINES: Node[] = [
   IF('joren_perdona', [N('Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.')], [IF('joren_mata', [N('Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.')], [N('Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.')])]),
   IF('zyr_sombra_acepta', [N('Zyr\'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.')], [IF('zyr_sombra_fragmento', [N('Zyr\'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.')], [N('Zyr\'thar: se quedó con su sombra a un paso de distancia. Prefiere así.')])]),
   IF('conoce_ellie', [N('Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.')], [N('Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.')]),
+  ...ARQ_EPILOGO,
   N('— El que escarba —'),
   IF('gusano_abismal', [N('Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.')], [IF('gusano_colosal', [N('El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.')], [IF('gusano_adulto', [N('A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.')], [N('Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.')])])]),
   N('— Los arcos se cierran —'),
