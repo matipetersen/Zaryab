@@ -5,6 +5,7 @@ import { MORALES } from './morales';
 import { CAP6 } from '../story/cap6';
 import { CAP7, CAP8, CAP9, CAP10, CAP11, CAP12, CAP13 } from '../story/acts';
 import { ACT2 } from './act2quests';
+import { DEEP } from './quests_deep';
 import { CYRIC } from '../story/integra';
 import { MAUNATOR } from '../story/maunator';
 import { CAP0, CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
@@ -237,5 +238,9 @@ export const QUESTS: QuestDef[] = [
   { id: 'p_zyr', title: "Los Cuchillos de Vel'Shara", kind: 'personal', pc: 'zyrthar', district: 'zoco', giver: "Zyr'thar", blurb: 'Un espía de la Casa Vel\'Shara lo ha reconocido en el Zoco.', when: done('cap3_done'), days: 1, script: P_ZYR, reward: 'Información · tiempo' },
 ];
 QUESTS.push({ id: 'o_cyric', title: 'La Herencia de Cyric', kind: 'side', district: 'medinat', giver: 'Seraphel', blurb: 'Kethras buscaba lo que hay bajo el Oráculo: un artefacto de Cyric que le enseñó a mentir a la ciudad. Decidan qué hacer con él.', when: c => has(c, 'q_o_maunator') && has(c, 'cap6_done') && !has(c, 'q_o_cyric'), days: 2, alert: 0, script: CYRIC, reward: 'Un Oráculo que dice la verdad, PF o paz con el Conclave' }, ...MORALES, ...ACT2, { id: 'o_maunator', title: 'El Inventario de Maunator', kind: 'side', district: 'zoco', giver: 'EaNassr', blurb: 'Robar un tomo de escribas de los muertos de un consulado extranjero. Un sótano que se mueve, un mago que prepara un magnicidio divino y una salida con tres medallones.', when: c => has(c, 'cap8_done') && !has(c, 'q_o_maunator'), days: 3, alert: 1, script: MAUNATOR, reward: 'Tomo (sirve contra Al-Mazhar) · Sello de Helm · Seraphel (avisa a Romain) · Kethras reaparece en el Cap. XII · abre «La Herencia de Cyric»' });
+// Profundización: las 6 personales y 4 secundarias tienen guion largo (quests_deep.ts); las secundarias de menos de 150 palabras sin consecuencias que nadie lee se retiran del hub.
+for (const q of QUESTS) if (DEEP[q.id]) q.script = DEEP[q.id];
+const RETIRED = new Set(['s_khush', 's_libro', 's_espejo', 'm_ladron', 'm_inq', 'f_motin', 'f_impuesto', 'f_hereje']);
+for (let i = QUESTS.length - 1; i >= 0; i--) if (RETIRED.has(QUESTS[i].id)) QUESTS.splice(i, 1);
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
 export const CHAPTER_SCRIPTS: Record<string, Node[]> = { cap0: CAP0, cap1: CAP1, cap2: CAP2 };

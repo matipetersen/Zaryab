@@ -24,6 +24,9 @@ export const XP_TABLE: Record<number, number> = { 1: 0, 2: 120, 3: 400, 4: 1100,
 export const MAX_LEVEL = 15;
 /** Tope de nivel por acto (como en Tactics Ogre: la historia marca el ritmo). */
 export function levelCap(flags: string[]): number { const h = (f: string) => flags.includes(f); return h('cap10_done') ? 15 : h('cap5_done') ? 10 : h('cap2_done') ? 5 : h('cap1_done') ? 3 : h('cap0_done') ? 2 : 1; }
+/** Experiencia mínima garantizada al cerrar cada capítulo: resolver un jefe hablando, sigilo o sacrificio también hace crecer a la compañía.
+ *  Es el nivel de diseño del próximo jefe menos uno, así que esquivar combates cuesta (≈ −7 %/nivel) pero no deja al grupo sin chances. */
+export const MILESTONE_XP: [string, number][] = [['cap4_done', 1100], ['cap5_done', 2500], ['cap6_done', 8000], ['cap7_done', 16000], ['cap9_done', 20500], ['cap10_done', 25000], ['cap11_done', 33000], ['cap12_done', 37500]];
 export function levelForXp(xp: number): number { let l = 1; for (let k = 2; k <= MAX_LEVEL; k++) if (xp >= XP_TABLE[k]) l = k; return l; }
 export const profBonus = (level: number) => 2 + Math.floor((level - 1) / 4);
 

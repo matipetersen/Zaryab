@@ -14,7 +14,7 @@ import { newCampaign, loadGame, saveGame, clearSave, applyEffect, has, built, pr
 import { CHAPTER_SCRIPTS, QUEST_BY_ID, QUESTS } from './world/quests';
 import { EVENTS, pendingEvent } from './world/events';
 import { D100, ZONES, drawOracle, eventScript, type OEv } from './world/oracle';
-import { autoPicks } from './data/progression';
+import { autoPicks, MILESTONE_XP } from './data/progression';
 import { computeRuta, finalFlags, RUTA_LABEL } from './story/endings';
 import { tick, count, guardAllies } from './world/followers';
 import { DISTRICT_BY_ID } from './world/districts';
@@ -161,6 +161,7 @@ class App {
     if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); await this.cutscene('cap1'); }
     if (!has(this.camp, 'cap2_done')) { await this.runScript('cap2'); await this.cutscene('cap2'); await this.arq('cap2'); }
     for (;;) {
+      for (const [f, xp] of MILESTONE_XP) if (has(this.camp, f) && this.camp.xp < xp) { this.camp.xp = xp; this.camp.journal.push(`Día ${this.camp.day}: lo vivido deja huella; la compañía está lista para crecer.`); }
       const due = this.camp.ecos.findIndex(x => x.due <= this.camp.day);
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
       if (has(this.camp, 'eclipse_forzado') && !has(this.camp, 'cap13_done')) { await this.forceEclipse(); continue; }
