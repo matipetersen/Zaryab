@@ -19,11 +19,12 @@ export const RUTA_LABEL = { sombra: 'Camino de Zahir (Sombra)', fe: 'Camino del 
 /** Banderas derivadas que desbloquean las opciones del final (se calculan antes del Cap. XIII). */
 export function finalFlags(c: Campaign): string[] {
   const f: string[] = [];
-  const frags = ['frag_dahhak', 'frag_marid', 'frag_mazhar', 'frag_gusano', 'frag_razul'].filter(x => has(c, x)).length;
+  // un fragmento resuelto cuenta tanto si se lo guardó o cedió como si se lo rompió (romperlo también libera al Simurg)
+  const frags = ['dahhak', 'marid', 'mazhar', 'gusano', 'razul'].filter(x => has(c, `frag_${x}`) || has(c, `frag_${x}_roto`)).length;
   if (c.d >= 7 && c.seal <= 30 && frags >= 3) f.push('puede_liberar');
   if (c.c >= 7) f.push('puede_gobernar');
   if (c.seal >= 60 || has(c, 'dahhak_devorado')) f.push('puede_espiral');
-  if (has(c, 'razul_silencio') || (has(c, 'huerfanos_descansan') && has(c, 'frag_gusano'))) f.push('puede_silencio');
+  if (has(c, 'razul_silencio') || (has(c, 'huerfanos_descansan') && (has(c, 'frag_gusano') || has(c, 'frag_gusano_roto')))) f.push('puede_silencio');
   if (c.c >= 4 && c.c <= 6 && c.d >= 4 && c.d <= 6) f.push('puede_equilibrio');
   for (const pc of ['romain', 'pact', 'rabb', 'joren', 'zyrthar', 'panchi']) { const v = c.arq[pc] ?? 0; if (v > 0) f.push(`arq_${pc}_a`); else if (v < 0) f.push(`arq_${pc}_b`); }
   f.push(c.gusano.power >= 10 ? 'gusano_abismal' : c.gusano.power >= 6 ? 'gusano_colosal' : c.gusano.power >= 3 ? 'gusano_adulto' : 'gusano_cria');

@@ -7,6 +7,7 @@ import { MIRACLES, ABILITIES } from '../engine/abilities';
 import type { InvUI } from './invUI';
 import { LevelUI } from './levelUI';
 import { ambient, POIS, POI_BY_ID, PHASE, PHASE_ICON, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
+import { openHubGuide, hubGuideSeen } from './hubGuide';
 import { BOND_NAME } from '../world/bonds';
 import { PARTY_BY_ID } from '../data/party';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
@@ -43,7 +44,8 @@ export class HubUI {
         h('span', { class: 'ic' }, d.icon), h('span', { class: 'nm' }, d.name), avail.length ? h('span', { class: `dot ${hasMain ? 'm' : hasPers ? 'p' : ''}` }, String(avail.length)) : null, rm ? h('span', { class: 'dot', style: { background: '#a33', right: 'auto', left: '-4px' } }, '⚔') : null);
       map.append(el);
     }
-    const dist = DISTRICT_BY_ID[this.sel]; this.root.append(map, this.panel(dist), this.bottom());
+    const dist = DISTRICT_BY_ID[this.sel]; this.root.append(map, this.panel(dist), this.bottom(), this.nextStep());
+    if (!hubGuideSeen() && !(window as any).__fast) setTimeout(() => { if (this.root.isConnected && !this.root.classList.contains('hidden')) openHubGuide(this.root); }, 400);
   }
   panel(d: District): HTMLElement {
     const c = this.camp; const open = d.open(c); const p = h('aside', { class: 'wpanel' });
@@ -74,6 +76,13 @@ export class HubUI {
     p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name), c.rumors >= 2 && !(c.peek && c.peek.district === d.id) ? h('button', { class: 'btn sm ghost', onClick: () => this.pick({ t: 'peek', district: d.id }) }, '👁 Preguntar a los espías (−2 rumores)') : null, c.peek && c.peek.district === d.id ? h('div', { class: 'tag good' }, 'Los espías ya saben qué les espera aquí.') : null));
     return p;
   }
+  /** Cartel con el próximo paso recomendado: la misión principal disponible, o una sugerencia si no hay. */
+  nextStep(): HTMLElement {
+    const c = this.camp; const main = QUESTS.find(q => q.kind === 'main' && this.questStatus(q) === 'available'); const pers = QUESTS.find(q => q.kind === 'personal' && this.questStatus(q) === 'available');
+    const d = main ? DISTRICT_BY_ID[main.district] : undefined;
+    const txt = main ? `★ Siguiente paso: «${main.title}» · ${d?.name ?? ''}` : pers ? `Misión personal disponible: «${pers.title}»` : pendingLevel(c) ? '⬆ Hay un nivel para subir en el botón de abajo.' : 'Recorré un distrito o descansá un día: la próxima misión principal se abre con el tiempo.';
+    return h('div', { class: 'nextstep', onClick: () => { const q = main ?? pers; if (q) { this.sel = q.district; this.render(); } } }, txt);
+  }
   bottom(): HTMLElement {
     const c = this.camp;
     return h('div', { class: 'wbar' },
@@ -82,6 +91,7 @@ export class HubUI {
       h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
+      h('button', { class: 'act', title: 'Guía del mapa', onClick: () => openHubGuide(this.root) }, '?'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),
       has(c, 'cap2_done') && !has(c, 'cap13_done') ? h('button', { class: 'act', style: { color: '#ff9c8f' }, onClick: () => this.confirmLeave() }, '🏜 Abandonar Zaryab') : null,
       h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day} · ${PHASE[c.phase]}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`), h('span', { class: 'pip free' }, `${c.gold} PO`)));
