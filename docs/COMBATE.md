@@ -23,6 +23,22 @@
 - **Alcance de amenaza.** Al señalar a un enemigo (ratón o primer toque) se marcan en rojo las casillas que podría atacar en su próximo turno.
 - **Escena previa a cada combate** (`src/story/briefings.ts`): título del lugar, qué está pasando, quiénes son los enemigos, cómo lo ven los personajes (con retrato) y una pista táctica según el terreno. Los combates con más historia (la emboscada de la noche, el Linyera, el Acueducto, el Coloso, Dahhak, el Eclipse…) tienen texto propio.
 
+## Agarrar, acción preparada, terreno y sinergias
+- **Agarrar (Grapple).** Prueba de Atletismo contra Atletismo/Acrobacia del objetivo: si gana, queda **agarrado** (velocidad 0) mientras el agarrador siga adyacente y en pie. **Escapar** (acción): el agarrado repite la prueba. La IA se zafa sola.
+- **Acción preparada (Ready).** Se gasta la acción y se espera un disparador (un enemigo entra en alcance): ataca con la **reacción** durante el turno rival, también a mitad de su movimiento.
+- **Terreno (`terrainMods`).** Elevado: +1 CA y +2 a distancia · escombros: +1 CA · agua: −1 CA y −1 ataque · pegado a un muro o caja: +1 CA. El panel de la unidad muestra qué bonos tiene.
+- **Sinergias («química», estilo FIFA, `src/engine/synergy.ts`).** Cada par de personajes acumula puntos de relación (parten con ventaja Pact+Romain, Rabb+Zyr'thar, Joren+Panchi). Niveles: Compañeros ≥ 3, Aliados ≥ 7, Hermanos de armas ≥ 12. Un aliado adyacente suma su nivel (a 2 casillas, la mitad): 1 punto = +1 CA, 2 = +1 ataque, 4 = +2 CA, 5 = +2 ataque. Pelear en formación (≤ 2 casillas la mitad de las rondas) sube la relación +1 por combate; algunas decisiones de las vigilias también. Se ven como líneas luminosas entre los personajes.
+- **Formaciones.** *Falange* (aliados a ambos lados en línea): +1 CA. *Núcleo protegido* (3 aliados adyacentes): +2 CA.
+
+## Efectos visuales
+`src/ui/fx.ts`: clima por mapa (arena, lluvia, brasas, niebla…) e iluminación dinámica (cada impacto, proyectil y fuego ilumina el entorno), hit-stop, chispas, tajos y flechas. Se probaron PixiJS, Phaser y GSAP: se descartaron para no sumar 300 KB+ a una build que debe ser un solo HTML para el teléfono; el Canvas 2D propio alcanza.
+
+## Escenas sobre el mapa
+`src/ui/stage.ts` (`StageView`): los fondos de la historia que corresponden a un mapa jugable (`BG_MAP`) se muestran con el mismo renderer isométrico: la compañía entra caminando, deambula, y quien habla se ilumina y salta; los NPC que hablan aparecen junto al grupo. Las escenas previas a cada combate usan el nodo `{ t: 'stage', map, foes }` con el mapa real y los enemigos en su posición.
+
+## Primer combate
+`src/ui/tutorial.ts`: guía rápida de 7 pasos (despliegue, movimiento, ataques, ataques de oportunidad, posición y sinergias, objetivo). Se abre sola la primera vez y vuelve con el botón «?».
+
 ## Distancia y melé
 - **Atacar a distancia con un enemigo adyacente que pueda actuar tiene desventaja** (armas y conjuros). La IA lo tiene en cuenta: los arqueros y lanzadores intentan no quedarse pegados.
 - La IA también **penaliza provocar ataques de oportunidad**; solo sale del alcance si compensa.

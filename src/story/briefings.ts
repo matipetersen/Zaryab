@@ -116,6 +116,7 @@ function tip(map: MapDef, foeIds: string[]): string {
 /** Cutscene previa a cada combate: qué pasa, quiénes son, cómo lo ven los personajes y por dónde empezar. */
 export function briefing(encId: string, enc: Encounter, map: MapDef, party: string[], foeIds: string[], bg: string): Node[] {
   const nodes: Node[] = [{ t: 'chapter', title: map.name, sub: enc.surprise === 'party' ? 'Los sorprenden' : enc.surprise === 'foes' ? 'Ustedes los sorprenden' : 'Antes del combate', bg }];
+  nodes.push({ t: 'stage', map: map.id, foes: foeIds });
   nodes.push(N(enc.intro));
   const cu = CUSTOM[encId]; const alive = party.filter(p => PARTY_BY_ID[p]);
   if (cu) nodes.push(N(cu.sit));

@@ -5,6 +5,7 @@ import { SPEAKERS } from '../story/speakers';
 import { applyEffect, has, built, previewEffect, type Campaign, type Effect } from '../state';
 import { MARKS, MARK_ANSWER } from '../story/script';
 import { PARTY_BY_ID } from '../data/party';
+import { StageView, BG_MAP } from './stage';
 
 const BG: Record<string, string> = {
   prison: 'radial-gradient(ellipse at 50% 90%, #3a2a1a 0%, #140e0a 60%, #060404 100%)',
@@ -26,7 +27,7 @@ const BG: Record<string, string> = {
 };
 
 export class StoryUI {
-  el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; camp!: Campaign; hud!: () => void;
+  stage?: StageView; el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; camp!: Campaign; hud!: () => void;
   battle!: (enc: string, foeCount?: number, foes?: any[]) => Promise<boolean>;
   onTop?: (i: number) => void;
 
@@ -34,10 +35,15 @@ export class StoryUI {
   mount() {
     this.root.innerHTML = ''; this.root.className = 'screen'; this.root.id = 'story';
     this.bg = h('div', { class: 'bg' }); this.dlg = h('div', { class: 'dialog hidden' });
-    this.el = h('div', { style: { position: 'absolute', inset: '0' } }, this.bg, h('div', { class: 'vignette' }), this.dlg);
-    this.root.append(this.el); this.setBg('prison');
+    this.stage?.destroy(); this.el = h('div', { style: { position: 'absolute', inset: '0' } }, this.bg, h('div', { class: 'vignette' }), this.dlg);
+    this.root.append(this.el); this.stage = new StageView(this.bg); this.stage.show(false); this.setBg('prison');
   }
-  setBg(id: string) { this.bg.style.background = BG[id] ?? BG.prison; }
+  /** Quiénes aparecen en escena: la escuadra elegida o toda la compañía viva. */
+  cast(): string[] { const c = this.camp; const alive = c.party.filter(id => !c.dead.includes(id)); return c.squad?.length ? c.squad.filter(id => alive.includes(id)) : alive; }
+  setBg(id: string) {
+    this.bg.style.background = BG[id] ?? BG.prison;
+    const m = BG_MAP[id]; if (m && this.stage) { this.stage.set(m, this.cast()); setTimeout(() => this.stage?.r.resize(), 30); } else this.stage?.show(false);
+  }
 
   // ---------- esperar avance ----------
   advance(): Promise<void> {
@@ -59,7 +65,7 @@ export class StoryUI {
 
   async show(who: string | null, text: string, tone?: string, extra?: HTMLElement | null) {
     this.dlg.classList.remove('hidden'); this.dlg.innerHTML = '';
-    const sp = who ? SPEAKERS[who] : undefined;
+    const sp = who ? SPEAKERS[who] : undefined; this.stage?.speak(who);
     const txt = h('div', { class: `txt ${who ? '' : 'narr'}` });
     const body = h('div', { style: { flex: '1', minWidth: '0' } }, who ? h('div', { class: 'who' }, who) : null, tone ? h('div', { class: 'tone' }, `(${tone})`) : null, txt);
     const row = h('div', { class: 'row' });
@@ -83,6 +89,7 @@ export class StoryUI {
         this.dlg.classList.add('hidden'); if (n.bg) this.setBg(n.bg);
         const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.sub)); this.el.append(t); await sleep((window as any).__fast ? 50 : 500); await Promise.race([this.advance(), sleep((window as any).__fast ? 100 : 5500)]); t.remove(); return; }
       case 'bg': this.setBg(n.id); return;
+      case 'stage': this.bg.style.background = BG.limbo; await this.stage?.set(n.map, this.cast(), n.foes ?? []); setTimeout(() => this.stage?.r.resize(), 30); return;
       case 'narr': await this.show(null, n.text); await this.pause(); return;
       case 'say': await this.show(n.who, n.text, n.tone); await this.pause(); return;
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }

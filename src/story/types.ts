@@ -7,6 +7,7 @@ export interface Opt { label: string; hint?: string; disabled?: string; e?: Effe
 export type Node =
   | { t: 'chapter'; title: string; sub: string; bg?: string }
   | { t: 'bg'; id: string }
+  | { t: 'stage'; map: string; foes?: string[] }
   | { t: 'narr'; text: string }
   | { t: 'say'; who: string; text: string; tone?: string }
   | { t: 'choice'; prompt?: string; options: Opt[] }

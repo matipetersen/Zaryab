@@ -22,7 +22,7 @@ button { font-family: inherit; cursor: pointer; }
 .screen { position: absolute; inset: 0; }
 
 /* ---------- menú ---------- */
-#menu { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px;
+#menu { overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: safe center; padding: 18px 12px; text-align: center; gap: 14px;
   background: radial-gradient(ellipse at 50% 20%, #5a2a55 0%, #1d1230 45%, #0b0716 100%); }
 #menu h1 { font-family: var(--f-head); font-size: clamp(34px, 6vw, 64px); margin: 0; color: var(--secondary); letter-spacing: .08em; text-shadow: 0 0 30px rgba(212,165,116,.4); }
 #menu h2 { font-family: var(--f-head); font-weight: 500; font-size: clamp(16px, 2.4vw, 26px); margin: 0 0 18px; color: #c9b4d8; letter-spacing: .2em; }
@@ -229,3 +229,22 @@ button, .node, .choice, .tk { touch-action: manipulation; user-select: none; -we
 #coach .cnav { display: flex; justify-content: space-between; margin-top: 10px; }
 #coach .cx { background: none; border: 0; color: #bdb0d0; font-size: 15px; } #coach .tb-btn.on { background: rgba(212,165,116,.22); border-color: var(--secondary); }
 @media (max-width: 820px) { #coach { bottom: 6px; padding: 10px 12px; } #coach .cbody { font-size: 12.5px; } }
+
+/* menú rediseñado */
+#menu .hero h2 { margin-bottom: 6px; }
+#menu .tag { margin: 0 0 6px; color: #b9a7cf; font-style: italic; font-size: 14px; }
+.cards { display: grid; grid-template-columns: repeat(6, minmax(0, 132px)); gap: 10px; justify-content: center; margin: 6px 0; }
+.pcard { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 6px 8px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)); border: 1px solid color-mix(in srgb, var(--c) 55%, #000); border-radius: 12px; box-shadow: 0 0 18px -8px var(--c); transition: transform .15s; }
+.pcard:hover { transform: translateY(-4px); }
+.pcard .avatar { border: 2px solid var(--c); box-shadow: 0 0 14px -2px var(--c); }
+.pcard b { font-family: var(--f-head); font-size: 14px; color: var(--c); }
+.pcard i { font-size: 10px; color: #a898bd; font-style: normal; }
+.pcard .role { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; background: var(--c); color: #111; border-radius: 999px; padding: 1px 8px; font-weight: 700; }
+.pcard small { font-size: 10px; color: #8e7ea6; line-height: 1.25; }
+.rules { display: grid; grid-template-columns: repeat(4, minmax(0, 150px)); gap: 10px; margin: 6px 0; }
+.rule { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 6px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.rule span { font-size: 20px; } .rule b { font-size: 12px; } .rule small { font-size: 10px; color: #8e7ea6; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.perm { display: flex; gap: 6px; align-items: center; font-size: 12px; color: #b9a7cf; cursor: pointer; flex-wrap: wrap; justify-content: center; max-width: 520px; }
+.perm small { color: #8e7ea6; font-size: 11px; }
+@media (max-width: 820px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 420px; } .rules { grid-template-columns: repeat(2, 1fr); width: 100%; max-width: 340px; } }

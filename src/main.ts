@@ -60,14 +60,26 @@ class App {
   }
   showMenu() {
     this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = '';
-    const roster = h('div', { class: 'roster' }, ...PARTY.map(p => h('div', { class: 'chip', title: p.blurb }, avatar(p.glyph, p.color, undefined, 28), h('span', {}, `${p.name} · ${p.klass}${p.sheet === 'estimada' ? ' ⚠' : ''}`))));
+    const ROLE: Record<string, [string, string]> = {
+      romain: ['Sostén', 'Cura, protege y juzga a los muertos'], pact: ['Frontline', 'Maniobras de combate y liderazgo'],
+      rabb: ['Duelista', 'Daño brutal con un arma que lo usa a él'], joren: ['Francotirador', 'Flechas a distancia, ignora coberturas'],
+      zyrthar: ['Asesino', 'Golpe furtivo y emboscadas'], panchi: ['Brawler', 'Monje veloz, golpes encadenados'] };
+    const cards = h('div', { class: 'cards' }, ...PARTY.map(p => {
+      const [role, line] = ROLE[p.id] ?? ['', p.blurb];
+      const card = h('div', { class: 'pcard', title: p.blurb },
+        avatar(p.glyph, p.color, p.portrait, 64), h('b', {}, p.name), h('i', {}, `${p.race} · ${p.klass.split(' (')[0]}`), h('span', { class: 'role' }, role), h('small', {}, line)); card.style.setProperty('--c', p.color); return card;
+    }));
+    const rules = h('div', { class: 'rules' }, ...[['🎲', 'D&D 5.ª edición', 'Tiradas, CA, salvaciones'], ['🗺️', 'Táctica isométrica', 'Flanqueo, altura, terreno'], ['🤝', 'Sinergias', 'Pelear en formación rinde'], ['⚖️', 'Decisiones', 'Tus elecciones cambian el final']]
+      .map(([i, t, d]) => h('div', { class: 'rule' }, h('span', {}, i), h('b', {}, t), h('small', {}, d))));
     const perm = h('input', { type: 'checkbox', id: 'perm' }) as HTMLInputElement; perm.checked = this.settings.permadeath;
     perm.addEventListener('change', () => { this.settings.permadeath = perm.checked; localStorage.setItem('zaryab.settings', JSON.stringify(this.settings)); });
-    m.append(h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA'), roster,
-      h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.start(); } }, 'Nueva campaña'),
-      h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar (día ${save.day})` : 'Continuar'),
-      h('label', { class: 'small', style: { display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' } }, perm, 'Muerte permanente (si no, el cristal de Zahir devuelve a los caídos a cambio de Corrupción y PF)'),
-      h('div', { class: 'mnote' }, 'Combate de D&D 5.ª edición sobre cuadrícula isométrica. Fichas reales de Romain, Pact Risen, Rabb Locke y Joren Hell. ⚠ Zyr\'thar y Panchi usan estadísticas estimadas. Controles: clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar. En el teléfono: tocá una casilla para ver la previsualización y tocala otra vez para confirmar; arrastrá para mover el tablero y pellizcá para el zoom; los botones 👥 y 📖 abren las listas de unidades e información.'));
+    m.append(h('div', { class: 'hero' }, h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA'), h('p', { class: 'tag' }, 'Seis almas rotas. Una ciudad que respira. Un eclipse que no espera.')),
+      cards, rules,
+      h('div', { class: 'cta' },
+        h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.start(); } }, 'Nueva campaña'),
+        h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar · día ${save.day}` : 'Continuar')),
+      h('label', { class: 'perm' }, perm, h('span', {}, 'Muerte permanente'), h('small', {}, ' — si no, Zahir devuelve a los caídos a cambio de Corrupción')),
+      h('div', { class: 'mnote' }, 'Tocá una casilla para previsualizar y de nuevo para confirmar · Guía rápida con el botón ?'));
   }
 
   // ───────── guiones ─────────

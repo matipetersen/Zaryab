@@ -34,6 +34,7 @@ interface Ring { x: number; y: number; t: number; color: string; max: number }
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
+  /** Modo escena: sin barras de PG ni anillos de bando (se usa en las cutscenes sobre mapa). */ cine = false;
   weather = new Weather(); lighting = new Lighting(); amb: Ambience = ambienceFor(''); flashes: Flash[] = []; freeze = 0;
   ctx: CanvasRenderingContext2D; b?: Battle; map?: MapDef; pal: Pal = PALS.alley;
   /** Instante del último arrastre táctil: el toque que lo termina no cuenta como clic. */ lastDrag = 0;
@@ -44,7 +45,7 @@ export class Renderer {
   constructor(public canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
     for (let i = 0; i < 40; i++) this.dust.push({ x: Math.random(), y: Math.random(), s: Math.random() * 2 + .5, v: Math.random() * .02 + .005 });
-    const loop = (t: number) => { if (!this.running) return; const dt = Math.min(.05, (t - this.last) / 1000 || 0); this.last = t; this.time += dt; this.update(dt); this.draw(); requestAnimationFrame(loop); };
+    const loop = (t: number) => { if (!this.running) return; if (canvas.offsetParent === null) { this.last = t; requestAnimationFrame(loop); return; } const dt = Math.min(.05, (t - this.last) / 1000 || 0); this.last = t; this.time += dt; this.update(dt); this.draw(); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     canvas.addEventListener('wheel', e => { e.preventDefault(); const z = this.zoom * (e.deltaY < 0 ? 1.1 : 0.91); this.zoom = Math.max(.5, Math.min(2, z)); }, { passive: false });
     let drag: { x: number; y: number } | null = null;
@@ -263,14 +264,14 @@ export class Renderer {
     c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 17 * k, 7 * k, 0, 0, 6.28); c.fill();
     if (u.uid === this.activeUid) { c.strokeStyle = `rgba(255,215,90,${.65 + .3 * Math.sin(this.time * 5)})`; c.lineWidth = 3; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 21 * k, 9.5 * k, 0, 0, 6.28); c.stroke(); }
     if (u.uid === this.selUid) { c.strokeStyle = 'rgba(160,210,255,.9)'; c.lineWidth = 2; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 24 * k, 11 * k, 0, 0, 6.28); c.stroke(); }
-    if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }
+    if (!this.cine) if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }
     const down = u.down; const deadK = v.dead > 0 ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
     c.save(); c.translate(sx, sy - bounce); c.scale(k * deadK, k * deadK);
     if (down) { c.rotate(-1.35); c.translate(-8, 4); }
     this.sprite(u); c.restore();
     if (v.flash > 0) { c.globalAlpha = v.flash * .5 * v.alpha; c.fillStyle = '#fff'; c.beginPath(); c.ellipse(sx, sy - 22 * k, 11 * k, 20 * k, 0, 0, 6.28); c.fill(); c.globalAlpha = v.alpha; }
     // barra de PG y estados
-    if (!u.dead) {
+    if (!u.dead && !this.cine) {
       const bw = 30 * k, bx = sx - bw / 2, by = sy - 50 * k;
       c.fillStyle = 'rgba(0,0,0,.7)'; c.fillRect(bx - 1, by - 1, bw + 2, 7);
       const pct = Math.max(0, u.hp / u.maxHp); c.fillStyle = pct > .5 ? '#2ecc71' : pct > .25 ? '#f1c40f' : '#e74c3c'; c.fillRect(bx, by, bw * pct, 5);
