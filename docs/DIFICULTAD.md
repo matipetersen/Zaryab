@@ -31,3 +31,6 @@ Medido con el bot (60 partidas por casilla, media de cinco jefes): 0 pts ≈ 43 
 - La base real del bot ronda 40–55 % según el encuentro (el ruido de 30–60 partidas es ±8 %).
 - El bot no usa objetos ni todas las habilidades: un humano suele estar por encima.
 - Los combates de defensa (patrulla, asalto, Coloso) no incluyen a los guardias seguidores en la simulación; en el juego sí, y cuentan como aliados.
+
+## Recalibración tras giros y terreno vivo
+Los giros por combate, el terreno vivo (derrumbes, fuego, pinches, inundaciones, tormentas) y los altares bajaron las victorias del bot; los 36 combates se recalibraron (N = 40 por casilla; rango final 30–68 %, la mayoría 45–57 %). Varreth perdió su refuerzo (quedó como furia al 50 % de vida) porque no era ganable ni con potencia ×42. Retratos: emblemas de game-icons.net (CC BY 3.0), ver `CREDITS.md`.

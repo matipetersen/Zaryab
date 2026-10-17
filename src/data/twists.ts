@@ -108,6 +108,6 @@ export const TWISTS: Record<string, TwistDef> = {
     bonus: { kind: 'kill', id: 'pilon', n: 5, text: 'Apagar todos los pilones antes de la ronda 6', reward: pf(2) } },
   varreth: { name: 'La sombra de Varreth', text: 'A la mitad de su vida, Varreth llama a los de la Marca.',
     bonus: { kind: 'noDown', text: 'Que nadie caiga', reward: pf(2) },
-    events: [{ when: { hp: 'varreth', below: 0.5 }, note: 'Varreth silba: llegan dos mercenarios.', do: [{ foes: ['mercenario_zoco', 'mercenario_zoco'] }] }] },
+    events: [{ when: { hp: 'varreth', below: 0.5 }, note: 'Varreth se enfurece.', do: [{ enrage: 'varreth' }] }] },
 };
 export const NO_LAND = new Set(['cubo', 'pact', 'cubo_maunator', 'd4_defensa', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa', 'torneo', 'gusano_caza']);
