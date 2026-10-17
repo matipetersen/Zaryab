@@ -39,6 +39,14 @@
 ## Primer combate
 `src/ui/tutorial.ts`: guía rápida de 7 pasos (despliegue, movimiento, ataques, ataques de oportunidad, posición y sinergias, objetivo). Se abre sola la primera vez y vuelve con el botón «?».
 
+## Giros de objetivo y terreno vivo (`src/engine/twists.ts`, `src/data/twists.ts`)
+Cada combate calibrado (36) tiene **un giro** y **un objetivo opcional con premio**; los combates con reglas propias (Cubo, Túneles, Defensa del D4, Torneo, Kethras a quemarropa) conservan las suyas.
+- **Giros (eventos):** por ronda (`round`, `every`), cuando cae un tipo de enemigo (`down`) o cuando baja de cierta vida (`hp`). Efectos: refuerzos enemigos, **aliados que acuden**, curación y **furia** (+2 ataque/daño, +1 velocidad) de un jefe, bendición a la compañía, peligros del terreno, y **desbandada** (si cae el jefe o los mayores, el resto suelta las armas: victoria con XP y botín).
+- **Objetivo opcional (bonus):** que nadie caiga · acabar antes de la ronda N · derribar a X antes de la ronda N · mantener con vida a los aliados · romper N estructuras · **que el terreno mate a N enemigos**. Premios: PF, oro o +1 sinergia entre los presentes. El panel superior izquierdo muestra el estado (◇ abierto, ✔ cumplido, ✘ fallado).
+- **Terreno vivo (`LAND`):** cada mapa hace algo cada pocas rondas, **avisando una ronda antes** con casillas marcadas, y golpea a ambos bandos (salvación de DES, 2d6 a nivel bajo, 3d6 desde nv 7, 4d6 desde nv 11): tormenta de arena (−2 a distancia; dunas y nido) · derrumbe (callejones, zoco, mina, cripta; deja escombros: +1 CA) · inundación (acueducto, lago; agua: −1 CA y −1 ataque, 3 rondas) · fuego (plaza, Medinat, iglesia, eclipse) · pinches (arena, ciudadela). La IA esquiva las casillas marcadas.
+- **Altares:** en pozo, iglesia, cementerio, jardín, templo, santuario, plaza y Medinat hay un altar equidistante de ambos bandos: quien empiece su turno encima se cura 1d6+1. Es un punto a conquistar.
+- El briefing previo avisa del terreno y del objetivo opcional (no del giro).
+
 ## Distancia y melé
 - **Atacar a distancia con un enemigo adyacente que pueda actuar tiene desventaja** (armas y conjuros). La IA lo tiene en cuenta: los arqueros y lanzadores intentan no quedarse pegados.
 - La IA también **penaliza provocar ataques de oportunidad**; solo sale del alcance si compensa.
