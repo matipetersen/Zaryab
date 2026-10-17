@@ -20,7 +20,7 @@ En cada una de las tres evoluciones eliges entre tres caminos:
 - **Camino de la Sombra** — requiere Corrupción (2 / 4 / 6).
 - **Camino del Equilibrio** — siempre disponible, más modesto.
 
-Las decisiones morales de la campaña deciden qué caminos puedes tomar. Se puede mezclar (Luz en la 1.ª, Sombra en la 2.ª…).
+Las decisiones morales de la campaña deciden qué caminos podés tomar. Se puede mezclar (Luz en la 1.ª, Sombra en la 2.ª…).
 
 | Personaje | Luz | Sombra |
 |---|---|---|
