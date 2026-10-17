@@ -22,8 +22,9 @@ import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from '.
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
-import { chemPoints } from './engine/synergy';
+import { chemPoints, pairKey } from './engine/synergy';
 import { briefing } from './story/briefings';
+import { playIntro } from './ui/intro';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
@@ -60,26 +61,24 @@ class App {
   }
   showMenu() {
     this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = '';
-    const ROLE: Record<string, [string, string]> = {
-      romain: ['Sostén', 'Cura, protege y juzga a los muertos'], pact: ['Frontline', 'Maniobras de combate y liderazgo'],
-      rabb: ['Duelista', 'Daño brutal con un arma que lo usa a él'], joren: ['Francotirador', 'Flechas a distancia, ignora coberturas'],
-      zyrthar: ['Asesino', 'Golpe furtivo y emboscadas'], panchi: ['Brawler', 'Monje veloz, golpes encadenados'] };
-    const cards = h('div', { class: 'cards' }, ...PARTY.map(p => {
-      const [role, line] = ROLE[p.id] ?? ['', p.blurb];
-      const card = h('div', { class: 'pcard', title: p.blurb },
-        avatar(p.glyph, p.color, p.portrait, 64), h('b', {}, p.name), h('i', {}, `${p.race} · ${p.klass.split(' (')[0]}`), h('span', { class: 'role' }, role), h('small', {}, line)); card.style.setProperty('--c', p.color); return card;
-    }));
-    const rules = h('div', { class: 'rules' }, ...[['🎲', 'D&D 5.ª edición', 'Tiradas, CA, salvaciones'], ['🗺️', 'Táctica isométrica', 'Flanqueo, altura, terreno'], ['🤝', 'Sinergias', 'Pelear en formación rinde'], ['⚖️', 'Decisiones', 'Tus elecciones cambian el final']]
-      .map(([i, t, d]) => h('div', { class: 'rule' }, h('span', {}, i), h('b', {}, t), h('small', {}, d))));
     const perm = h('input', { type: 'checkbox', id: 'perm' }) as HTMLInputElement; perm.checked = this.settings.permadeath;
     perm.addEventListener('change', () => { this.settings.permadeath = perm.checked; localStorage.setItem('zaryab.settings', JSON.stringify(this.settings)); });
-    m.append(h('div', { class: 'hero' }, h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA'), h('p', { class: 'tag' }, 'Seis almas rotas. Una ciudad que respira. Un eclipse que no espera.')),
-      cards, rules,
-      h('div', { class: 'cta' },
-        h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.start(); } }, 'Nueva campaña'),
-        h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar · día ${save.day}` : 'Continuar')),
-      h('label', { class: 'perm' }, perm, h('span', {}, 'Muerte permanente'), h('small', {}, ' — si no, Zahir devuelve a los caídos a cambio de Corrupción')),
-      h('div', { class: 'mnote' }, 'Tocá una casilla para previsualizar y de nuevo para confirmar · Guía rápida con el botón ?'));
+    m.append(h('div', { class: 'hero' }, h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA')),
+      h('div', { class: 'cta col' },
+        h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.renderHud(); playIntro(this.rootEl, () => this.start()); } }, 'Nueva campaña'),
+        h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar · día ${save.day}` : 'Continuar'),
+        h('button', { class: 'btn ghost', onClick: () => this.howTo() }, 'Cómo jugar')),
+      h('label', { class: 'perm' }, perm, h('span', {}, 'Muerte permanente')));
+  }
+  /** Reglas, controles y quién es quién, fuera de la pantalla principal. */
+  howTo() {
+    const ROLE: Record<string, string> = { romain: 'Sostén · cura y protege', pact: 'Frontline · maniobras y liderazgo', rabb: 'Duelista · daño brutal', joren: 'Francotirador · flechas a distancia', zyrthar: 'Asesino · golpe furtivo', panchi: 'Brawler · golpes encadenados' };
+    const card = h('div', { class: 'card wide' }, h('h2', {}, 'Cómo jugar'),
+      h('h4', {}, 'Las reglas'), h('ul', { class: 'howto' }, h('li', {}, '🎲 Combate de D&D 5.ª edición: tiradas de d20, CA, salvaciones, ventaja y desventaja.'), h('li', {}, '🗺️ Táctica isométrica: flanqueo, altura, cobertura, terreno y ataques de oportunidad.'), h('li', {}, '🤝 Sinergias: pelear cerca de quien tenés afinidad da bonos de CA y ataque.'), h('li', {}, '⚖️ Decisiones: lo que elijan cambia el final. Cada combate tiene un giro y un objetivo opcional.')),
+      h('h4', {}, 'Controles'), h('div', { class: 'small' }, 'Clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar. En el teléfono: tocá una casilla para previsualizar y de nuevo para confirmar; arrastrá para mover el tablero y pellizcá para el zoom. El botón ? abre la guía rápida.'),
+      h('h4', {}, 'La compañía'), h('div', { class: 'howto-pcs' }, ...PARTY.map(p => h('div', { class: 'rowp' }, h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, avatar(p.glyph, p.color, p.portrait, 40), h('div', {}, h('b', {}, p.name), h('div', { class: 'small' }, `${p.race} · ${p.klass} — ${ROLE[p.id] ?? ''}${p.sheet === 'estimada' ? ' (ficha estimada)' : ''}`)))))),
+      h('button', { class: 'btn', style: { marginTop: '14px' } }, 'Entendido'));
+    const ov = h('div', { class: 'overlay' }, card); card.querySelector('button.btn')!.addEventListener('click', () => ov.remove()); ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); }); this.rootEl.append(ov);
   }
 
   // ───────── guiones ─────────
@@ -251,6 +250,7 @@ class App {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
       for (const id of res.dead) { if (this.settings.permadeath && has(c, 'cap3_done')) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }
+    if (victory && !duel) for (const bo of res.bonus ?? []) { const r = bo.reward; if (r.pf) c.pf += r.pf; if (r.gold) c.gold += r.gold; if (r.chem) { const ids = Object.keys(res.survivors); for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const k = pairKey(ids[i], ids[j]); c.chem[k] = chemPoints(c.chem, k) + 1; } } }
     if (victory && !duel) for (const [k, n] of Object.entries(res.chem ?? {})) c.chem[k] = chemPoints(c.chem, k) + n; // pelear en formación fortalece la relación
     this.renderHud(); saveGame(c); return won;
   }
@@ -261,6 +261,7 @@ class App {
       lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia: `, h('b', {}, String(res.xp)), ' XP'));
       if (loot) lines.push(h('div', {}, '💰 Botín: ', h('b', {}, `${loot.gold} PO`), loot.mats ? ` · ${loot.mats} materiales` : '', ...Object.entries(loot.items).map(([k, n]) => ` · ${ITEM[k].icon} ${ITEM[k].name} ×${n}`)));
       if (pendingLevel(this.camp)) lines.push(h('div', { style: { color: '#e8c872' } }, '⬆ ¡Han ganado experiencia suficiente para subir de nivel! Háganlo desde el mapa.'));
+      for (const bo of res.bonus ?? []) lines.push(h('div', { style: { color: '#7ee89b' } }, `✔ Objetivo cumplido: ${bo.text} (${bo.reward.label})`));
       if (res.pfSpent) lines.push(h('div', {}, `PF gastados en milagros: ${res.pfSpent}`));
       if (res.downed.length) lines.push(h('div', {}, `Caídos que se recuperan: ${names(res.downed.filter(d => !res.dead.includes(d)))}`));
       if (res.dead.length) lines.push(h('div', { style: { color: '#ff9c8f' } }, this.settings.permadeath ? `Han muerto para siempre: ${names(res.dead)}.` : `${names(res.dead)} murió… y el cristal de Zahir lo devuelve. +1 Corrupción, −3 PF.`));

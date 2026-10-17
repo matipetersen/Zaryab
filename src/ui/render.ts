@@ -189,7 +189,7 @@ export class Renderer {
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
-    this.drawLinks(s);
+    this.drawLinks(s); this.drawField(s);
     if (this.hover && g.inb(this.hover.x, this.hover.y)) { const t = g.tiles[this.hover.y][this.hover.x]; const p = this.proj(this.hover.x, this.hover.y, t.kind === 'high' ? ELEV : 0); this.diamond(p.x, p.y, s, 'rgba(255,255,255,.10)', 'rgba(255,255,255,.7)'); }
     // objetos y unidades ordenados por profundidad
     type D = { depth: number; fn: () => void };
@@ -248,6 +248,14 @@ export class Renderer {
       else this.box(p.x, p.y, s, COVER, shade(P.cov, 1.25), shade(P.cov, .75), P.cov);
       if (t.hp != null && t.maxHp && t.hp < t.maxHp) { c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p.x - 6 * s, p.y + 4 * s); c.lineTo(p.x + 2 * s, p.y + 14 * s); c.lineTo(p.x - 3 * s, p.y + 22 * s); c.stroke(); }
     }
+  }
+  /** Zonas de peligro avisadas (derrumbe, pinches, fuego, inundación) y altares de curación. */
+  drawField(s: number) {
+    const b = this.b!, c = this.ctx; const pulse = .5 + .5 * Math.sin(this.time * 6);
+    const COL: Record<string, [string, string]> = { collapse: ['rgba(214,160,80,A)', '🪨'], spikes: ['rgba(255,70,70,A)', '▲'], fire: ['rgba(255,130,30,A)', '🔥'], flood: ['rgba(70,150,255,A)', '💧'] };
+    for (const t of b.telegraphs) { const [col, ic] = COL[t.kind] ?? COL.fire; const hgt = b.grid.at(t.x, t.y)?.kind === 'high' ? ELEV : 0; const p = this.proj(t.x, t.y, hgt); this.diamond(p.x, p.y, s, col.replace('A', String(.22 + .25 * pulse)), col.replace('A', '.9'));
+      const q = this.center(t.x, t.y, hgt); c.font = `${Math.round(13 * s)}px sans-serif`; c.textAlign = 'center'; c.globalAlpha = .85; c.fillText(ic, q.x, q.y + 4 * s); c.globalAlpha = 1; }
+    for (const z of b.zones) { const p = this.proj(z.x, z.y, 0); this.diamond(p.x, p.y, s, `rgba(255,220,120,${.15 + .15 * pulse})`, 'rgba(255,225,140,.9)'); const q = this.center(z.x, z.y, 0); c.save(); c.shadowColor = '#ffd66b'; c.shadowBlur = 14; c.fillStyle = '#ffe9a8'; c.font = `bold ${Math.round(16 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('✚', q.x, q.y + 5 * s); c.restore(); }
   }
   drawOverlay(o: Overlay, s: number) {
     const t = this.b!.grid.at(o.x, o.y); if (!t) return; const p = this.proj(o.x, o.y, t.kind === 'high' ? ELEV : 0);

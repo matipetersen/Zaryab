@@ -3,6 +3,8 @@ import type { Encounter } from '../data/maps';
 import type { MapDef } from '../engine/types';
 import { MONSTERS } from '../data/monsters';
 import { PARTY_BY_ID } from '../data/party';
+import { TWISTS, NO_LAND } from '../data/twists';
+import { LAND, ALTARS } from '../engine/twists';
 
 const N = (text: string): Node => ({ t: 'narr', text });
 const NAME: Record<string, string> = { romain: 'Romain', pact: 'Pact Risen', rabb: 'Rabb Locke', joren: 'Joren Hell', zyrthar: "Zyr'thar", panchi: 'Panchi' };
@@ -134,6 +136,10 @@ export function briefing(encId: string, enc: Encounter, map: MapDef, party: stri
     for (const pc of pool) { if (said.size >= (cu ? 2 : 2)) break; const lines = REACT[cat][pc] ?? REACT.otro[pc]; const line = lines[(encId.length + k++) % lines.length]; nodes.push(S(pc, line)); said.add(pc); }
   }
   if (map.objective) nodes.push(N(`Objetivo: ${map.objective}`));
+  const L = NO_LAND.has(encId) ? undefined : LAND[map.id]; const TW = TWISTS[encId];
+  const LTXT: Record<string, string> = { storm: 'tormentas de arena que ciegan a los arqueros', collapse: 'derrumbes', fire: 'brasas que prenden fuego', flood: 'compuertas que inundan', spikes: 'trampas de pinches' };
+  if (L || (!NO_LAND.has(encId) && ALTARS.has(map.id))) nodes.push(N(`El terreno juega su partido: ${[...(L ?? []).map(l => LTXT[l.kind]), ...(ALTARS.has(map.id) ? ['un altar que cura a quien lo ocupe'] : [])].join(' y ')}. Las casillas marcadas avisan una ronda antes: el escenario golpea a ambos bandos.`));
+  if (TW?.bonus) nodes.push(N(`Objetivo opcional: ${TW.bonus.text} (${TW.bonus.reward.label}).`));
   nodes.push(N(`Pista táctica: ${tip(map, foeIds)}`));
   return nodes;
 }

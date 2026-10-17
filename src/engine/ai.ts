@@ -37,6 +37,8 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
     }
     if (engaged) s *= 0.6;
     if (b.grid.at(from.x, from.y)?.kind === 'hazard' && !u.fly) s -= 4;
+    if (b.telegraphs.some(t => t.x === from.x && t.y === from.y && t.kind !== 'flood') && !u.fly) s -= 8;
+    if (u.hp < u.maxHp * 0.8 && b.zones.some(z => z.x === from.x && z.y === from.y)) s += 2;
     if (a.recharge) s *= 1.15;
     const dmgEst = b.expectedDamage(u, a, t); if (!t.down && dmgEst >= t.hp) s += 12;
     s += (1 - t.hp / t.maxHp) * 3;
@@ -122,7 +124,7 @@ export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bi
       let best: P | undefined, bd = 1e9;
       for (const v of [...b.reach(u).values()].filter(v => !v.occ)) {
         const dmin = Math.min(...fs.map(t => cheb(v, t)));
-        const hz = b.grid.at(v.x, v.y)?.kind === 'hazard' ? 3 : 0;
+        const hz = (b.grid.at(v.x, v.y)?.kind === 'hazard' ? 3 : 0) + (b.telegraphs.some(t => t.x === v.x && t.y === v.y && t.kind !== 'flood') ? 6 : 0) - (b.zones.some(z => z.x === v.x && z.y === v.y) ? 1.5 : 0);
         const score = dmin + hz - (cheb(u, fs[0]) === 0 ? 0 : 0);
         if (score < bd) { bd = score; best = { x: v.x, y: v.y }; }
       }

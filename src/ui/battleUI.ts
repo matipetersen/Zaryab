@@ -16,8 +16,9 @@ import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
 type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' } | { k: 'deploy' };
-export interface BattleResult { chem?: Record<string, number>; result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number> }
+export interface BattleResult { chem?: Record<string, number>; result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number>; bonus?: { text: string; reward: Reward }[] }
 
+import { objectiveStatus, type Reward } from '../engine/twists';
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
 
@@ -31,10 +32,10 @@ export class BattleUI {
 
   async run(b: Battle, mapId: string, intro: string): Promise<BattleResult> {
     this.b = b; this.stopped = false; this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
-    const map = MAPS[mapId];
+    this.mapId = mapId; const map = MAPS[mapId];
     this.canvas = h('canvas', { id: 'board' }); this.left = h('aside', { id: 'left', class: 'side' }); this.right = h('aside', { id: 'right', class: 'side' });
     this.bar = h('div', { id: 'actionbar' }); this.logEl = h('div', { id: 'log' }); this.tracker = h('div', { id: 'tracker' }); this.tip = h('div', { id: 'tooltip', class: 'hidden' });
-    const stage = h('div', { id: 'stage' }, this.canvas, this.tracker, h('div', { id: 'objective' }, h('b', {}, map.name), h('div', {}, map.objective)), this.logEl);
+    const stage = h('div', { id: 'stage' }, this.canvas, this.tracker, (this.objEl = h('div', { id: 'objective' }, h('b', {}, map.name), h('div', {}, map.objective))), this.logEl);
     // En pantallas pequeñas, las columnas laterales pasan a ser cajones que se abren con estos botones.
     const drawer = (side: HTMLElement, other: HTMLElement) => () => { const open = !side.classList.contains('open'); other.classList.remove('open'); side.classList.toggle('open', open); };
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
@@ -119,7 +120,7 @@ export class BattleUI {
     await this.flush(); await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
-    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), chem: b.chemGains(), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
+    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), chem: b.chemGains(), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed }, bonus: objectiveStatus(b).filter(o => o.state === 'done').map(o => ({ text: o.text, reward: o.reward })) });
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }
@@ -206,8 +207,17 @@ export class BattleUI {
   }
 
   // ---------- paneles ----------
+  objEl!: HTMLElement; mapId = '';
+  /** Panel de objetivo: el objetivo del mapa, el giro del combate y el objetivo opcional con su estado. */
+  renderObjective() {
+    const b = this.b, map = MAPS[this.mapId]; if (!this.objEl || !map) return; const o = this.objEl; o.innerHTML = '';
+    o.append(h('b', {}, map.name), h('div', {}, map.objective));
+    if (b.twist) o.append(h('div', { class: 'twist' }, h('b', {}, '⚡ ' + b.twist.name), h('div', { class: 'small' }, b.twist.text)));
+    for (const ob of objectiveStatus(b)) o.append(h('div', { class: `bonus ${ob.state}` }, (ob.state === 'done' ? '✔ ' : ob.state === 'failed' ? '✘ ' : '◇ ') + ob.text, ob.hint && ob.state === 'open' ? h('i', {}, ` (${ob.hint})`) : null, h('small', {}, ` · ${ob.reward.label}`)));
+    if (b.zones.length) o.append(h('div', { class: 'small' }, '✚ Altar: cura a quien lo ocupe.'));
+  }
   renderAll() {
-    this.root.classList.toggle('late', this.b.round > 1); this.renderPanels(); this.updateOverlays(); }
+    this.root.classList.toggle('late', this.b.round > 1); this.renderObjective(); this.renderPanels(); this.updateOverlays(); }
   renderPanels() { this.renderLeft(); this.renderRight(); this.renderBar(); this.renderTracker(); }
   card(u: Unit): HTMLElement {
     const b = this.b; const hp = Math.max(0, u.hp / u.maxHp) * 100;

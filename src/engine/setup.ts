@@ -8,6 +8,8 @@ import type { Grant } from '../state';
 import { foeScaleFor } from '../data/difficulty';
 import { addFlat } from './dice';
 import { initScript } from './scripts';
+import { installTwists } from './twists';
+import { TWISTS, NO_LAND } from '../data/twists';
 
 import type { Encounter } from '../data/maps';
 export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[]; equip?: Record<string, string[]>; level?: number; flags?: string[]; prog?: Record<string, import('../data/progression').Prog>; inv?: Record<string, number>; edge?: number; powerup?: number; chem?: Record<string, number> }
@@ -33,7 +35,8 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
   const b = new Battle(grid, units); b.chem = opts.chem ?? {}; b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
   b.scaleFoe = scaleFoe; b.goalOnly = !!(enc.goal || enc.objective); if (enc.goal) { b.goal = enc.goal; b.goalMsg = enc.goalMsg ?? ''; }
   if (enc.script) initScript(enc.script, b, opts.flags ?? []);
-  if (enc.waves?.length || enc.script) b.onRound = (bb, round) => {
+  const twist = enc.script || enc.duel || enc.soft ? undefined : TWISTS[encId]; installTwists(b, encId, enc.map, opts.level ?? 3, twist, !NO_LAND.has(encId) && !enc.script && !enc.duel && !enc.soft);
+  if (enc.waves?.length || enc.script || b.scripts.length) b.onRound = (bb, round) => {
     bb.runScripts(round);
     if (!enc.waves) return;
     for (const w of enc.waves!) {

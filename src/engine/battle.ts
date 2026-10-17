@@ -1,4 +1,5 @@
 import { chemOf, chemLevel, pairKey } from './synergy';
+import { zonesTurn, type Tele, type Zone, type Objective, type BonusDef } from './twists';
 import { Grid, P, cheb, key } from './grid';
 import { d20, roll, avg, rand, pick, addFlat } from './dice';
 import type { Unit, Weapon, MAction, BEvent, CondId, Status, DmgType, DmgPart, Ab, Side } from './types';
@@ -50,7 +51,7 @@ export class Battle {
     this.destroyTile(x, y, type, src); return true;
   }
   destroyTile(x: number, y: number, type: DmgType, src?: Unit) {
-    const t = this.grid.at(x, y); if (!t) return; const name = t.ch === 'o' ? 'El barril' : t.kind === 'wall' ? 'El muro' : 'La cobertura';
+    const t = this.grid.at(x, y); if (!t) return; this.tilesBroken++; const name = t.ch === 'o' ? 'El barril' : t.kind === 'wall' ? 'El muro' : 'La cobertura';
     const boom = t.boom, flam = t.flam;
     if (boom) { this.log(`${name} estalla en una bola de fuego.`, 'dmg'); this.emit({ t: 'tile', kind: 'boom', x, y }); }
     else this.log(`${name} se hace pedazos.`, 'sys');
@@ -109,6 +110,9 @@ export class Battle {
   incapacitated(u: Unit) { return u.down || u.dead || this.has(u, 'paralyzed') || this.has(u, 'stunned'); }
   /** Relación (puntos) entre pares de la compañía: la fija la campaña; por defecto, la de partida. */
   chem: Record<string, number> = {};
+  // ───── giros de objetivo y terreno vivo (ver twists.ts) ─────
+  level = 3; twist?: { name: string; text: string }; objectives: (Objective & { def?: BonusDef })[] = []; telegraphs: Tele[] = []; zones: Zone[] = []; revert: { x: number; y: number; ch: string; round: number }[] = [];
+  mods = { stormFrom: 0, stormUntil: 0 }; hazardKills = 0; hazMode = false; tilesBroken = 0; everDown = new Set<string>(); killRound: Record<string, number> = {}; allyUids: number[] = []; watchers: ((b: Battle) => void)[] = [];
   /** Rondas que cada par pasó a ≤ 2 casillas (para subir su relación al terminar). */
   together: Record<string, number> = {}; roundsSeen = 0;
   // ───── terreno: dónde estás parado cambia tu defensa y tu ataque ─────
@@ -193,7 +197,8 @@ export class Battle {
       if (this.idx >= this.order.length) { this.idx = 0; this.recordTogether(); this.round++; if (this.surviveRounds && this.round > this.surviveRounds && !this.over) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); return; } if (this.maxRounds && this.round > this.maxRounds && !this.over) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); return; } this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
       const u = this.order[this.idx];
       if (u.dead) continue;
-      this.startTurn(u);
+      for (const w of this.watchers) w(this);
+      this.startTurn(u); zonesTurn(this, u);
       if (this.over) return undefined;
       this.emit({ t: 'turn', uid: u.uid });
       if (u.dead) continue;
@@ -392,7 +397,7 @@ export class Battle {
     let nat = d20(); let n2 = nat;
     if (adv && !dis) { n2 = d20(); nat = Math.max(nat, n2); } else if (dis && !adv) { n2 = d20(); nat = Math.min(nat, n2); }
     let bonus = toHit;
-    const tm = this.terrainMods(a); bonus += tm.atk + (o.ranged ? tm.rangedAtk : 0);
+    const tm = this.terrainMods(a); bonus += tm.atk + (o.ranged ? tm.rangedAtk : 0); if (o.ranged && this.round >= this.mods.stormFrom && this.round <= this.mods.stormUntil && this.mods.stormFrom) bonus -= 2;
     if (a.pcId) { bonus += this.synergy(a).atk; if (melee && !this.flanked(a, t) && this.units.some(v => v !== a && v.pcId && !v.dead && !v.down && cheb(v, t) <= 1)) bonus += 1; } // Cerco: dos aliados sobre el mismo objetivo
     if (this.has(a, 'bless')) bonus += Math.floor(rand() * 4) + 1;
     if (this.has(a, 'bane')) bonus -= Math.floor(rand() * 4) + 1;
@@ -445,7 +450,7 @@ export class Battle {
       const over = -t.hp; t.hp = 0;
       const pcLike = !!t.pcId;
       if (pcLike && over < t.maxHp) {
-        t.down = true; t.stable = false; t.death = { succ: 0, fail: 0 };
+        t.down = true; if (t.pcId) this.everDown.add(t.pcId); t.stable = false; t.death = { succ: 0, fail: 0 };
         this.addStatus(t, { id: 'prone', turns: -1 }, true);
         this.log(`${t.name} cae inconsciente (0 PG).`, 'dmg'); this.float(t, '¡Caído!', 'crit');
         this.breakConc(t);
@@ -462,7 +467,8 @@ export class Battle {
   }
   kill(t: Unit, src?: Unit) {
     if (t.dead) return;
-    t.dead = true; t.hp = 0; t.down = false;
+    if (this.hazMode && t.side === 'foe') this.hazardKills++; if (t.pcId) this.everDown.add(t.pcId);
+    t.dead = true; t.hp = 0; t.down = false; if (t.side === 'foe' && !this.units.some(u => u !== t && u.id === t.id && !u.dead)) this.killRound[t.id] ??= this.round;
     this.emit({ t: 'death', uid: t.uid });
     this.log(`${t.name} cae${t.side === 'pc' ? ' y muere' : ''}.`, 'dmg');
     this.breakConc(t);
@@ -478,11 +484,12 @@ export class Battle {
         if (!ok && od.cond) this.addStatus(v, { id: od.cond, turns: 1 });
       }
     }
+    for (const w of this.watchers) w(this);
     this.checkEnd();
   }
-  flee(t: Unit) {
+  flee(t: Unit, msg = 'huye herido hacia el oeste, hacia la Iglesia del Simurg.') {
     if (t.dead) return; t.dead = true; t.fled = true; t.hp = 0; this.emit({ t: 'death', uid: t.uid });
-    this.log(`${t.name} huye herido hacia el oeste, hacia la Iglesia del Simurg.`, 'sys'); this.flags['fled_' + t.id] = true; this.checkEnd();
+    this.log(`${t.name} ${msg}`, 'sys'); this.flags['fled_' + t.id] = true; this.checkEnd();
   }
   heal(t: Unit, amt: number, src?: Unit, quiet = false): number {
     if (t.dead || amt <= 0) return 0;
