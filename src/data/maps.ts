@@ -338,6 +338,8 @@ export const ENCOUNTERS: Record<string, Encounter> = {
     waves: [{ round: 2, every: 2, until: 8, foes: ['ghul_swarmer', 'ghul_swarmer'], note: 'Los ghuls de la mina se agolpan en las galerías.' }] },
   jann_zoco: { scale: { hp: 0.75, atk: -1 }, map: 'zoco', intro: 'La estatua del rincón parpadea. Es un jann de arena movediza con los ojos brillantes: lleva semanas robando secretos para el Conclave.',
     foes: [{ id: 'jann_enganador', slot: 0 }, { id: 'guardia_arena', slot: 1 }, { id: 'guardia_arena', slot: 2 }] },
+  gusano_caza: { survive: 6, scale: { hp: 1.6, atk: 1 }, map: 'acueducto', intro: 'El suelo se abre otra vez. No podéis matarlo: aguantad hasta que se canse de vosotros.',
+    foes: [{ id: 'gusano_martillo', slot: 0 }] },
   gusano_martillo: { scale: { hp: 0.6, atk: -1 }, map: 'acueducto', intro: 'El suelo se abre. Un gusano con varias cabezas de martillo emerge de la arena. Os quedaríais muy quietos… pero ya os ha olido.',
     foes: [{ id: 'gusano_martillo', slot: 0 }] },
   coloso: { scale: { hp: 1.1, atk: 0 }, defense: true, map: 'plaza', intro: 'Las columnas del Capitolio se abren como pétalos y emerge un coloso de hierro y oro. Dahhak trepa por su espalda, le susurra algo hueco… y las gemas se encienden en púrpura enfermizo. «¿Querían un dios? Les traje uno.»',

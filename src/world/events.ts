@@ -3,6 +3,7 @@ import { INTERLUDES } from '../story/interludes';
 import type { Node } from '../story/types';
 import type { Campaign } from '../state';
 import { has, built } from '../state';
+import { gusanoDue } from './gusano';
 
 const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
@@ -80,6 +81,7 @@ export function pendingEvent(c: Campaign): string | null {
   if (!has(c, 'cap2_done')) return null;
   if (has(c, 'ev_noche3_done') && has(c, 'conoce_ellie') && !has(c, 'ev_qadir_done')) return 'qadir';
   for (const [after, ev] of [['cap7_done', 'noche1'], ['cap9_done', 'noche2'], ['cap10_done', 'noche3'], ['cap11_done', 'noche4']] as const) if (has(c, after) && !has(c, `ev_${ev}_done`)) return ev;
+  if (gusanoDue(c)) return 'gusano_caza';
   if (c.alert >= 10 && !has(c, 'ev_cacería_done') && !built(c, 'torre')) return 'cacería';
   if (c.alert >= 7 && !has(c, 'ev_asalto_done')) return 'asalto';
   if (c.alert >= 4 && !has(c, 'ev_patrulla_done')) return 'patrulla';

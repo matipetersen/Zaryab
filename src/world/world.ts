@@ -1,5 +1,6 @@
 import type { Campaign } from '../state';
 import { has } from '../state';
+import { gusanoDay } from './gusano';
 import { DISTRICT_BY_ID } from './districts';
 import { FRONT_DISTRICTS, FRONT_LABEL, HOSTILE, ROAMER_ENC } from './pois';
 
@@ -29,7 +30,7 @@ function spawnRoamer(c: Campaign): string | null {
 }
 /** Un día de mundo vivo. Devuelve las líneas para el Diario. */
 export function worldDay(c: Campaign): string[] {
-  const out: string[] = []; if (!has(c, 'cap5_done')) return out; ensureFronts(c);
+  const out: string[] = gusanoDay(c); if (!has(c, 'cap5_done')) return out; ensureFronts(c);
   c.frontTick++; if (c.frontTick >= 6) { c.frontTick = 0; out.push(shiftFront(c)); }
   c.roamerTick++; if (c.roamerTick >= 4) { c.roamerTick = 0; const s = spawnRoamer(c); if (s) out.push(s); }
   const stale = c.roamers.filter(r => c.day - r.since >= 8);

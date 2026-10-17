@@ -23,6 +23,7 @@ import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
 import { reactive } from './story/novelReact';
+import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
@@ -50,7 +51,7 @@ class App {
   renderHud() {
     const c = this.camp; this.hudEl.innerHTML = ''; const left = c.eclipseDay && !has(c, 'cap13_done') ? Math.max(0, c.eclipseDay - c.day) : -1;
     const m = (cls: string, label: string, v: number, max: number) => h('div', { class: `meter ${cls}` }, label, h('div', { class: 'bar' }, h('i', { style: { width: (v / max) * 100 + '%' } })), h('span', {}, `${v}/${max}`));
-    this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day} · ${PHASE_ICON[c.phase]} ${PHASE[c.phase]}`), ...(left >= 0 ? [h('div', { class: 'meter', style: { color: left <= 10 ? '#ff9c8f' : left <= 30 ? '#e8c872' : '' } }, `🌑 Eclipse en ${left} d`)] : []), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
+    this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day} · ${PHASE_ICON[c.phase]} ${PHASE[c.phase]}`), ...(hunting(c) ? [h('div', { class: 'meter', title: 'Potencia ' + c.gusano.power, style: { color: c.gusano.next - c.day <= 3 ? '#ff9c8f' : '' } }, `🪱 ${STAGES[stage(c)]}${c.gusano.next - c.day <= 3 ? ' · cerca' : ''}`)] : []), ...(left >= 0 ? [h('div', { class: 'meter', style: { color: left <= 10 ? '#ff9c8f' : left <= 30 ? '#e8c872' : '' } }, `🌑 Eclipse en ${left} d`)] : []), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
       h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
   }
   showMenu() {
@@ -69,6 +70,7 @@ class App {
   scriptNodes(id: string): Node[] {
     if (CHAPTER_SCRIPTS[id]) return CHAPTER_SCRIPTS[id];
     if (id.startsWith('q:')) return QUEST_BY_ID[id.slice(2)].script;
+    if (id === 'ev:gusano_caza') return gusanoScript(this.camp);
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
     if (id.startsWith('cut:')) return NOVEL[id.slice(4)] ?? [];
     if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
@@ -134,7 +136,9 @@ class App {
       if (due >= 0) { const [eco] = this.camp.ecos.splice(due, 1); this.camp.journal.push(`Día ${this.camp.day}: una decisión del pasado vuelve a llamar a la puerta.`); await this.runScript('ev:' + eco.id); this.renderHud(); saveGame(this.camp); continue; }
       if (has(this.camp, 'eclipse_forzado') && !has(this.camp, 'cap13_done')) { await this.forceEclipse(); continue; }
       const ev = pendingEvent(this.camp);
-      if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev); this.renderHud(); continue; }
+      if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev);
+        if (ev === 'gusano_caza') { const g = this.camp.gusano; g.seen++; this.camp.journal.push(`Día ${this.camp.day}: el Gusano os alcanza (${STAGES[stage(this.camp)]}).`); if (g.next <= this.camp.day) g.next = this.camp.day + interval(this.camp); }
+        this.renderHud(); saveGame(this.camp); continue; }
       if ((window as any).__autolevel) { const c = this.camp; for (let n = pendingLevel(c); n; n = pendingLevel(c)) { for (const pc of c.party.filter(p => !c.dead.includes(p))) (c.picks[pc] ??= []).push(...autoPicks(pc, n, c.d, c.c)); c.lvl = n; } }
       ensureFronts(this.camp); this.show('hub'); this.renderHud();
       const a = await this.hub.choose(this.camp);
@@ -184,7 +188,7 @@ class App {
   // ───────── combate ─────────
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
     const e = ENCOUNTERS[enc]; const c = this.camp; const alive = c.party.filter(p => !c.dead.includes(p)); const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : (c.squad?.length ? c.squad.filter(p => alive.includes(p)) : alive);
-    let list = foes ?? e.foes; if (foeCount) list = list.slice(0, foeCount);
+    let list = foes ?? (enc === 'gusano_caza' ? huntFoes(c.gusano.power) : e.foes); if (foeCount) list = list.slice(0, foeCount);
     const miracles = has(c, 'razul_pacto') ? [] : MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');
@@ -194,7 +198,7 @@ class App {
     const rated = DESIGN_LVL[enc] != null && !NO_CAL.has(enc) && !e.duel && !e.soft;
     const edge = rated ? computeEdge(c, party, allies.length) : { points: 0, lines: [] as string[] };
     const intro = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points });
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points, powerup: enc === 'gusano_caza' ? c.gusano.power : 0 });
     if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, intro);
