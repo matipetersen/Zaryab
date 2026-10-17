@@ -186,6 +186,7 @@ export class Renderer {
     c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
   }
   draw() {
+    if (!(this.W > 4 && this.H > 4)) return; // lienzo aún sin tamaño (oculto o recién montado): nada que dibujar
     const c = this.ctx; c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     const g0 = c.createRadialGradient(this.W / 2, this.H * .35, 20, this.W / 2, this.H / 2, Math.max(this.W, this.H));
     g0.addColorStop(0, (this.pal.bg0)); g0.addColorStop(1, this.pal.bg1); c.fillStyle = g0; c.fillRect(0, 0, this.W, this.H);
