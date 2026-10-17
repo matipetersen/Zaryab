@@ -23,7 +23,7 @@
 Cobertura (media y tres cuartos), terreno difícil, ventaja y desventaja, derribado, concentración, salvaciones de muerte, ataque furtivo con flanqueo/ventaja, objetos y terreno destruible.
 
 ## Dificultad
-Las reglas nuevas movieron la victoria del bot unos pocos puntos; los 36 combates se volvieron a calibrar (`scripts/calibrate.ts`) para que la base siga en ≈ 50 % (ver `docs/DIFICULTAD.md`).
+Las reglas nuevas movieron la victoria del bot unos pocos puntos; los 36 combates se volvieron a calibrar (media 49 %, rango 42–62 %) (`scripts/calibrate.ts`) para que la base siga en ≈ 50 % (ver `docs/DIFICULTAD.md`).
 
 ## Resurrección
 - **Antes del Cap. III la muerte no es definitiva:** el cristal de Zahir devuelve a los caídos solo (también en partidas guardadas viejas).
