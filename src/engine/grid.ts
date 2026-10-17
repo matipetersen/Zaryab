@@ -1,10 +1,14 @@
 import type { Tile } from './types';
 
-const LEGEND: Record<string, Omit<Tile, 'ch'>> = {
+export const LEGEND: Record<string, Omit<Tile, 'ch'>> = {
   '.': { kind: 'floor', h: 0, cost: 1, blocked: false },
   ',': { kind: 'diff', h: 0, cost: 2, blocked: false },
   '#': { kind: 'wall', h: 2, cost: 99, blocked: true },
-  'c': { kind: 'cover', h: 1, cost: 99, blocked: true },
+  'c': { kind: 'cover', h: 1, cost: 99, blocked: true, hp: 15, maxHp: 15, flam: true },        // cajas y mesas de madera
+  'C': { kind: 'cover', h: 1, cost: 99, blocked: true, hp: 30, maxHp: 30 },                     // piedra
+  'o': { kind: 'cover', h: 1, cost: 99, blocked: true, hp: 6, maxHp: 6, flam: true, boom: true }, // barril de aceite
+  'x': { kind: 'wall', h: 2, cost: 99, blocked: true, hp: 30, maxHp: 30 },                      // muro frágil
+  'f': { kind: 'hazard', h: 0, cost: 1, blocked: false, turns: 3 },                              // fuego (dinámico)
   '^': { kind: 'hazard', h: 0, cost: 1, blocked: false },
   '~': { kind: 'water', h: 0, cost: 2, blocked: false },
   '=': { kind: 'high', h: 1, cost: 2, blocked: false },
@@ -16,7 +20,7 @@ export class Grid {
   w: number; h: number; tiles: Tile[][] = [];
   spawns: { pc: P[]; foe: P[]; ally: P[]; wave: P[] } = { pc: [], foe: [], ally: [], wave: [] };
   marks: P[] = [];
-  constructor(rows: string[]) {
+  constructor(rows: string[], objs: { x: number; y: number; id: string }[] = []) {
     this.h = rows.length; this.w = rows[0].length;
     const pcSlots: [number, P][] = [];
     rows.forEach((row, y) => {
@@ -35,6 +39,11 @@ export class Grid {
       this.tiles.push(line);
     });
     this.spawns.pc = pcSlots.sort((a, b) => a[0] - b[0]).map(s => s[1]);
+    for (const o of objs) { const t = this.tiles[o.y]?.[o.x]; if (t) t.obj = o.id; }
+  }
+  /** Sustituye una casilla (terreno modificable). */
+  setTile(x: number, y: number, ch: string, turns?: number) {
+    const t = LEGEND[ch]; if (!this.inb(x, y) || !t) return; this.tiles[y][x] = { ch, ...t, ...(turns != null ? { turns } : {}) };
   }
   inb(x: number, y: number) { return x >= 0 && y >= 0 && x < this.w && y < this.h; }
   at(x: number, y: number): Tile | undefined { return this.inb(x, y) ? this.tiles[y][x] : undefined; }

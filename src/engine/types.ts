@@ -8,7 +8,7 @@ export type CondId =
   | 'prone' | 'blinded' | 'poisoned' | 'frightened' | 'charmed' | 'paralyzed' | 'stunned' | 'restrained' | 'invisible'
   | 'burning' | 'dodging' | 'bless' | 'bane' | 'shieldFaith' | 'hex' | 'hunterMark' | 'hexCurse' | 'enfeebled'
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
-  | 'faerie' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged';
+  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped' | 'grappled' | 'ready';
 
 export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string }
 
@@ -48,6 +48,7 @@ export interface MonsterDef {
 export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental' | 'djinn' | 'mirror' | 'colossus' | 'swarm' | 'wall' | 'pylon' | 'serpent';
 
 export interface Unit {
+  /** Reacción gastada en esta ronda (ataque de oportunidad). Se recupera al empezar su turno. */ reactionUsed?: boolean; /** Sorprendido: pierde su primer turno y no puede reaccionar hasta entonces. */ surprised?: boolean; /** Marca interna: el turno perdido por sorpresa se salta solo. */ lostTurn?: boolean;
   uid: number; id: string; name: string; side: Side; ai: boolean; color: string; glyph: string; sprite: Sprite;
   x: number; y: number; size: number;
   mods: Mods; saves: Mods; prof: number; level: number;
@@ -61,13 +62,13 @@ export interface Unit {
   initiative: number; resist: DmgType[]; immune: DmgType[]; vuln: DmgType[]; condImmune: CondId[];
   traits: string[]; xp: number; cr?: string; undead: boolean;
   onDeath?: MonsterDef['onDeath']; regen: number; rechargeReady: Record<string, boolean>;
-  pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean;
+  extraAtk?: number; pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean; initBonus?: number;
 }
 
-export interface Tile { ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean }
+export interface Tile { obj?: string; ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean; hp?: number; maxHp?: number; flam?: boolean; boom?: boolean; turns?: number }
 export interface MapDef {
   id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine' | 'garden' | 'crater' | 'market' | 'ruins' | 'sanctum';
-  intro?: string; objective: string; marks?: string[];
+  intro?: string; objective: string; marks?: string[]; objs?: { x: number; y: number; id: string }[];
 }
 export type BEvent =
   | { t: 'log'; text: string; cls?: string }
@@ -75,5 +76,7 @@ export type BEvent =
   | { t: 'move'; uid: number; path: { x: number; y: number }[] }
   | { t: 'hit'; uid: number } | { t: 'death'; uid: number } | { t: 'spawn'; uid: number }
   | { t: 'fx'; kind: string; x: number; y: number; x2?: number; y2?: number }
+  | { t: 'tile'; kind: 'break' | 'ignite' | 'build' | 'burnout' | 'boom'; x: number; y: number }
+  | { t: 'snap'; uid: number; x: number; y: number }
   | { t: 'turn'; uid: number } | { t: 'round'; n: number }
   | { t: 'end'; result: 'victory' | 'defeat' };

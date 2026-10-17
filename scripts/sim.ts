@@ -3,12 +3,16 @@ import { buildBattle } from '../src/engine/setup';
 import { runAI } from '../src/engine/ai';
 import { setSeed } from '../src/engine/dice';
 import { ENCOUNTERS } from '../src/data/maps';
+import { huntFoes } from '../src/world/gusano';
+import { DESIGN_LVL } from '../src/data/difficulty';
 import { PARTY } from '../src/data/party';
+import { progUpTo } from '../src/data/progression';
 import { botSetup, botTurn } from './bot';
 
 export async function playBattle(enc: string, seed: number, verbose = false, party = PARTY.map(p => p.id), opts: { pf?: number; allies?: string[] } = {}) {
   setSeed(seed);
-  const b = buildBattle(enc, party, { allies: opts.allies, pf: opts.pf });
+  const LVL = +(process.env.LVL || DESIGN_LVL[enc] || 3); const EDGE = +(process.env.EDGE || 0); const prog = LVL !== 3 ? Object.fromEntries(party.map(id => [id, progUpTo(id, LVL, 5, 0)])) : undefined;
+  const b = buildBattle(enc, party, { foes: enc === 'gusano_caza' ? huntFoes(+(process.env.POWER || 0)) : undefined, allies: opts.allies, pf: opts.pf, level: LVL, prog, edge: EDGE, powerup: +(process.env.POWER || 0) });
   botSetup(b); b.start();
   const everDown = new Set<string>(); let turns = 0;
   while (!b.over && turns < 600) {

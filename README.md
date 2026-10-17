@@ -15,7 +15,7 @@ Atajos de depuración: `/?battle=linyera|acueducto|cubo` abre un combate directa
 ## Novedades de la v0.3
 
 - **Cap. V · La Caída del Capitolio:** jefe con tres pilones que alimentan al Coloso, Dahhak que huye al llegar al 50 % de PG, oleadas de refuerzos, y la primera gran decisión (Orden / Pueblo / Sombra). Cierra el Acto I.
-- **Seguidores estilo Cult of the Lamb:** oficios, fe, rasgos, víveres/materiales/rumores, sermones, rituales (Dab, banquete, casamiento de telas blancas, ofrenda, ascensión), deserción y guardias que combaten a vuestro lado.
+- **Seguidores estilo Cult of the Lamb:** oficios, fe, rasgos, víveres/materiales/rumores, sermones, rituales (Dab, banquete, casamiento de telas blancas, ofrenda, ascensión), deserción y guardias que combaten a su lado.
 - **Balance** con un bot competente: tabla de objetivos por nivel de dificultad en [`docs/DISENO.md`](docs/DISENO.md#9-balance-v03). `npx tsx scripts/sim.ts all 100` y `scripts/tune.ts`.
 
 ## Novedades de la v0.2
@@ -72,3 +72,8 @@ scripts      sim.ts (headless) · playtest.mjs / storytest.mjs (Playwright)
 - Medinat al-Rih: torneo de Panchi contra Ellie/Sifra, manifiesto de Joren, misión del Vizir a Romain.
 - Subida de nivel ligada a PF, mejoras del santuario, inventario, finales múltiples (Liberación, Destrucción, Gobierno, Equilibrio, Sacrificio).
 - Gusano de Brazos (Gul-Amarat) como escenario de huida, no como combate.
+
+## v0.4 · Inventario, terreno y decisiones morales
+- **Terreno destruible**: barriles que explotan, fuego que se propaga, muros frágiles, cobertura que se rompe y muros de piedra que se alzan.
+- **Inventario**: equipo (arma, armadura, talismán) por personaje, consumibles en combate («🎒 Objeto», tecla I), tienda de EaNassr, taller y botín.
+- **Decisiones morales**: 13 misiones nuevas (`docs/MISIONES.md`), pruebas de habilidad con CD, ecos diferidos y huellas.
