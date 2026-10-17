@@ -11,9 +11,9 @@ export class LevelUI {
   sel: Record<string, { asi?: string; tier?: string }> = {};
   render(c: Campaign, done: () => void): HTMLElement {
     const next = pendingLevel(c); const root = h('div', { class: 'res' });
-    if (!next) { root.append(h('div', { class: 'small' }, `Nivel ${c.lvl}. Siguiente nivel con ${XP_TABLE[c.lvl + 1] ?? '—'} XP (tenéis ${c.xp}).`)); return root; }
+    if (!next) { root.append(h('div', { class: 'small' }, `Nivel ${c.lvl}. Siguiente nivel con ${XP_TABLE[c.lvl + 1] ?? '—'} XP (tienen ${c.xp}).`)); return root; }
     const party = c.party.filter(p => !c.dead.includes(p));
-    root.append(h('div', { class: 'msg' }, `¡Subida de nivel! ${c.lvl} → ${next}`), h('div', { class: 'small' }, 'Cada personaje recibe sus rasgos de clase automáticamente. Donde hay una decisión, elige: el arquetipo evoluciona con vuestra Corrupción y Devoción.'));
+    root.append(h('div', { class: 'msg' }, `¡Subida de nivel! ${c.lvl} → ${next}`), h('div', { class: 'small' }, 'Cada personaje recibe sus rasgos de clase automáticamente. Donde hay una decisión, elijan: el arquetipo evoluciona con su Corrupción y Devoción.'));
     for (const pc of party) {
       const def = PARTY_BY_ID[pc]; const t = TRACKS[pc]; const choice = pendingChoices(pc, next); const st = (this.sel[pc] ??= {});
       const card = h('div', { class: 'jq' }, h('b', {}, `${def.name} · ${t.klass} ${next}`));

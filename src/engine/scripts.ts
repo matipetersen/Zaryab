@@ -9,7 +9,7 @@ function fireballTelegraph(b: Battle, round: number, warnRound: number, dc: numb
   if (round === warnRound && Math.random() < chance) {
     const pcs = b.units.filter(u => u.pcId && !u.dead && !u.down); if (!pcs.length) return;
     const back = [...pcs].sort((a, z) => z.y - a.y)[0]; b.flags['fbTarget'] = { x: back.x, y: back.y };
-    b.log('Kethras alza una mano: un círculo ardiente se dibuja en el suelo. ¡Salid del área!', 'sys'); b.emit({ t: 'fx', kind: 'burst', x: back.x, y: back.y });
+    b.log('Kethras alza una mano: un círculo ardiente se dibuja en el suelo. ¡Salgan del área!', 'sys'); b.emit({ t: 'fx', kind: 'burst', x: back.x, y: back.y });
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const t = b.grid.at(back.x + dx, back.y + dy); if (t && !t.blocked) b.grid.setTile(back.x + dx, back.y + dy, 'f', 2); }
   } else if (round === warnRound + 1 && c) {
     b.log('La Bola de Fuego de Kethras explota.', 'roll'); b.emit({ t: 'fx', kind: 'boom', x: c.x, y: c.y });

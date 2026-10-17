@@ -7,7 +7,7 @@
 
 ## Opciones para tenerlo en el teléfono
 1. **Enlace publicado** (artefacto de claude.ai): se abre desde el navegador del teléfono. La partida se guarda en el navegador de ese dispositivo.
-2. **Archivo único:** `npm run build:single` genera `dist/zaryab.html` (800 kB, sin dependencias salvo las fuentes de Google). Se puede alojar en cualquier sitio o abrir directamente.
+2. **Archivo único:** `npm run build:single` genera `dist/zaryab.html` (800 kB, sin dependencias salvo las fuentes de Google). Se puede alojar en cualquier lugar o abrir directamente.
 3. **GitHub Pages:** el flujo `.github/workflows/pages.yml` compila y publica `dist/` en cada push. Hay que activar Pages (Origen: «GitHub Actions») en la configuración del repositorio.
 4. **Instalarlo como app:** en un alojamiento propio (opciones 2 o 3) el navegador ofrece «Añadir a la pantalla de inicio»; hay manifiesto e icono.
 

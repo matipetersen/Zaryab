@@ -4,7 +4,7 @@
 
 | Salvaguarda | Cuándo actúa | Qué hace |
 |---|---|---|
-| **Cuenta atrás del Eclipse** | Al caer el Capitolio (Cap. V): 80 días | Avisos a −30 y −10 días; HUD «🌑 Eclipse en N d». A 0, los capítulos sin hacer se saltan (`skipped_capN`) y se lanza el Cap. XIII con lo que tengáis. |
+| **Cuenta atrás del Eclipse** | Al caer el Capitolio (Cap. V): 80 días | Avisos a −30 y −10 días; HUD «🌑 Eclipse en N d». A 0, los capítulos sin hacer se saltan (`skipped_capN`) y se lanza el Cap. XIII con lo que tengan. |
 | **Plazo de Razul** | Tras rechazar su trato (25 d) o negociar la tregua (14 d) | Razul «cobra»: −8 PF, +3 Alerta, −1 rep. Conclave. |
 | **Zahir insiste** | Siempre tras el Cap. II mientras no avance la trama principal | Cada 12 d (10 tras Cap. VII, 8 tras Cap. XI) sin capítulo principal: −3 PF y −1 fe de los seguidores. |
 | **Alerta del Conclave** | Cada 3 días +1 | Patrulla (4), asalto (7), cacería (10). |

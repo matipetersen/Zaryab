@@ -31,9 +31,9 @@ def({ id: 'trip_attack', name: 'Maniobra: Derribo', desc: 'Dado de superioridad.
   run: (b, u, t: Unit) => { const w = u.weapons.find(x => !x.ranged && !x.bonusAction)!; const d = roll(sdDie(u)).total; const r = b.rollAttack(u, t, w.toHit, {}); if (r.hit) { b.damage(t, d + roll(w.dmg[0].dice).total, w.dmg[0].type, u); if (!b.save(t, 'str', 8 + u.prof + u.mods.str, '(Derribo)')) b.addStatus(t, { id: 'prone', turns: 1, src: u.uid }); } else b.log(`${u.name} falla el Derribo.`, 'roll'); } });
 def({ id: 'menacing_attack', name: 'Maniobra: Ataque Amenazador', desc: 'Dado de superioridad. Ataque cuerpo a cuerpo + dado; salvación SAB o queda aterrado.', cost: 'free', range: 1, target: 'enemy', use: 'sd', tag: 'control',
   run: (b, u, t: Unit) => { const w = u.weapons.find(x => !x.ranged && !x.bonusAction)!; const d = roll(sdDie(u)).total; const r = b.rollAttack(u, t, w.toHit, {}); if (r.hit) { b.damage(t, d + roll(w.dmg[0].dice).total, w.dmg[0].type, u); if (!b.save(t, 'wis', 8 + u.prof + u.mods.str, '(Amenaza)')) b.addStatus(t, { id: 'frightened', turns: 2, src: u.uid }); } else b.log(`${u.name} falla.`, 'roll'); } });
-def({ id: 'indomitable', name: 'Indómito', desc: 'Te libras de aterrado, aturdido, paralizado o hechizado.', cost: 'free', range: 0, target: 'self', use: 'indomitable', tag: 'heal',
+def({ id: 'indomitable', name: 'Indómito', desc: 'Te librás de aterrado, aturdido, paralizado o hechizado.', cost: 'free', range: 0, target: 'self', use: 'indomitable', tag: 'heal',
   run: (b, u) => { for (const c of ['frightened', 'stunned', 'paralyzed', 'charmed', 'blinded'] as const) b.removeStatus(u, c); b.float(u, 'Indómito', 'heal'); b.log(`${u.name} se sobrepone.`, 'heal'); } });
-def({ id: 'alas_azuran', name: 'Alas de Azuran', desc: 'Acción adicional. Alas de luz: vuelas 10 rondas.', cost: 'bonus', range: 0, target: 'self', tag: 'buff',
+def({ id: 'alas_azuran', name: 'Alas de Azuran', desc: 'Acción adicional. Alas de luz: volás 10 rondas.', cost: 'bonus', range: 0, target: 'self', tag: 'buff',
   run: (b, u) => { u.fly = true; b.addStatus(u, { id: 'radiantSoul', turns: 10, src: u.uid }); b.log(`${u.name} despliega las alas de Azuran.`, 'buff'); } });
 
 // ───── Rabb Locke · Hexblade ─────
@@ -41,7 +41,7 @@ const held = (name: string, desc: string, slot: number, ab: 'wis' | 'cha', range
   run: (b, u, t: Unit) => { if (!b.save(t, ab, u.spellDC, `(${desc.split('|')[0]})`)) { u.conc = { id: name, targets: [t.uid] }; b.addStatus(t, { id: 'paralyzed', turns: 10, src: u.uid }); b.log(`${t.name} queda inmóvil.`, 'buff'); } else u.conc = undefined; } });
 held('hold_person', 'Inmovilizar Persona|Concentración. Un humanoide a 12 casillas: salvación SAB o queda paralizado.', 2, 'wis', 12);
 held('hold_monster', 'Inmovilizar Monstruo|Concentración. Una criatura a 12 casillas: salvación SAB o queda paralizada.', 5, 'wis', 12);
-def({ id: 'vampiric_touch', name: 'Toque Vampírico', desc: 'Toque, ataque de conjuro: 3d6 necrótico y recuperas la mitad.', cost: 'action', range: 1, target: 'enemy', slot: 3, upcast: true, tag: 'attack',
+def({ id: 'vampiric_touch', name: 'Toque Vampírico', desc: 'Toque, ataque de conjuro: 3d6 necrótico y recuperás la mitad.', cost: 'action', range: 1, target: 'enemy', slot: 3, upcast: true, tag: 'attack',
   run: (b, u, t: Unit, l) => { const before = t.hp; spellAttack(b, u, t, `${l}d6`, 'necrotic', 'Toque Vampírico', false); const lost = Math.max(0, before - t.hp); if (lost) b.heal(u, Math.floor(lost / 2), u); } });
 def({ id: 'fear_spell', name: 'Miedo', desc: 'Enemigos a 3 casillas: salvación SAB o quedan aterrados.', cost: 'action', range: 0, target: 'none', slot: 3, aoe: 3, tag: 'control',
   run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); for (const f of nearestFoes(b, u, 3, 8)) if (!b.save(f, 'wis', u.spellDC, '(Miedo)')) b.addStatus(f, { id: 'frightened', turns: 3, src: u.uid }); } });
@@ -51,11 +51,11 @@ def({ id: 'circle_of_death', name: 'Círculo de Muerte (Arcano)', desc: '1/día.
   run: (b, u, t: P) => { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); for (const f of b.foesOf(u).filter(f => cheb(f, t) <= 3)) { const ok = b.save(f, 'con', u.spellDC, '(Círculo de Muerte)'); const d = roll('8d6').total; b.damage(f, ok ? Math.floor(d / 2) : d, 'necrotic', u); } } });
 def({ id: 'finger_of_death', name: 'Dedo de la Muerte (Arcano)', desc: '1/día. Un enemigo a 12 casillas: 7d8+30 necrótico (CON mitad).', cost: 'action', range: 12, target: 'enemy', use: 'arc7', tag: 'attack',
   run: (b, u, t: Unit) => { const ok = b.save(t, 'con', u.spellDC, '(Dedo de la Muerte)'); const d = roll('7d8').total + 30; b.damage(t, ok ? Math.floor(d / 2) : d, 'necrotic', u); } });
-def({ id: 'accursed_specter', name: 'Espectro Maldito', desc: '1/día. Invocas un espectro aliado (sombra de arena) en una casilla a 3.', cost: 'action', range: 3, target: 'tile', use: 'specter', tag: 'utility',
+def({ id: 'accursed_specter', name: 'Espectro Maldito', desc: '1/día. Invocás un espectro aliado (sombra de arena) en una casilla a 3.', cost: 'action', range: 3, target: 'tile', use: 'specter', tag: 'utility',
   run: (b, u, t: P) => { const g = makeFoe('sombra_arena', t.x, t.y, ' (espectro)', u.side); b.summon(g, u, t); b.log(`${u.name} libera un espectro maldito.`, 'buff'); } });
 
 // ───── Joren Hell · Acechador de la Penumbra ─────
-def({ id: 'zephyr_strike', name: 'Golpe de Céfiro', desc: 'Acción adicional. Ganas +3 casillas de movimiento y no provocas ataques de oportunidad.', cost: 'bonus', range: 0, target: 'self', slot: 1, tag: 'move',
+def({ id: 'zephyr_strike', name: 'Golpe de Céfiro', desc: 'Acción adicional. Ganás +3 casillas de movimiento y no provocas ataques de oportunidad.', cost: 'bonus', range: 0, target: 'self', slot: 1, tag: 'move',
   run: (b, u) => { u.moveLeft += 3; b.addStatus(u, { id: 'disengaged', turns: 1, src: u.uid }, true); b.log(`${u.name} corre como el viento.`, 'buff'); } });
 def({ id: 'conjure_barrage', name: 'Lluvia de Flechas', desc: 'Un punto a 6 casillas, radio 3: 3d8 de daño (DES mitad).', cost: 'action', range: 6, target: 'point', slot: 3, aoe: 3, tag: 'attack',
   run: (b, u, t: P) => { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); for (const f of b.foesOf(u).filter(f => cheb(f, t) <= 3)) { const ok = b.save(f, 'dex', u.spellDC, '(Lluvia de Flechas)'); const d = roll('3d8').total; b.damage(f, ok ? Math.floor(d / 2) : d, 'piercing', u); } } });
@@ -71,10 +71,10 @@ def({ id: 'poison_blade', name: 'Hoja Envenenada', desc: '1/día. Tus golpes cue
   run: (b, u) => { for (const w of u.weapons) if (!w.ranged) w.dmg = [...w.dmg, { dice: '1d6', type: 'poison' as DmgType }]; b.log(`${u.name} unta su hoja con veneno.`, 'buff'); } });
 
 // ───── Panchi · Monje ─────
-def({ id: 'stunning_strike', name: 'Golpe Aturdidor', desc: 'Gastas 1 ki: un enemigo adyacente, salvación CON o queda aturdido 1 turno.', cost: 'free', range: 1, target: 'enemy', use: 'ki', tag: 'control',
+def({ id: 'stunning_strike', name: 'Golpe Aturdidor', desc: 'Gastás 1 ki: un enemigo adyacente, salvación CON o queda aturdido 1 turno.', cost: 'free', range: 1, target: 'enemy', use: 'ki', tag: 'control',
   run: (b, u, t: Unit) => { if (!b.save(t, 'con', 8 + u.prof + u.mods.wis, '(Golpe Aturdidor)')) b.addStatus(t, { id: 'stunned', turns: 1, src: u.uid }); } });
-def({ id: 'wholeness_of_body', name: 'Plenitud Corporal', desc: '1/día. Acción adicional: recuperas 3×nivel PG.', cost: 'bonus', range: 0, target: 'self', use: 'whole', tag: 'heal',
+def({ id: 'wholeness_of_body', name: 'Plenitud Corporal', desc: '1/día. Acción adicional: recuperás 3×nivel PG.', cost: 'bonus', range: 0, target: 'self', use: 'whole', tag: 'heal',
   run: (b, u) => { b.heal(u, u.level * 3, u); b.log(`${u.name} recupera la plenitud del cuerpo.`, 'heal'); } });
-def({ id: 'quivering_palm', name: 'Palma Vibrante', desc: '1/día, gastas 3 ki. Un enemigo adyacente: salvación CON o recibe 10d10 necrótico (si salva, 10d10 reducido a la mitad).', cost: 'action', range: 1, target: 'enemy', use: 'palm', tag: 'attack',
+def({ id: 'quivering_palm', name: 'Palma Vibrante', desc: '1/día, gastás 3 ki. Un enemigo adyacente: salvación CON o recibe 10d10 necrótico (si salva, 10d10 reducido a la mitad).', cost: 'action', range: 1, target: 'enemy', use: 'palm', tag: 'attack',
   run: (b, u, t: Unit) => { const d = roll('10d10').total; const ok = b.save(t, 'con', 8 + u.prof + u.mods.wis, '(Palma Vibrante)'); b.damage(t, ok ? Math.floor(d / 2) : d, 'necrotic', u); u.res['ki'] = Math.max(0, (u.res['ki'] ?? 0) - 2); } });
 void nearestAllies;

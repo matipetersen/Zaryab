@@ -65,7 +65,7 @@ export class StoryUI {
     const row = h('div', { class: 'row' });
     if (sp) { const p = h('div', { class: 'portrait', style: { background: sp.img ? `url(${portraitUrl(sp.img)}) center/cover` : sp.color } }, sp.img ? '' : sp.glyph); row.append(p); }
     row.append(body); this.dlg.append(row); if (extra) this.dlg.append(extra);
-    const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'toca para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
+    const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'tocá para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
     await this.type(txt, text);
   }
   async pause() { await this.advance(); }
@@ -99,7 +99,7 @@ export class StoryUI {
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
       for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} CD ${o.check.dc} · mejor: ${bestFor(this.camp, o.check)}`) : null, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
-      this.show(null, prompt ?? 'Elegid.', undefined, wrap);
+      this.show(null, prompt ?? 'Elijan.', undefined, wrap);
     });
     let branch: { e?: Effect; result?: string[]; then?: Node[] } = picked;
     if (picked.check) {
@@ -117,7 +117,7 @@ export class StoryUI {
   async squadPick(max: number, label?: string) {
     this.dlg.classList.add('hidden');
     const alive = this.camp.party.filter(id => !this.camp.dead.includes(id)); const chosen = new Set<string>(alive.slice(0, max));
-    const box = h('div', { class: 'box' }, h('h3', {}, 'Escuadra'), h('p', {}, label ?? `Elegid hasta ${max} personajes.`));
+    const box = h('div', { class: 'box' }, h('h3', {}, 'Escuadra'), h('p', {}, label ?? `Elijan hasta ${max} personajes.`));
     const go = h('button', { class: 'btn', style: { marginTop: '14px' } }, 'Confirmar escuadra');
     const draw = () => { for (const el of [...box.querySelectorAll('.rowp')]) el.remove(); for (const id of alive) { const d = PARTY_BY_ID[id]; const on = chosen.has(id); box.insertBefore(h('div', { class: 'rowp' }, h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, avatar(d.glyph, d.color, undefined, 34), h('div', {}, h('b', {}, d.name), h('div', { class: 'small' }, d.klass))), h('button', { class: `tabbtn ${on ? 'on' : ''}`, onClick: () => { if (on) chosen.delete(id); else if (chosen.size < max) chosen.add(id); draw(); } }, on ? '✔ Va' : 'Se queda')), go); } go.textContent = `Confirmar escuadra (${chosen.size}/${max})`; };
     box.append(go); draw(); const ov = h('div', { class: 'puzzle' }, box); this.el.append(ov);
@@ -137,7 +137,7 @@ export class StoryUI {
     }
     const go = h('button', { class: 'btn', style: { marginTop: '14px' } }, 'Ocupar las marcas');
     box.append(go); const ov = h('div', { class: 'puzzle' }, box); this.el.append(ov);
-    await new Promise<void>(res => go.addEventListener('click', () => { if (party.some(id => !selects[id].value)) { go.textContent = 'Asigna una marca a cada alma'; return; } res(); }));
+    await new Promise<void>(res => go.addEventListener('click', () => { if (party.some(id => !selects[id].value)) { go.textContent = 'Asignen una marca a cada alma'; return; } res(); }));
     const wrong = party.filter(id => selects[id].value !== MARK_ANSWER[id]); ov.remove();
     if (!wrong.length) { this.camp.flags.push('marcas_perfectas'); await this.show(null, 'Seis marcas. Seis almas. Una sola respiración. Las tres rondas pasan en silencio y la puerta se abre sin que un solo reflejo despierte. «Seis deben ser uno… y uno debe ser seis.»'); await this.pause(); applyEffect(this.camp, { d: 1 }); this.hud(); return; }
     const names = wrong.map(id => PARTY_BY_ID[id].name);

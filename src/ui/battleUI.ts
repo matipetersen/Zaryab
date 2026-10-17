@@ -264,7 +264,7 @@ export class BattleUI {
     const col = ['#9ad8a0', '#e8c872', '#e08a4a', '#e5584b'][c.alert];
     return h('div', {}, h('div', { class: 'sec' }, 'Cubo de Maunator'), h('div', {}, h('span', { class: 'tag', style: { color: col, borderColor: col } }, `Alerta: ${ALERT_LABEL[c.alert]}`), h('span', { class: 'tag' }, `Rotación cada ${[3, 2, 1, 1][c.alert]} ronda${c.alert >= 2 ? '' : 's'}`)),
       c.knowsPattern ? h('div', { class: 'small' }, `Próxima: ${ROT_SEQ[c.step % 8].label}`) : h('div', { class: 'small' }, 'Patrón desconocido (cuadernos o Investigación).'),
-      h('div', { class: 'small' }, `Lleváis: ${Object.keys(b.carry).map(k => names[k] ?? k).join(', ') || 'nada'}`), h('div', { class: 'small' }, `Objetivo: tomo + 3 calaveras → La Salida (${c.goal.filter(g => b.carry[g]).length}/3).`));
+      h('div', { class: 'small' }, `Llevan: ${Object.keys(b.carry).map(k => names[k] ?? k).join(', ') || 'nada'}`), h('div', { class: 'small' }, `Objetivo: tomo + 3 calaveras → La Salida (${c.goal.filter(g => b.carry[g]).length}/3).`));
   }
   openItemMenu() {
     const u = this.cur; if (!u) return; this.clearMenu(); const b = this.b;

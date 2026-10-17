@@ -14,7 +14,7 @@ Cada capítulo se diseña con tres piezas: **tensión** (amenaza o duda), **aliv
 | VII Iglesia | Dahhak | Prueba de Azuran | Jefe + sentencia | Pregunta sin respuesta |
 | **noche 1** | — | **La Cena de la Biblioteca** | Regalo de Zahir | Generoso |
 | VIII Vizir | Razul en la mesa | Un vaso de agua | Entregar, negociar o rechazar el trato | «Os lo dije» |
-| IX Jardín | Fiesta de máscaras | Zyr'thar y su sombra | Marid: hablar o pelear | Confiesa que os eligió por vuestras heridas |
+| IX Jardín | Fiesta de máscaras | Zyr'thar y su sombra | Marid: hablar o pelear | Confiesa que los eligió por sus heridas |
 | **noche 2** | — | **Lo que se dice a media voz** (Samira, Romain) | Confiar en Samira | — |
 | X Lago | Cripta, Al-Mazhar | Cena con la nana | **Cantar la nana (sin combate) o combatir** | Dice «gracias» |
 | **noche 3** | — | **La Nana** | Decir la verdad a Farid | Dolido |

@@ -22,11 +22,11 @@ Archivo: `src/story/novel.ts`. Cada escena se reproduce **una sola vez** (bander
 Se suman a los interludios jugables ya existentes (`src/story/interludes.ts`): estos son sólo lectura, cortos y de tono literario.
 
 ## Aviso de canon
-El material de las sesiones 1–2 y del Juicio de Arena es canónico. **Estas escenas son invención mía** (Al-Khush y las tres monedas, las 23 plumas, el vaso de Razul, la máscara de Nafisa, el libro de la Veta, etc.) y están escritas para encajar con lo ya establecido; cotejadlas con vuestras notas antes de darlas por buenas.
+El material de las sesiones 1–2 y del Juicio de Arena es canónico. **Estas escenas son invención mía** (Al-Khush y las tres monedas, las 23 plumas, el vaso de Razul, la máscara de Nafisa, el libro de la Veta, etc.) y están escritas para encajar con lo ya establecido; cotéjenlas con sus notas antes de darlas por buenas.
 
 ## Escenas que reaccionan a la campaña (`src/story/novelReact.ts`)
-Cada escena base lleva añadidos **fragmentos** según lo que hayáis hecho:
+Cada escena base lleva añadidos **fragmentos** según lo que hayan hecho:
 - **Decisión del capítulo** (siempre se cuenta): por ejemplo Cap. VIII cambia con `razul_pacto`, `razul_tregua`, `razul_rechazo` o `razul_vaso`; Cap. IX con el destino del Marid (libre, atado, enemigo, diálogo); Cap. VII con Dahhak (muerto, vivo, devorado); Cap. XI con el sacrificio y el Gusano; Cap. XII con Razul (muerto, silencio, aliado); la portada del Acto II con vuestra Postura (Orden, Pueblo, Sombra).
 - **Ambiente** (una sola vez cada uno): camino moral (Corrupción/Devoción), Alerta, número y salud de los seguidores, bajas de la compañía, Sello del Simurg, reputación con Conclave/Hijos/Mercaderes, vínculos con Aisha/Farid/Samira, Ruta (Sombra/Fe/Balanza), decisiones morales (el niño, el juicio), arcos de personaje (corona de Pact, memoria de Rabb, sombra de Zyr'thar, golem de Panchi) y las dudas o promesas con Zahir.
-- **Profundidad:** cuantas más misiones secundarias, personales y morales completéis, más fragmentos de ambiente se suman (1 hasta 4 misiones, 2 de 5 a 9, 3 desde 10). Una campaña “de paso” recibe novelas más cortas; una campaña implicada, más ricas.
-- **Portadas de acto:** además llevan un **resumen vivo** de lo que la ciudad cuenta de vosotros (tono según Corrupción/Devoción, facciones con más peso y las últimas huellas morales).
+- **Profundidad:** cuantas más misiones secundarias, personales y morales completen, más fragmentos de ambiente se suman (1 hasta 4 misiones, 2 de 5 a 9, 3 desde 10). Una campaña “de paso” recibe novelas más cortas; una campaña implicada, más ricas.
+- **Portadas de acto:** además llevan un **resumen vivo** de lo que la ciudad cuenta de ustedes (tono según Corrupción/Devoción, facciones con más peso y las últimas huellas morales).

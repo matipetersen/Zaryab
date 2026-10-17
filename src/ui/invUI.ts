@@ -52,15 +52,15 @@ export class InvUI {
         for (const i of l) b.append(card(i.id, [h('span', { class: 'tag' }, `×${c.inv[i.id]}${i.kind === 'equipo' ? ` (${this.equipped(c, i.id)} equipado)` : ''}`)]));
       }
     } else if (tab === 'tienda') {
-      const disc = c.rep.mercaderes >= 2 ? 0.85 : c.rep.mercaderes <= -2 ? 1.25 : 1; b.append(h('div', { class: 'small lore' }, 'EaNassr sonríe con tres dientes de oro. «Precios de amigo.» Mentira, pero casi.' + (disc < 1 ? ' (−15 % por tu fama entre los Mercaderes)' : disc > 1 ? ' (+25 %: no le caes bien)' : '')));
-      for (const it of SHOP_STOCK) { const pr = Math.round((it.price ?? 100) * disc); b.append(card(it.id, [h('button', { class: 'btn sm', disabled: c.gold < pr, onClick: () => { c.gold -= pr; c.inv[it.id] = (c.inv[it.id] ?? 0) + 1; say(`Compras ${it.name} por ${pr} PO.`); } }, `Comprar · ${pr} PO`), h('span', { class: 'tag' }, `tienes ${c.inv[it.id] ?? 0}`)])); }
+      const disc = c.rep.mercaderes >= 2 ? 0.85 : c.rep.mercaderes <= -2 ? 1.25 : 1; b.append(h('div', { class: 'small lore' }, 'EaNassr sonríe con tres dientes de oro. «Precios de amigo.» Mentira, pero casi.' + (disc < 1 ? ' (−15 % por tu fama entre los Mercaderes)' : disc > 1 ? ' (+25 %: no le caés bien)' : '')));
+      for (const it of SHOP_STOCK) { const pr = Math.round((it.price ?? 100) * disc); b.append(card(it.id, [h('button', { class: 'btn sm', disabled: c.gold < pr, onClick: () => { c.gold -= pr; c.inv[it.id] = (c.inv[it.id] ?? 0) + 1; say(`Comprás ${it.name} por ${pr} PO.`); } }, `Comprar · ${pr} PO`), h('span', { class: 'tag' }, `tenés ${c.inv[it.id] ?? 0}`)])); }
       b.append(h('div', { class: 'sec' }, 'Vender (50 %)'));
-      for (const it of ITEMS.filter(i => i.price && this.free(c, i.id) > 0 && i.kind !== 'clave')) { const pr = Math.floor((it.price ?? 0) / 2); b.append(h('div', { class: 'small' }, `${it.icon} ${it.name} ×${this.free(c, it.id)} `, h('button', { class: 'btn sm ghost', onClick: () => { c.inv[it.id]--; c.gold += pr; say(`Vendes ${it.name} por ${pr} PO.`); } }, `+${pr} PO`))); }
+      for (const it of ITEMS.filter(i => i.price && this.free(c, i.id) > 0 && i.kind !== 'clave')) { const pr = Math.floor((it.price ?? 0) / 2); b.append(h('div', { class: 'small' }, `${it.icon} ${it.name} ×${this.free(c, it.id)} `, h('button', { class: 'btn sm ghost', onClick: () => { c.inv[it.id]--; c.gold += pr; say(`Vendés ${it.name} por ${pr} PO.`); } }, `+${pr} PO`))); }
     } else {
       b.append(h('div', { class: 'small lore' }, 'Aisha enciende el horno de la biblioteca. Con materiales y un poco de oro se fabrica casi todo lo que EaNassr vende más caro.'));
       for (const r of RECIPES) {
         const it = ITEM[r.out]; const lock = r.need && !has(c, r.need); if (lock) continue; const ok = c.mats >= r.mats && c.gold >= r.gold;
-        b.append(card(r.out, [h('div', { class: 'small' }, r.note), h('button', { class: 'btn sm', disabled: !ok, onClick: () => { c.mats -= r.mats; c.gold -= r.gold; c.inv[r.out] = (c.inv[r.out] ?? 0) + 1; say(`Fabricas ${it.name}.`); } }, `Fabricar · ${r.mats} mat.${r.gold ? ` + ${r.gold} PO` : ''}`)]));
+        b.append(card(r.out, [h('div', { class: 'small' }, r.note), h('button', { class: 'btn sm', disabled: !ok, onClick: () => { c.mats -= r.mats; c.gold -= r.gold; c.inv[r.out] = (c.inv[r.out] ?? 0) + 1; say(`Fabricás ${it.name}.`); } }, `Fabricar · ${r.mats} mat.${r.gold ? ` + ${r.gold} PO` : ''}`)]));
       }
     }
     return b;

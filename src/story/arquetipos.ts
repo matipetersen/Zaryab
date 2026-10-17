@@ -23,12 +23,12 @@ export const ARQ: Record<string, Node[]> = {
   // ── Mentor: Nadir ──
   cap2: [
     T('El Mentor que no era', 'Nadir, en el Bajo', 'bajo'),
-    N('Nadir os espera en una esquina con un odre de agua y la cara de quien lleva todo el día ensayando una frase. Os trajo hasta Zaryab. Nunca dijo por qué conocía tan bien el camino a los pilares.'),
-    S('Nadir', 'No os cobré el viaje. Pensé que me lo pagaríais más adelante, y no con dinero.', 'sin mirar a nadie en concreto'),
+    N('Nadir los espera en una esquina con un odre de agua y la cara de quien lleva todo el día ensayando una frase. Los trajo hasta Zaryab. Nunca dijo por qué conocía tan bien el camino a los pilares.'),
+    S('Nadir', 'No les cobré el viaje. Pensé que me lo pagarían más adelante, y no con dinero.', 'sin mirar a nadie en concreto'),
     { t: 'choice', prompt: 'Nadir sabe algo. Quiere venderlo o regalarlo.', options: [
-      { label: 'Sentaros a escucharlo', hint: 'Devoción · rumores. Nadir será un mentor.', e: { d: 1, rumors: 2, flags: ['nadir_mentor'], ...a('pact') }, result: ['Nadir os habla de los pilares, de la primera noche en que los vio apagarse, de un viejo conocido suyo que los llamaba «los rastros». Es poco, y es todo lo que tiene.'] },
-      { label: 'Despedirlo con una bolsa de monedas', hint: '−20 PO. Nadir será sólo un guía.', e: { gold: -20, flags: ['nadir_guia'], ...b('pact') }, result: ['Nadir acepta, un poco decepcionado. «Si cambiáis de idea, preguntad en las tabernas por el que sabe de los pilares.»'] },
-      { label: 'Preguntarle quién le paga por vigilaros', hint: 'Engaño CD 14 (Zyr\'thar). Nadir es heraldo del Conclave.', check: { skill: 'engano', dc: 14, pc: 'zyrthar' }, e: { rep: { conclave: -1 }, flags: ['nadir_heraldo'], ...a('zyrthar') }, result: ['Nadir palidece. «Nadie me paga. Todavía.» Os confiesa que el Conclave le ofreció una bolsa por contar adónde ibais. No la ha cobrado, y no sabe si hará bien en no cobrarla.'], fail: { e: {}, result: ['Nadir sonríe, ofendido. «Sois desconfiados. Es bueno.» No dice más.'] } },
+      { label: 'Sentarse a escucharlo', hint: 'Devoción · rumores. Nadir será un mentor.', e: { d: 1, rumors: 2, flags: ['nadir_mentor'], ...a('pact') }, result: ['Nadir les habla de los pilares, de la primera noche en que los vio apagarse, de un viejo conocido suyo que los llamaba «los rastros». Es poco, y es todo lo que tiene.'] },
+      { label: 'Despedirlo con una bolsa de monedas', hint: '−20 PO. Nadir será sólo un guía.', e: { gold: -20, flags: ['nadir_guia'], ...b('pact') }, result: ['Nadir acepta, un poco decepcionado. «Si cambian de idea, pregunten en las tabernas por el que sabe de los pilares.»'] },
+      { label: 'Preguntarle quién le paga por vigilarlos', hint: 'Engaño CD 14 (Zyr\'thar). Nadir es heraldo del Conclave.', check: { skill: 'engano', dc: 14, pc: 'zyrthar' }, e: { rep: { conclave: -1 }, flags: ['nadir_heraldo'], ...a('zyrthar') }, result: ['Nadir palidece. «Nadie me paga. Todavía.» Os confiesa que el Conclave le ofreció una bolsa por contar adónde ibais. No la ha cobrado, y no sabe si hará bien en no cobrarla.'], fail: { e: {}, result: ['Nadir sonríe, ofendido. «Son desconfiados. Es bueno.» No dice más.'] } },
     ] },
   ],
   // ── Guardián del umbral: Shul-Avar ──
@@ -36,16 +36,16 @@ export const ARQ: Record<string, Node[]> = {
     IF('efrit_vivo', [
       T('El Guardián Amigo', 'El último encargo de Shul-Avar', 'hammam'),
       S('Shul-Avar', 'Antes de irme quiero hacer una cosa. Lo hice durante siglos por obligación: guardar una puerta. Ahora quiero guardarla por gusto, una vez, para saber qué se siente.', 'con un nudo en la garganta de fuego'),
-      { t: 'choice', prompt: 'Shul-Avar os pide acompañarlo a una puerta vieja del acueducto.', options: [
-        { label: 'Acompañarlo y guardar la puerta con él', hint: '+PF · +Devoción. Shul-Avar será leal.', e: { d: 1, pf: 6, flags: ['shul_leal'], ...a('joren') }, result: ['Pasáis la noche sentados frente a una puerta vacía. Al amanecer, Shul-Avar dice: «Ya está. Era esto.» Se levanta sin cadenas y camina hacia el desierto.'] },
-        { label: 'Dejarlo ir solo', hint: 'Respetar su elección. Shul-Avar os recordará.', e: { flags: ['shul_recuerda'] }, result: ['Lo veis alejarse con la espalda recta. Una hora después, alguien deja en vuestra puerta una moneda de bronce con una llama grabada.'] },
+      { t: 'choice', prompt: 'Shul-Avar les pide acompañarlo a una puerta vieja del acueducto.', options: [
+        { label: 'Acompañarlo y guardar la puerta con él', hint: '+PF · +Devoción. Shul-Avar será leal.', e: { d: 1, pf: 6, flags: ['shul_leal'], ...a('joren') }, result: ['Pasan la noche sentados frente a una puerta vacía. Al amanecer, Shul-Avar dice: «Ya está. Era esto.» Se levanta sin cadenas y camina hacia el desierto.'] },
+        { label: 'Dejarlo ir solo', hint: 'Respetar su elección. Shul-Avar los recordará.', e: { flags: ['shul_recuerda'] }, result: ['Lo ven alejarse con la espalda recta. Una hora después, alguien deja en su puerta una moneda de bronce con una llama grabada.'] },
       ] },
     ]),
   ],
   // ── Sombra: el Cubo de espejos (marca el arquetipo de cada PC) ──
   m_cap4: [
     T('La Sombra de Cada Uno', 'El Cubo de los Mil Reflejos', 'espejos'),
-    N('Antes de abandonar el Cubo, cada uno de vosotros se queda un instante frente a su propio reflejo. No habla; no hace falta. Cada reflejo hace exactamente lo que vosotros no os atrevéis a hacer.'),
+    N('Antes de abandonar el Cubo, cada uno de ustedes se queda un instante frente a su propio reflejo. No habla; no hace falta. Cada reflejo hace exactamente lo que ustedes no se atreven a hacer.'),
     { t: 'choice', prompt: 'Romain ve un templo en llamas y, entre las llamas, su balanza.', options: [
       { label: 'La balanza se inclina hacia la compasión', e: { ...a('romain') }, result: ['Romain baja la mirada. Pesa, y pesar le duele menos.'] },
       { label: 'La balanza se inclina hacia la justicia fría', e: { ...b('romain') }, result: ['Romain sostiene la mirada. La balanza no tiembla.'] },
@@ -75,7 +75,7 @@ export const ARQ: Record<string, Node[]> = {
   m_cap5: [
     T('La Vigilia', 'De qué huye cada uno', 'plaza'),
     N('La noche antes del Coloso nadie duerme. En un rincón de la plaza, alrededor de un brasero medio apagado, alguien rompe el silencio.'),
-    { t: 'choice', prompt: 'Cada uno cuenta de qué huye. ¿A quién dejáis hablar primero?', options: [
+    { t: 'choice', prompt: 'Cada uno cuenta de qué huye. ¿A quién dejan hablar primero?', options: [
       { label: 'A Romain', hint: 'Su templo, su balanza.', e: { d: 1, ...a('romain') }, result: ['Romain habla de la noche en que su templo ardió, y de cómo desde entonces pesa a todo el mundo para no pesarse a sí mismo.'] },
       { label: 'A Rabb', hint: 'Su nombre, su espada.', e: { ...a('rabb') }, result: ['Rabb confiesa que lleva meses fingiendo recordar. A veces cree que el nombre que dice es solo uno que le dijeron. Nadie ríe.'] },
       { label: 'A Panchi', hint: 'Su rabia.', e: { ...a('panchi') }, result: ['Panchi dice: «Tengo miedo de no volver a ser el que era». Hace una pausa. «Pero tengo más miedo de volver a serlo».'] },
@@ -105,28 +105,28 @@ export const ARQ: Record<string, Node[]> = {
   // ── Embaucador: EaNassr y Razul ──
   m_cap8: [
     T('El Embaucador Generoso', 'EaNassr tiene una oferta', 'zoco'),
-    S('EaNassr', 'Los precios de las promesas suben cuando se acerca el invierno. Me han dicho que el Vizir os va a hacer una visita. Puedo venderle vuestro silencio; o puedo venderos el suyo.', 'sobándose el anillo de hueso'),
-    { t: 'choice', prompt: 'EaNassr os ofrece un negocio.', options: [
+    S('EaNassr', 'Los precios de las promesas suben cuando se acerca el invierno. Me han dicho que el Vizir les va a hacer una visita. Puedo venderle el silencio de ustedes; o puedo venderles el suyo.', 'sobándose el anillo de hueso'),
+    { t: 'choice', prompt: 'EaNassr les ofrece un negocio.', options: [
       { label: 'Comprarle el silencio del Vizir', hint: '−80 PO · −2 Alerta. EaNassr gana confianza.', e: { gold: -80, alert: -2, flags: ['ea_vendio_silencio'], bond: { ea: 1 } }, result: ['EaNassr desaparece con las monedas. Cuando regresa, trae un sobre sellado: «Doce horas de calma». Las campanas tardan en sonar.'] },
-      { label: 'Venderle el vuestro', hint: '+120 PO · +2 Alerta. Pagaréis el doble.', e: { gold: 120, alert: 2, flags: ['ea_compro_silencio'] }, result: ['EaNassr sonríe de oreja a oreja. Un trato justo es el que deja al otro creyendo que ganó.'] },
+      { label: 'Venderle el propio', hint: '+120 PO · +2 Alerta. Pagarán el doble.', e: { gold: 120, alert: 2, flags: ['ea_compro_silencio'] }, result: ['EaNassr sonríe de oreja a oreja. Un trato justo es el que deja al otro creyendo que ganó.'] },
       { label: 'Rechazar a ambos', hint: 'Sin deuda ni favor.', e: { d: 1 }, result: ['EaNassr se encoge de hombros. «Cada uno tiene sus prisas.»'] },
     ] },
   ],
   // ── Cambiaformas: Seraphel y Nafisa ──
   m_cap9: [
     T('Los Cambiaformas', 'Quién es quién en el Jardín', 'espejos'),
-    N('Hay dos personas en esta ciudad que cambian de rostro según quién las mire: una lo hace con máscaras, la otra con silencios. Las dos os necesitan, y las dos os mienten un poco.'),
-    { t: 'choice', prompt: '¿En quién confiáis más?', options: [
-      { label: 'En Lady Nafisa', hint: 'La nobleza os abre puertas.', e: { rep: { conclave: 1 }, bond: { nafisa: 1 }, flags: ['confia_nafisa'] }, result: ['Nafisa sonríe con la máscara puesta. «Sabía que erais listos.»'] },
-      { label: 'En Seraphel', hint: 'La Hija del Simurg os abre túneles.', e: { rep: { hijos: 1 }, flags: ['confia_seraphel'] }, result: ['Seraphel inclina la cabeza. «Cuando todo caiga, recordad quién os dijo la verdad.»'] },
+    N('Hay dos personas en esta ciudad que cambian de rostro según quién las mire: una lo hace con máscaras, la otra con silencios. Las dos los necesitan, y las dos les mienten un poco.'),
+    { t: 'choice', prompt: '¿En quién confían más?', options: [
+      { label: 'En Lady Nafisa', hint: 'La nobleza les abre puertas.', e: { rep: { conclave: 1 }, bond: { nafisa: 1 }, flags: ['confia_nafisa'] }, result: ['Nafisa sonríe con la máscara puesta. «Sabía que eran listos.»'] },
+      { label: 'En Seraphel', hint: 'La Hija del Simurg les abre túneles.', e: { rep: { hijos: 1 }, flags: ['confia_seraphel'] }, result: ['Seraphel inclina la cabeza. «Cuando todo caiga, recuerden quién les dijo la verdad.»'] },
       { label: 'En ninguna de las dos', hint: 'Ni favores ni deudas.', e: { flags: ['no_confia_cambiaformas'] }, result: ['Las dos asienten, y ninguna parece molesta. Es lo que hacen los cambiaformas cuando los descubren: se vuelven más cuidadosos.'] },
     ] },
   ],
   // ── Niño divino: Farid ──
   m_cap10: [
     T('El Niño Divino', 'Lo que Farid ve', 'bajo'),
-    S('Farid', 'Dentro de cinco días uno de vosotros va a soltar una cosa que lleva años apretando. No sé quién es. Se parece a una mano.', 'sentado en los escalones, con el arpa sobre las rodillas'),
-    { t: 'choice', prompt: 'Farid os cuenta lo que ve, con la inocencia de quien no sabe lo que ve.', options: [
+    S('Farid', 'Dentro de cinco días uno de ustedes va a soltar una cosa que lleva años apretando. No sé quién es. Se parece a una mano.', 'sentado en los escalones, con el arpa sobre las rodillas'),
+    { t: 'choice', prompt: 'Farid les cuenta lo que ve, con la inocencia de quien no sabe lo que ve.', options: [
       { label: 'Escucharlo con atención', hint: '+Devoción. Farid confía más.', e: { d: 1, flags: ['farid_ve'], bond: { farid: 1 } }, result: ['Farid habla de colores, de manos, de una puerta que se abre sola. No todo se entiende. Todo, cuando ocurra, se reconocerá.'] },
       { label: 'Pedirle que no mire más', hint: 'Protegerlo. Pierde el don por un tiempo.', e: { flags: ['farid_protegido'], bond: { farid: 1 } }, result: ['Farid asiente. «Lo intentaré». Esa noche no toca el arpa; es la primera vez que no lo hace.'] },
     ] },
@@ -134,15 +134,15 @@ export const ARQ: Record<string, Node[]> = {
   // ── Aliado que se pierde: Abril en la Mina ──
   m_cap11: [
     T('El Aliado que se Pierde', 'Abril y el cuaderno', 'prison'),
-    N('Abril bajó con vosotros para dibujar el mapa de lo que quedara. Cuando salisteis, su cuaderno estaba en vuestras manos y ella no.'),
+    N('Abril bajó con ustedes para dibujar el mapa de lo que quedara. Cuando salieron, su cuaderno estaba en sus manos y ella no.'),
     { t: 'choice', prompt: 'Abril no ha salido de la mina.', options: [
-      { label: 'Volver a buscarla', hint: '−8 PF. Joren se juega el pellejo.', e: { pf: -8, flags: ['abril_salvada'], bond: { abril: 2 }, ...a('joren') }, result: ['La encontráis sentada en el tercer nivel con la espalda contra una pared, dibujando de memoria. No pidió que fuerais. Pero llora al veros.'] },
+      { label: 'Volver a buscarla', hint: '−8 PF. Joren se juega el pellejo.', e: { pf: -8, flags: ['abril_salvada'], bond: { abril: 2 }, ...a('joren') }, result: ['La encuentran sentada en el tercer nivel con la espalda contra una pared, dibujando de memoria. No pidió que fueran. Pero llora al verlos.'] },
       { label: 'Seguir adelante', hint: 'El culto necesita salir. Abril se pierde.', e: { c: 1, flags: ['abril_perdida'], ...b('joren') }, result: ['Nadie dice su nombre en el camino de vuelta. En el Bajo, alguien cuelga el cuaderno de un clavo. Allí se queda.'] },
     ] },
   ],
   // ── Sombra: lo que cada uno comparte con Razul ──
   m_cap12: [
-    T('La Sombra que Habla', 'Lo que compartís con él', 'coliseo'),
+    T('La Sombra que Habla', 'Lo que comparten con él', 'coliseo'),
     N('Al bajar la escalera del Vizir, cada uno ha pensado lo mismo sin decirlo: «Lo entiendo». No es fácil admitir que se comprende a un hombre que ha mantenido tres mil años una ciudad en pie con una sola idea.'),
     { t: 'choice', prompt: '¿Quién se atreve a decirlo en voz alta?', options: [
       { label: 'Pact: «Yo también quise ser corona»', e: { d: 1, ...a('pact') }, result: ['Pact lo dice mirando al suelo. Nadie lo contradice. Alguien le pone una mano en el hombro.'] },
@@ -165,7 +165,7 @@ const rite = (pc: string, name: string, askA: string, askB: string): Node[] => [
 ];
 export const RESURRECCION: Node[] = [
   T('La Resurrección', 'Antes del Eclipse', 'limbo'),
-  N('Antes del Eclipse, en el círculo de piedra, cada uno de vosotros siente la misma cosa: que lo que ha sido hasta ahora ya no alcanza. Es el momento de decidir en quién os convertís al salir de aquí.'),
+  N('Antes del Eclipse, en el círculo de piedra, cada uno de ustedes siente la misma cosa: que lo que ha sido hasta ahora ya no alcanza. Es el momento de decidir en quién se convierten al salir de aquí.'),
   ...rite('romain', 'Romain', 'Pesar con compasión', 'Pesar con justicia'),
   ...rite('pact', 'Pact', 'Rendir la corona', 'Aceptar la corona'),
   ...rite('rabb', 'Rabb', 'Escribir su propio nombre', 'Dejar que otro lo escriba'),

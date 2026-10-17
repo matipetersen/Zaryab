@@ -26,7 +26,7 @@ function spawnRoamer(c: Campaign): string | null {
   const ds = FRONT_DISTRICTS.filter(d => DISTRICT_BY_ID[d].open(c) && ROAMER_ENC[c.front[d]] && !c.roamers.some(r => r.district === d)); if (!ds.length) return null;
   const d = pick(ds); const f = c.front[d]; c.roamers.push({ id: `r${c.day}_${Math.floor(Math.random() * 1000)}`, district: d, kind: f, since: c.day });
   const who = f === 'conclave' ? 'Un recaudador del Conclave' : f === 'culto' ? 'Un infiltrado del Culto' : 'Una partida de ghuls hambrientos';
-  return `${who} merodea por ${DISTRICT_BY_ID[d].name}. Si lo ignoráis, subirá la Alerta.`;
+  return `${who} merodea por ${DISTRICT_BY_ID[d].name}. Si lo ignoran, subirá la Alerta.`;
 }
 /** Un día de mundo vivo. Devuelve las líneas para el Diario. */
 export function worldDay(c: Campaign): string[] {
@@ -34,7 +34,7 @@ export function worldDay(c: Campaign): string[] {
   c.frontTick++; if (c.frontTick >= 6) { c.frontTick = 0; out.push(shiftFront(c)); }
   c.roamerTick++; if (c.roamerTick >= 4) { c.roamerTick = 0; const s = spawnRoamer(c); if (s) out.push(s); }
   const stale = c.roamers.filter(r => c.day - r.since >= 8);
-  if (stale.length) { c.roamers = c.roamers.filter(r => !stale.includes(r)); c.alert = Math.min(10, c.alert + stale.length); out.push(`Dejasteis a ${stale.length} errante(s) a su aire: +${stale.length} Alerta.`); }
+  if (stale.length) { c.roamers = c.roamers.filter(r => !stale.includes(r)); c.alert = Math.min(10, c.alert + stale.length); out.push(`Dejaron a ${stale.length} errante(s) a su aire: +${stale.length} Alerta.`); }
   return out;
 }
 export const hostile = (c: Campaign, d: string) => HOSTILE.includes(c.front[d]);

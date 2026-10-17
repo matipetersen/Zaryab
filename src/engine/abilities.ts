@@ -43,7 +43,7 @@ export const nearestFoes = (b: Battle, u: Unit, radius: number, n: number) =>
   b.foesOf(u).filter(f => cheb(f, u) <= radius && b.canSee(u, f).visible && b.targetable(u, f)).sort((x, y) => cheb(x, u) - cheb(y, u)).slice(0, n);
 
 // ---------- generales ----------
-def({ id: 'dash', name: 'Correr', desc: 'Duplicas tu movimiento este turno.', cost: 'action', range: 0, target: 'self', tag: 'move',
+def({ id: 'dash', name: 'Correr', desc: 'Duplicás tu movimiento este turno.', cost: 'action', range: 0, target: 'self', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; b.log(`${u.name} corre.`, 'sys'); } });
 def({ id: 'dodge', name: 'Esquivar', desc: 'Los ataques contra ti tienen desventaja hasta tu próximo turno.', cost: 'action', range: 0, target: 'self', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); b.log(`${u.name} se pone a la defensiva.`, 'sys'); } });
@@ -79,13 +79,13 @@ def({ id: 'ray_of_enfeeblement', name: 'Rayo de Debilitamiento', desc: 'Concentr
   run: (b, u, t: Unit) => { const r = b.rollAttack(u, t, u.spellAtk, { ranged: true, spell: true }); b.emit({ t: 'fx', kind: 'bolt', x: u.x, y: u.y, x2: t.x, y2: t.y }); if (!r.hit) { b.log('El rayo falla.', 'roll'); b.float(t, 'Falla', 'miss'); u.conc = undefined; return; } u.conc = { id: 'ray_of_enfeeblement', targets: [t.uid] }; b.addStatus(t, { id: 'enfeebled', turns: 10, src: u.uid }); } });
 
 // ---------- Pact Risen (Guerrero / Maestro de Batalla / Aasimar) ----------
-def({ id: 'second_wind', name: 'Tomar Aliento', desc: 'Acción adicional. Recuperas 1d10+3 PG.', cost: 'bonus', range: 0, target: 'self', use: 'sw', tag: 'heal',
+def({ id: 'second_wind', name: 'Tomar Aliento', desc: 'Acción adicional. Recuperás 1d10+3 PG.', cost: 'bonus', range: 0, target: 'self', use: 'sw', tag: 'heal',
   run: (b, u) => { const a = roll('1d10').total + u.level; b.heal(u, a, u); b.log(`${u.name} toma aliento (+${a}).`, 'heal'); } });
-def({ id: 'action_surge', name: 'Oleada de Acción', desc: 'Obtienes una acción adicional este turno.', cost: 'free', range: 0, target: 'self', use: 'surge', tag: 'buff',
+def({ id: 'action_surge', name: 'Oleada de Acción', desc: 'Obtenés una acción adicional este turno.', cost: 'free', range: 0, target: 'self', use: 'surge', tag: 'buff',
   run: (b, u) => { u.extraActions++; b.log(`${u.name} lanza una Oleada de Acción.`, 'buff'); b.float(u, '¡Oleada!', 'status'); } });
 def({ id: 'rally', name: 'Reagrupar', desc: 'Acción adicional, dado de superioridad. Aliado a 12 casillas gana 1d8+CAR PG temporales.', cost: 'bonus', range: 12, target: 'allyOrSelf', use: 'sd', tag: 'buff', los: false,
   run: (b, u, t: Unit) => { const a = roll(sdDie(u)).total + u.mods.cha; t.temp = Math.max(t.temp, a); b.float(t, `+${a} temp`, 'heal'); b.log(`${u.name} reagrupa a ${t.name} (+${a} PG temporales).`, 'buff'); } });
-def({ id: 'radiant_soul', name: 'Alma Radiante', desc: 'Brotan alas luminosas: vuelas y sumas 3 de daño radiante por turno (10 rondas).', cost: 'action', range: 0, target: 'self', use: 'soul', tag: 'buff',
+def({ id: 'radiant_soul', name: 'Alma Radiante', desc: 'Brotan alas luminosas: volás y sumás 3 de daño radiante por turno (10 rondas).', cost: 'action', range: 0, target: 'self', use: 'soul', tag: 'buff',
   run: (b, u) => { u.fly = true; b.addStatus(u, { id: 'radiantSoul', turns: 10, src: u.uid }); b.log(`Dos alas de luz brotan de la espalda de ${u.name}.`, 'buff'); b.emit({ t: 'fx', kind: 'heal', x: u.x, y: u.y }); } });
 def({ id: 'healing_hands', name: 'Manos Curativas', desc: 'Toque. Recupera PG igual a tu nivel.', cost: 'action', range: 1, target: 'allyOrSelf', use: 'hh', tag: 'heal',
   run: (b, u, t: Unit) => { b.heal(t, u.level, u); b.log(`${u.name} cura ${u.level} a ${t.name}.`, 'heal'); } });
@@ -105,19 +105,19 @@ def({ id: 'hunters_mark', name: 'Marca del Cazador', desc: 'Acción adicional, c
   run: (b, u, t: Unit) => { u.conc = { id: 'hunters_mark', targets: [t.uid] }; b.addStatus(u, { id: 'hunterMark', turns: 600, src: u.uid, val: t.uid }, true); b.float(t, 'Marcado', 'status'); b.log(`${u.name} marca a ${t.name}.`, 'buff'); } });
 
 // ---------- Zyr'thar (Pícaro / Asesino) ----------
-def({ id: 'hide', name: 'Esconderse', desc: 'Acción adicional. Quedas oculto hasta que ataques.', cost: 'bonus', range: 0, target: 'self', tag: 'buff',
+def({ id: 'hide', name: 'Esconderse', desc: 'Acción adicional. Quedás oculto hasta que ataques.', cost: 'bonus', range: 0, target: 'self', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'invisible', turns: 3, src: u.uid }); b.log(`${u.name} se funde con las sombras.`, 'buff'); } });
-def({ id: 'cunning_dash', name: 'Acción Astuta: Correr', desc: 'Acción adicional. Duplicas tu movimiento.', cost: 'bonus', range: 0, target: 'self', tag: 'move',
+def({ id: 'cunning_dash', name: 'Acción Astuta: Correr', desc: 'Acción adicional. Duplicás tu movimiento.', cost: 'bonus', range: 0, target: 'self', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; b.log(`${u.name} corre entre las sombras.`, 'sys'); } });
 def({ id: 'faerie_fire', name: 'Fuego Feérico', desc: '1/día. Enemigos a 2 casillas del punto: salvación DES o quedan delineados (ventaja para atacarles).', cost: 'action', range: 12, target: 'tile', use: 'faerie', aoe: 2, tag: 'control',
   run: (b, u, t: P) => { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); for (const f of b.foesOf(u).filter(f => cheb(f, t) <= 2)) if (!b.save(f, 'dex', u.spellDC, '(Fuego Feérico)')) b.addStatus(f, { id: 'faerie', turns: 10, src: u.uid }); } });
 
 // ---------- Panchi (Monje) ----------
-def({ id: 'flurry', name: 'Ráfaga de Golpes', desc: 'Gastas 1 ki: dos golpes desarmados como acción adicional.', cost: 'bonus', range: 0, target: 'none', use: 'ki', tag: 'attack',
+def({ id: 'flurry', name: 'Ráfaga de Golpes', desc: 'Gastás 1 ki: dos golpes desarmados como acción adicional.', cost: 'bonus', range: 0, target: 'none', use: 'ki', tag: 'attack',
   run: (b, u) => { u.res['flurry'] = 2; b.log(`${u.name} desata una Ráfaga de Golpes.`, 'buff'); } });
-def({ id: 'patient_defense', name: 'Defensa Paciente', desc: 'Gastas 1 ki: Esquivar como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'buff',
+def({ id: 'patient_defense', name: 'Defensa Paciente', desc: 'Gastás 1 ki: Esquivar como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); } });
-def({ id: 'step_of_wind', name: 'Paso del Viento', desc: 'Gastas 1 ki: Correr como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'move',
+def({ id: 'step_of_wind', name: 'Paso del Viento', desc: 'Gastás 1 ki: Correr como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; } });
 void rand;
 

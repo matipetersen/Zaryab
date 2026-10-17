@@ -24,4 +24,4 @@ En la **Mina de Alabastro**, huyen o enfrentan a **Gul-Amarat**, el gusano de br
 La pestaña **Personajes** del inventario muestra cada arco con sus hitos y lo que decidiste.
 
 ## Hilos de Zahir
-Promesa amable → primer regalo (Mirabel) → «os elegí por vuestras heridas» → «gracias» → ruego → mejor oferta → revelación → máscara caída.
+Promesa amable → primer regalo (Mirabel) → «los elegí por sus heridas» → «gracias» → ruego → mejor oferta → revelación → máscara caída.

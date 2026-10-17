@@ -5,9 +5,9 @@ export interface District { id: string; name: string; x: number; y: number; icon
 
 const after = (flag: string) => (c: Campaign) => has(c, flag);
 export const DISTRICTS: District[] = [
-  { id: 'santuario', name: 'La Biblioteca · Santuario', x: 52, y: 55, icon: '☥', bg: 'choza', danger: 1, open: () => true, blurb: 'Vuestra base: una biblioteca olvidada bajo el Bajo Zaryab, sobre los Huesos del Primer Pacto. Paredes que sangran aceite violeta.' },
+  { id: 'santuario', name: 'La Biblioteca · Santuario', x: 52, y: 55, icon: '☥', bg: 'choza', danger: 1, open: () => true, blurb: 'Su base: una biblioteca olvidada bajo el Bajo Zaryab, sobre los Huesos del Primer Pacto. Paredes que sangran aceite violeta.' },
   { id: 'bajo', name: 'Bajo Zaryab', x: 38, y: 40, icon: '⌂', bg: 'bajo', danger: 2, open: () => true, blurb: 'Adobe agrietado pintado con tiza violeta. Olor a especias quemadas y mentira fermentada.' },
-  { id: 'zoco', name: 'Zoco de los Mil Soplos', x: 24, y: 26, icon: '✧', bg: 'zoco', danger: 2, open: after('cap2_done'), lockedNote: 'Aún no conocéis el camino al Zoco.', blurb: 'Seda púrpura, columnas de mármol veteadas de oro y esferas de cristal que graban contratos.' },
+  { id: 'zoco', name: 'Zoco de los Mil Soplos', x: 24, y: 26, icon: '✧', bg: 'zoco', danger: 2, open: after('cap2_done'), lockedNote: 'Aún no conocen el camino al Zoco.', blurb: 'Seda púrpura, columnas de mármol veteadas de oro y esferas de cristal que graban contratos.' },
   { id: 'plaza', name: 'Plaza Central', x: 52, y: 20, icon: '⬛', bg: 'plaza', danger: 4, open: after('cap2_done'), blurb: 'El Capitolio del Vizir y, bajo las baldosas, un cubo de mármol sin inscripciones.' },
   { id: 'jardin', name: 'Jardín de los Suspiros', x: 78, y: 28, icon: '❀', bg: 'espejos', danger: 3, open: after('cap3_done'), lockedNote: 'Hace falta una invitación… o un nombre.', blurb: 'Cipreses podados como manos gigantes. Aquí los nobles juegan al Juego de las Máscaras.' },
   { id: 'acueductos', name: 'Acueductos del Oeste', x: 11, y: 52, icon: '≈', bg: 'acueducto', danger: 3, open: after('cap2_done'), blurb: 'Viejos baños y canales olvidados. El agua guarda lo que se hunde.' },

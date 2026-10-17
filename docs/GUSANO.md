@@ -3,13 +3,13 @@
 **Idea original:** como el gusano real (una especie invasora que rebrota de sus propios trozos), no se puede matar. Persigue a quien lleva fragmentos del meteorito y crece con lo que devora.
 
 ## Reglas (implementadas)
-- **Empieza a cazar** tras el Cap. III y mientras llevéis al menos un fragmento (`fragmento_2`, `fragmento_3`, Dahhak, Marid, Al-Mazhar, Gul-Amarat, Razul). Se cuentan fragmentos distintos (`fragments()` en `src/world/gusano.ts`).
+- **Empieza a cazar** tras el Cap. III y mientras lleven al menos un fragmento (`fragmento_2`, `fragmento_3`, Dahhak, Marid, Al-Mazhar, Gul-Amarat, Razul). Se cuentan fragmentos distintos (`fragments()` en `src/world/gusano.ts`).
 - **Frecuencia:** ataca cada `16 − 2·fragmentos − ⌊poder/4⌋` días (mínimo 5). Dos días antes, el diario avisa («la tierra tiembla bajo el barrio») y el HUD muestra «🪱 Etapa · cerca».
 - **Poder 0–14:** +1 cada 14 días y +1 cada vez que devora. Etapas: Cría (0–2) · Adulto (3–5) · Colosal (6–9) · Abismal (10+).
 - **Cada ataque** (evento `gusano_caza`, se dispara en el mapa, nunca en medio de un capítulo):
-  1. *Huir por los túneles* — Sigilo CD 12 + poder. Si falla, os alcanza y devora algo.
+  1. *Huir por los túneles* — Sigilo CD 12 + poder. Si falla, los alcanza y devora algo.
   2. *Plantarle cara* — combate de supervivencia de 6 rondas. No se puede matar: se hunde herido. Más poder = más PG, ataque y daño; con poder ≥ 6 sale una segunda cabeza, y otra con ≥ 11.
-  3. *Dejar que coma* — devora algo y crece, pero os deja en paz ~8 días.
+  3. *Dejar que coma* — devora algo y crece, pero los deja en paz ~8 días.
 - **Devorar:** 40 % un seguidor (nunca un guardia), si no 4 víveres, si no 40 PO y 6 PF.
 - **Epílogo:** lo que escarba bajo la ciudad cierra los finales con cuatro versiones según su poder (`gusano_cria/adulto/colosal/abismal`).
 

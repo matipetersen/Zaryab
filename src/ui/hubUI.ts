@@ -59,7 +59,7 @@ export class HubUI {
     for (const x of pois) {
       const st = poiState(c, x); const bond = x.npc ? c.bond[x.npc] ?? 0 : -1;
       p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, `${x.icon} ${x.hidden ? 'Descubierto · ' : ''}${x.npc ? `${BOND_NAME[x.npc]} ${'♥'.repeat(bond)}${'♡'.repeat(5 - bond)}` : 'Lugar'}`), h('b', {}, x.name), h('div', { class: 'small' }, x.desc),
-        st === 'ok' ? h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'poi', id: x.id }) }, 'Visitar (una fase)') : h('div', { class: 'tag' }, st === 'cd' ? `Volved en ${(c.poiCd[x.id] ?? 0) - c.day} día(s)` : st === 'night' ? `Sólo abierto: ${(x.ph ?? []).map(i => PHASE[i]).join(' / ')}` : 'Cerrado: la facción que domina el barrio ahuyentó a la gente. Reforzad el frente.')));
+        st === 'ok' ? h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'poi', id: x.id }) }, 'Visitar (una fase)') : h('div', { class: 'tag' }, st === 'cd' ? `Vuelvan en ${(c.poiCd[x.id] ?? 0) - c.day} día(s)` : st === 'night' ? `Sólo abierto: ${(x.ph ?? []).map(i => PHASE[i]).join(' / ')}` : 'Cerrado: la facción que domina el barrio ahuyentó a la gente. Refuercen el frente.')));
     }
     void POI_BY_ID; void closedByFront;
     const qs = QUESTS.filter(q => q.district === d.id); const order = { main: 0, personal: 1, side: 2, faction: 3 } as Record<string, number>;
@@ -70,7 +70,7 @@ export class HubUI {
         st === 'available' ? h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'quest', id: q.id }) }, q.kind === 'main' ? `Iniciar (${q.days} días)` : `Aceptar (${q.days} día${q.days > 1 ? 's' : ''})`) : st === 'done' ? h('div', { class: 'tag good' }, '✔ Completada') : h('div', { class: 'tag' }, 'Próximamente')));
     }
     const free = built(c, 'alfombra');
-    p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name), c.rumors >= 2 && !(c.peek && c.peek.district === d.id) ? h('button', { class: 'btn sm ghost', onClick: () => this.pick({ t: 'peek', district: d.id }) }, '👁 Preguntar a los espías (−2 rumores)') : null, c.peek && c.peek.district === d.id ? h('div', { class: 'tag good' }, 'Los espías ya saben qué os espera aquí.') : null));
+    p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name), c.rumors >= 2 && !(c.peek && c.peek.district === d.id) ? h('button', { class: 'btn sm ghost', onClick: () => this.pick({ t: 'peek', district: d.id }) }, '👁 Preguntar a los espías (−2 rumores)') : null, c.peek && c.peek.district === d.id ? h('div', { class: 'tag good' }, 'Los espías ya saben qué les espera aquí.') : null));
     return p;
   }
   bottom(): HTMLElement {
@@ -86,7 +86,7 @@ export class HubUI {
       h('div', { class: 'pips' }, h('span', { class: 'pip free' }, `Día ${c.day} · ${PHASE[c.phase]}`), h('span', { class: `pip ${c.alert >= 7 ? '' : 'free'}`, style: c.alert >= 7 ? { color: '#ff9c8f', borderColor: '#8a3a34' } : {} }, `Alerta ${c.alert}/10`), h('span', { class: 'pip free' }, `PF ${c.pf}`), h('span', { class: 'pip free' }, `${c.gold} PO`)));
   }
   confirmLeave() {
-    const b = h('div', { class: 'res' }, h('div', {}, 'Podéis dar la espalda a Zaryab, a Zahir y al Eclipse. Es un final, no una pausa: la campaña termina aquí y la partida guardada se borra.'), h('div', { class: 'small lore' }, 'Si sólo queréis descansar, usad «Guardar y salir».'), h('button', { class: 'btn', style: { marginTop: '10px', background: '#4a1f1f' }, onClick: () => this.pick({ t: 'leave' }) }, 'Irme al desierto, de verdad'));
+    const b = h('div', { class: 'res' }, h('div', {}, 'Pueden dar la espalda a Zaryab, a Zahir y al Eclipse. Es un final, no una pausa: la campaña termina aquí y la partida guardada se borra.'), h('div', { class: 'small lore' }, 'Si sólo quieren descansar, usen «Guardar y salir».'), h('button', { class: 'btn', style: { marginTop: '10px', background: '#4a1f1f' }, onClick: () => this.pick({ t: 'leave' }) }, 'Irme al desierto, de verdad'));
     this.openModal('¿Abandonar Zaryab?', b);
   }
   // ───────── modales ─────────
@@ -104,7 +104,7 @@ export class HubUI {
     }
     b.append(h('div', { class: 'sec' }, 'Reputación'));
     for (const [k, v] of Object.entries(c.rep)) b.append(h('div', { class: 'small' }, `${FACTIONS[k] ?? k}: ${v >= 0 ? '+' : ''}${v}`));
-    if (c.huellas.length) { b.append(h('div', { class: 'sec' }, 'Huellas · lo que dejáis atrás')); for (const x of c.huellas) b.append(h('div', { class: 'small lore' }, '• ' + x)); }
+    if (c.huellas.length) { b.append(h('div', { class: 'sec' }, 'Huellas · lo que dejan atrás')); for (const x of c.huellas) b.append(h('div', { class: 'small lore' }, '• ' + x)); }
     if (c.journal.length) { b.append(h('div', { class: 'sec' }, 'Diario')); for (const j of c.journal.slice(-12).reverse()) b.append(h('div', { class: 'small' }, j)); }
     this.openModal('Diario de misiones', b);
   }
@@ -122,7 +122,7 @@ export class HubUI {
       const p = projection(c);
       b.append(h('div', { class: 'small', style: { margin: '6px 0' } }, `Cada 3 días: ${[`+${p.pf} PF`, `+${p.food} víveres`, `+${p.mats} materiales`, `+${p.rumors} rumores`].join(' · ')} · el culto come ${p.need} víveres.${c.food < p.need ? ' ⚠ Faltan víveres.' : ''}`),
         h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'fe'), tab) }, 'Sermón de Fe (1 día)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'hierro'), tab) }, 'Sermón de Hierro (1 día, +1 Corrupción)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(recruit(c), tab) }, 'Predicar y reclutar (1 día)')));
-      if (!c.followers.length) b.append(h('div', { class: 'small', style: { marginTop: '10px' } }, 'Aún no tenéis seguidores. Predicad en el Bajo Zaryab.'));
+      if (!c.followers.length) b.append(h('div', { class: 'small', style: { marginTop: '10px' } }, 'Aún no tienen seguidores. Prediquen en el Bajo Zaryab.'));
       for (const f of c.followers) {
         const sel = h('select', { onChange: (e: Event) => { setRole(c, f.id, (e.target as HTMLSelectElement).value as Role); this.onChange?.(); this.openSanctuary(tab); } }, ...f.apt.map(r => h('option', { value: r, selected: r === f.role }, `${ROLES[r].icon} ${ROLES[r].label}`)));
         b.append(h('div', { class: `fcard ${f.sick ? 'sick' : ''}` }, h('div', { class: 'fh' }, h('b', {}, f.name), f.trait ? h('span', { class: 'tag mag', title: TRAITS[f.trait].desc }, TRAITS[f.trait].label) : null, f.sick ? h('span', { class: 'tag bad' }, 'enfermo') : null, f.prov ? h('span', { class: 'tag', title: 'El canon sólo da el nombre: oficio provisional.' }, 'oficio provisional') : null),

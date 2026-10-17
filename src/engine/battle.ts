@@ -82,10 +82,10 @@ export class Battle {
   }
   /** Ataque a una casilla destructible con un arma (impacto automático). */
   attackTerrain(u: Unit, w: Weapon, x: number, y: number): Res {
-    if (this.incapacitated(u)) return { ok: false, msg: 'No puedes actuar.' };
+    if (this.incapacitated(u)) return { ok: false, msg: 'No podés actuar.' };
     if (!this.destructible(x, y)) return { ok: false, msg: 'Eso no se puede romper.' };
     if (cheb(u, { x, y }) > (w.longRange ?? w.range) || (cheb(u, { x, y }) > 1 && !this.grid.los(u, { x, y }).visible)) return { ok: false, msg: 'Fuera de alcance.' };
-    if (w.bonusAction) return { ok: false, msg: 'Usa un arma normal.' };
+    if (w.bonusAction) return { ok: false, msg: 'Usá un arma normal.' };
     const mid = u.attacksMade > 0 && u.attacksMade < this.maxAttacks(u);
     if (!mid) { if (!this.spendAction(u)) return { ok: false, msg: 'No te queda acción.' }; u.attacksMade = 0; }
     const dmg = w.dmg.reduce((s, p) => s + roll(p.dice).total, 0); this.emit({ t: 'fx', kind: w.ranged ? 'arrow' : 'slash', x: u.x, y: u.y, x2: x, y2: y });
@@ -228,7 +228,7 @@ export class Battle {
   }
   move(u: Unit, x: number, y: number): Res {
     const r = this.reach(u); const dest = r.get(key(x, y));
-    if (!dest || dest.occ || (x === u.x && y === u.y)) return { ok: false, msg: 'No puedes llegar allí.' };
+    if (!dest || dest.occ || (x === u.x && y === u.y)) return { ok: false, msg: 'No podés llegar allí.' };
     const path: P[] = []; let k: string | undefined = key(x, y);
     while (k) { const n: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: n.x, y: n.y }); k = n.prev; }
     u.moveLeft -= dest.cost; u.x = x; u.y = y;
@@ -236,7 +236,7 @@ export class Battle {
     const tile = this.grid.at(x, y);
     if (tile?.kind === 'hazard' && !u.fly) { const rr = roll('1d6'); this.log(`${u.name} pisa terreno peligroso (${rr.total}).`, 'dmg'); this.damage(u, rr.total, 'fire', undefined); }
     if (this.cube) stepTrap(this, u);
-    if (this.goal && u.pcId && !u.dead && u.x === this.goal.x && u.y === this.goal.y) this.win(this.goalMsg || 'Alcanzáis la salida.');
+    if (this.goal && u.pcId && !u.dead && u.x === this.goal.x && u.y === this.goal.y) this.win(this.goalMsg || 'Alcanzan la salida.');
     return { ok: true };
   }
 
@@ -391,9 +391,9 @@ export class Battle {
 
   // ---------- ataque con arma (PJ) ----------
   weaponAttack(u: Unit, w: Weapon, t: Unit): Res {
-    if (this.incapacitated(u)) return { ok: false, msg: 'No puedes actuar.' };
+    if (this.incapacitated(u)) return { ok: false, msg: 'No podés actuar.' };
     if (!this.targetable(u, t) || t.side === u.side) return { ok: false, msg: 'Objetivo inválido.' };
-    if (this.has(u, 'charmed') && this.status(u, 'charmed')!.src === t.uid) return { ok: false, msg: 'No puedes atacar a quien te hechizó.' };
+    if (this.has(u, 'charmed') && this.status(u, 'charmed')!.src === t.uid) return { ok: false, msg: 'No podés atacar a quien te hechizó.' };
     if (!this.inRange(u, t, w.longRange ?? w.range)) return { ok: false, msg: 'Fuera de alcance o sin línea de visión.' };
     const longShot = w.longRange && cheb(u, t) > w.range;
     if (w.bonusAction) { if (u.bonusUsed && !(u.res['flurry'] > 0)) return { ok: false, msg: 'Ya usaste tu acción adicional.' }; }
@@ -450,7 +450,7 @@ export class Battle {
   }
   canUse(u: Unit, id: string): Res {
     const ab = ABILITIES[id]; if (!ab) return { ok: false, msg: 'Habilidad desconocida.' };
-    if (this.incapacitated(u)) return { ok: false, msg: 'No puedes actuar.' };
+    if (this.incapacitated(u)) return { ok: false, msg: 'No podés actuar.' };
     if (ab.cost === 'action' && !(!u.actionUsed || u.extraActions > 0)) return { ok: false, msg: 'Sin acción.' };
     if (ab.cost === 'bonus' && u.bonusUsed) return { ok: false, msg: 'Sin acción adicional.' };
     if (ab.slot && !this.slotLevels(u, ab.slot).length) return { ok: false, msg: 'Sin espacios de conjuro.' };

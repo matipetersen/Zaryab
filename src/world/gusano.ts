@@ -27,24 +27,24 @@ export function gusanoDay(c: Campaign): string[] {
 }
 export const gusanoDue = (c: Campaign) => hunting(c) && c.gusano.next > 0 && c.day >= c.gusano.next;
 
-const FIRST = [N('La primera vez no hizo ruido. Un temblor en la taza de té. Un perro que ladra a un suelo vacío. Luego la calle se abrió en un círculo perfecto y de la boca de la tierra salió una cabeza plana, ancha como una puerta, con ojos a los lados y sin ninguna cara.'), N('Los viejos del desierto lo llaman el Gusano de Cabeza de Martillo. Dicen que si le cortas un trozo, el trozo vive. Que si le cortas dos, hay dos. Que no se mata: se sobrevive a él. Y que va detrás de lo que brilla.')];
+const FIRST = [N('La primera vez no hizo ruido. Un temblor en la taza de té. Un perro que ladra a un suelo vacío. Luego la calle se abrió en un círculo perfecto y de la boca de la tierra salió una cabeza plana, ancha como una puerta, con ojos a los lados y sin ninguna cara.'), N('Los viejos del desierto lo llaman el Gusano de Cabeza de Martillo. Dicen que si le cortás un trozo, el trozo vive. Que si le cortás dos, hay dos. Que no se mata: se sobrevive a él. Y que va detrás de lo que brilla.')];
 const BY_STAGE = [
-  [N('La cabeza asoma, olisquea el aire, y gira hacia el cristal de vuestro pecho como una brújula hacia el norte.')],
+  [N('La cabeza asoma, olisquea el aire, y gira hacia el cristal de su pecho como una brújula hacia el norte.')],
   [N('Ha crecido. Ya no es un gusano que acecha: es un animal que sabe que acecha. Los muros del Bajo se estremecen cuando respira.')],
-  [N('Tres cabezas, ahora. Cada una con un ojo distinto de lo que ha devorado. En una, vais a reconocer un trozo de rostro: lo que ha comido, lo guarda.')],
+  [N('Tres cabezas, ahora. Cada una con un ojo distinto de lo que ha devorado. En una, van a reconocer un trozo de rostro: lo que ha comido, lo guarda.')],
   [N('Ya no cabe en las calles. Se desliza bajo ellas y las arquea como una ola, y por donde pasa las casas se inclinan, saludando. Es más antiguo que la ciudad, y no está de buen humor.')],
 ];
-/** El Gusano nunca muere: vosotros decidís cuánto le dais. */
+/** El Gusano nunca muere: ustedes deciden cuánto le dan. */
 export function gusanoScript(c: Campaign): Node[] {
   const st = stage(c), p = c.gusano.power, fr = fragments(c);
   const nodes: Node[] = [{ t: 'chapter', title: 'El que Escarba', sub: `Gusano de Cabeza de Martillo · ${STAGES[st]} · ${fr} fragmento${fr > 1 ? 's' : ''}`, bg: 'acueducto' }];
   if (c.gusano.seen === 0) nodes.push(...FIRST); nodes.push(...BY_STAGE[st]);
-  nodes.push({ t: 'choice', prompt: 'El suelo vuelve a abrirse. ¿Qué hacéis?', options: [
-    { label: 'Huir por los túneles', hint: `Sigilo CD ${12 + p}. Si falla, os alcanza.`, check: { skill: 'sigilo', dc: 12 + p }, e: { flags: ['gusano_huida'] }, result: ['Os deslizáis entre los muros mientras la cabeza se pasea sobre vosotros. Cuando se aleja, sois los únicos que no olvidáis respirar.'], fail: { e: { gusano: 1, devora: true }, result: ['Os oye. Os alcanza. Llevaba un instante, apenas, pero es el instante que necesitaba para comer.'] } },
-    { label: 'Plantarle cara', hint: 'Combate: aguantad 5 rondas. No se le puede matar.', e: {}, result: ['Los cinco os giráis a la vez. Es la primera vez que algo en Zaryab os mira como si valierais.'], then: [{ t: 'battle', enc: 'gusano_caza' }, { t: 'fx', e: { flags: ['gusano_resistido'] }, note: 'Resistís. El Gusano se hunde en la arena, herido: no muerto.' }] },
-    { label: 'Dejar que coma', hint: 'Os deja en paz ~8 días. Devora algo y crece.', e: { gusano: 1, devora: true, sacia: 8 }, result: ['Le ofrecéis lo que tenéis. Come sin prisa, sin gratitud. Lo que desaparece no vuelve.'] },
+  nodes.push({ t: 'choice', prompt: 'El suelo vuelve a abrirse. ¿Qué hacen?', options: [
+    { label: 'Huir por los túneles', hint: `Sigilo CD ${12 + p}. Si falla, los alcanza.`, check: { skill: 'sigilo', dc: 12 + p }, e: { flags: ['gusano_huida'] }, result: ['Se deslizan entre los muros mientras la cabeza se pasea sobre ustedes. Cuando se aleja, son los únicos que no olvidan respirar.'], fail: { e: { gusano: 1, devora: true }, result: ['Los oye. Los alcanza. Llevaba un instante, apenas, pero es el instante que necesitaba para comer.'] } },
+    { label: 'Plantarle cara', hint: 'Combate: aguanten 5 rondas. No se le puede matar.', e: {}, result: ['Los cinco se giran a la vez. Es la primera vez que algo en Zaryab los mira como si valieran.'], then: [{ t: 'battle', enc: 'gusano_caza' }, { t: 'fx', e: { flags: ['gusano_resistido'] }, note: 'Resisten. El Gusano se hunde en la arena, herido: no muerto.' }] },
+    { label: 'Dejar que coma', hint: 'Los deja en paz ~8 días. Devora algo y crece.', e: { gusano: 1, devora: true, sacia: 8 }, result: ['Le ofrecen lo que tienen. Come sin prisa, sin gratitud. Lo que desaparece no vuelve.'] },
   ] });
-  nodes.push({ t: 'if', flag: 'gusano_resistido', then: [S('Zahir', 'No se mata, vosotros lo sabéis. Hace lo que hace cualquier cosa hambrienta: vuelve. Lo que podéis hacer es ser el obstáculo más caro que encuentre.', 'con un respeto inesperado')] });
+  nodes.push({ t: 'if', flag: 'gusano_resistido', then: [S('Zahir', 'No se mata, ustedes lo saben. Hace lo que hace cualquier cosa hambrienta: vuelve. Lo que pueden hacer es ser el obstáculo más caro que encuentre.', 'con un respeto inesperado')] });
   return nodes;
 }
 

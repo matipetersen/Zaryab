@@ -18,88 +18,88 @@ const after = (f: string) => (c: Campaign) => has(c, f);
 export const POIS: Poi[] = [
   { id: 'aisha_cocina', district: 'santuario', name: 'La cocina de Aisha', icon: '🍞', npc: 'aisha', cd: 3, desc: 'Olor a pan de arena y a cuna ajena.', script: [
     N('Aisha amasa sin mirar. Tararea algo que se corta justo antes del final, como siempre.'),
-    S('Aisha', 'Come. No sé qué sois, pero estáis flacos.', 'sin levantar la vista'),
-    { t: 'choice', prompt: '¿Qué hacéis?', options: [
-      { label: 'Ayudarla a amasar', hint: '+1 víveres · vínculo', e: { food: 1, bond: { aisha: 1 } }, result: ['Amasáis en silencio. Cuando termina la tanda, Aisha os da la primera hogaza, todavía caliente.'] },
+    S('Aisha', 'Coman. No sé qué son, pero están flacos.', 'sin levantar la vista'),
+    { t: 'choice', prompt: '¿Qué hacen?', options: [
+      { label: 'Ayudarla a amasar', hint: '+1 víveres · vínculo', e: { food: 1, bond: { aisha: 1 } }, result: ['Amasan en silencio. Cuando termina la tanda, Aisha les da la primera hogaza, todavía caliente.'] },
       { label: 'Preguntarle por la nana', hint: 'Vínculo · +1 Devoción', e: { d: 1, bond: { aisha: 1 } }, result: ['«Me la cantaba mi madre. Me la cantaba a mí y a un niño que no era mío.» No dice más. No hace falta.'] },
     ] },
   ] },
   { id: 'biblioteca_noche', district: 'santuario', name: 'Los estantes sin dueño', icon: '📚', ph: [2], cd: 5, desc: 'De noche, los libros sangran menos y susurran más.', script: [
     N('Entre los estantes hay volúmenes que nadie escribió. Uno se abre solo.'),
     { t: 'choice', prompt: 'Una página se ilumina en violeta.', options: [
-      { label: 'Leerla entera', hint: '+4 PF · +1 Corrupción', e: { pf: 4, c: 1 }, result: ['Es una lista de nombres con fechas futuras. El primero es el vuestro. Cerráis el libro con las manos frías.'] },
-      { label: 'Cerrarlo y apagar el candil', hint: '+1 Devoción', e: { d: 1 }, result: ['El libro intenta abrirse otra vez. Lo aplastáis bajo otro más pesado.'] },
+      { label: 'Leerla entera', hint: '+4 PF · +1 Corrupción', e: { pf: 4, c: 1 }, result: ['Es una lista de nombres con fechas futuras. El primero es el suyo. Cierran el libro con las manos frías.'] },
+      { label: 'Cerrarlo y apagar el candil', hint: '+1 Devoción', e: { d: 1 }, result: ['El libro intenta abrirse otra vez. Lo aplastan bajo otro más pesado.'] },
     ] },
   ] },
   { id: 'farid_calle', district: 'bajo', name: 'Farid y su arpa', icon: '🎶', npc: 'farid', cd: 4, desc: 'Un niño toca en la esquina. No pide monedas.', script: [
     N('Farid toca tres notas, se detiene, las repite. Lleva días intentando recordar la cuarta.'),
-    { t: 'choice', prompt: 'El niño os mira.', options: [
-      { label: 'Sentaros a escuchar', hint: 'Vínculo con Farid', e: { bond: { farid: 1 } }, result: ['La cuarta nota no llega. Pero Farid sonríe como si sí.'] },
+    { t: 'choice', prompt: 'El niño los mira.', options: [
+      { label: 'Sentarse a escuchar', hint: 'Vínculo con Farid', e: { bond: { farid: 1 } }, result: ['La cuarta nota no llega. Pero Farid sonríe como si sí.'] },
       { label: 'Dejarle unas monedas', hint: '−5 PO · vínculo ×2', e: { gold: -5, bond: { farid: 2 } }, result: ['«No hacía falta», dice. Se las guarda en el bolsillo de la camisa, justo sobre el corazón.'] },
     ] },
   ] },
   { id: 'taberna_escorpion', district: 'bajo', name: 'Taberna del Escorpión', icon: '🍺', ph: [1, 2], cd: 3, desc: 'Donde las mentiras se pagan en rondas.', script: [
     N('El tabernero sirve sin preguntar. En la mesa del fondo, dos guardias de bronce hablan demasiado alto, o lo bastante.'),
     { t: 'choice', prompt: 'Las voces cruzan la sala.', options: [
-      { label: 'Invitar una ronda y escuchar', hint: '−5 PO · +2 rumores', e: { gold: -5, rumors: 2 }, result: ['Entre risas y bronce, oís de patrullas, de pasillos bajo los acueductos y de un mural de tiza que «llora cuando hay luna».'] },
-      { label: 'Seguir a los guardias', check: { skill: 'sigilo', dc: 13 }, hint: 'Sigilo CD 13 · descubrís un lugar', e: { found: ['mural_tiza'], rumors: 1 }, result: ['Los seguís hasta un muro de adobe con tiza violeta. Lo que dibujaron ahí no está en ningún mapa.'], fail: { e: { alert: 1 }, result: ['Uno se gira. Tenéis que improvisar una excusa muy larga y muy mala.'] } },
+      { label: 'Invitar una ronda y escuchar', hint: '−5 PO · +2 rumores', e: { gold: -5, rumors: 2 }, result: ['Entre risas y bronce, oyen de patrullas, de pasillos bajo los acueductos y de un mural de tiza que «llora cuando hay luna».'] },
+      { label: 'Seguir a los guardias', check: { skill: 'sigilo', dc: 13 }, hint: 'Sigilo CD 13 · descubren un lugar', e: { found: ['mural_tiza'], rumors: 1 }, result: ['Los siguen hasta un muro de adobe con tiza violeta. Lo que dibujaron ahí no está en ningún mapa.'], fail: { e: { alert: 1 }, result: ['Uno se gira. Tienen que improvisar una excusa muy larga y muy mala.'] } },
     ] },
   ] },
   { id: 'mural_tiza', district: 'bajo', name: 'El mural que llora', icon: '🖌', ph: [2], hidden: true, cd: 8, desc: 'Un mural de tiza violeta, escondido tras un patio.', script: [
-    N('El mural muestra un ave partida en siete. Sus ojos de tiza gotean al ritmo de vuestro pulso.'),
-    { t: 'choice', prompt: 'Sentís que el cristal responde.', options: [
-      { label: 'Apoyar la mano en el ave', hint: '+8 PF · +1 Corrupción', e: { pf: 8, c: 1, found: ['ratas_acueducto'] }, result: ['El cristal bebe. Cuando soltáis, un hilo de tiza apunta hacia el oeste, hacia los acueductos.'] },
-      { label: 'Borrar un ojo con la manga', hint: '+2 Devoción · −1 Alerta', e: { d: 2, alert: -1 }, result: ['Dejáis de ser observados, un poco. El mural parece agradecerlo con una grieta menos.'] },
+    N('El mural muestra un ave partida en siete. Sus ojos de tiza gotean al ritmo de su pulso.'),
+    { t: 'choice', prompt: 'Sienten que el cristal responde.', options: [
+      { label: 'Apoyar la mano en el ave', hint: '+8 PF · +1 Corrupción', e: { pf: 8, c: 1, found: ['ratas_acueducto'] }, result: ['El cristal bebe. Cuando sueltan, un hilo de tiza apunta hacia el oeste, hacia los acueductos.'] },
+      { label: 'Borrar un ojo con la manga', hint: '+2 Devoción · −1 Alerta', e: { d: 2, alert: -1 }, result: ['Dejan de ser observados, un poco. El mural parece agradecerlo con una grieta menos.'] },
     ] },
   ] },
   { id: 'ea_puesto', district: 'zoco', name: 'El puesto de EaNassr', icon: '💍', npc: 'ea', cd: 4, desc: 'Anillos de hueso y negocios sin recibo.', script: [
     S('EaNassr', 'Mis mejores clientes son los que no vuelven a preguntar por el cambio.', 'sobándose el anillo de hueso'),
     { t: 'choice', prompt: 'EaNassr ladea la cabeza.', options: [
-      { label: 'Regatear una baratija', hint: 'Persuasión CD 13 · +30 PO · vínculo', check: { skill: 'persuasion', dc: 13 }, e: { gold: 30, bond: { ea: 1 } }, result: ['Cerráis un trato donde nadie sabe quién robó a quién. EaNassr está encantado.'], fail: { e: { gold: -10 }, result: ['Os cobra la lección. Con intereses.'] } },
-      { label: 'Invitarle a una copa', hint: '−6 PO · vínculo ×2', e: { gold: -6, bond: { ea: 2 } }, result: ['Brindáis por «las deudas bien pagadas». Es la primera vez que le veis reír sin mirar la puerta.'] },
+      { label: 'Regatear una baratija', hint: 'Persuasión CD 13 · +30 PO · vínculo', check: { skill: 'persuasion', dc: 13 }, e: { gold: 30, bond: { ea: 1 } }, result: ['Cierran un trato donde nadie sabe quién robó a quién. EaNassr está encantado.'], fail: { e: { gold: -10 }, result: ['Les cobra la lección. Con intereses.'] } },
+      { label: 'Invitarle a una copa', hint: '−6 PO · vínculo ×2', e: { gold: -6, bond: { ea: 2 } }, result: ['Brindan por «las deudas bien pagadas». Es la primera vez que lo ven reír sin mirar la puerta.'] },
     ] },
   ] },
-  { id: 'shub_trastienda', district: 'zoco', name: 'La trastienda de Madam Shub', icon: '🪞', npc: 'shub', ph: [1, 2], cd: 5, desc: 'Espejos que devuelven rostros que no son los vuestros.', script: [
+  { id: 'shub_trastienda', district: 'zoco', name: 'La trastienda de Madam Shub', icon: '🪞', npc: 'shub', ph: [1, 2], cd: 5, desc: 'Espejos que devuelven rostros que no son los suyos.', script: [
     S('Madam Shub', 'Cada espejo me debe un favor. Cada cliente, dos.', 'con una sonrisa de espejo roto'),
-    { t: 'choice', prompt: 'Madam Shub os ofrece un trato.', options: [
-      { label: 'Comprar información', hint: '−10 PO · +3 rumores · vínculo', e: { gold: -10, rumors: 3, bond: { shub: 1 } }, result: ['Os vende secretos al peso. Los de los demás, entiéndase.'] },
-      { label: 'Dejar que os mire en un espejo', hint: '+1 Corrupción · +6 PF · vínculo', e: { c: 1, pf: 6, bond: { shub: 1 } }, result: ['El rostro del espejo os sonríe con vuestros dientes. Shub apunta algo en un cuaderno.'] },
+    { t: 'choice', prompt: 'Madam Shub les ofrece un trato.', options: [
+      { label: 'Comprar información', hint: '−10 PO · +3 rumores · vínculo', e: { gold: -10, rumors: 3, bond: { shub: 1 } }, result: ['Les vende secretos al peso. Los de los demás, entiéndase.'] },
+      { label: 'Dejar que los mire en un espejo', hint: '+1 Corrupción · +6 PF · vínculo', e: { c: 1, pf: 6, bond: { shub: 1 } }, result: ['El rostro del espejo les sonríe con sus dientes. Shub apunta algo en un cuaderno.'] },
     ] },
   ] },
   { id: 'samira_cuartel', district: 'plaza', name: 'El cuartel de la Guardia', icon: '🛡', npc: 'samira', ph: [0, 1], cd: 4, when: after('cap3_done'), desc: 'Capitana Samira, entre papeles y juramentos.', script: [
     S('Capitana Samira', 'Me pagan por obedecer. Nadie dijo que fuera gratis.', 'sin levantar la mirada del informe'),
-    { t: 'choice', prompt: 'Samira os observa.', options: [
+    { t: 'choice', prompt: 'Samira los observa.', options: [
       { label: 'Ofrecer información sobre el Conclave', hint: 'vínculo · −1 rep. Conclave', e: { bond: { samira: 1 }, rep: { conclave: -1 }, found: ['mirador_plaza'] }, result: ['Samira toma notas y, sin que nadie lo vea, marca una cruz en un plano: un mirador olvidado sobre la plaza.'] },
-      { label: 'Ayudar a un recluta en apuros', hint: '+1 Devoción · vínculo', e: { d: 1, bond: { samira: 1 } }, result: ['Samira no dice nada. Pero a la salida, un guardia os abre la puerta con un gesto de respeto.'] },
+      { label: 'Ayudar a un recluta en apuros', hint: '+1 Devoción · vínculo', e: { d: 1, bond: { samira: 1 } }, result: ['Samira no dice nada. Pero a la salida, un guardia les abre la puerta con un gesto de respeto.'] },
     ] },
   ] },
   { id: 'mirador_plaza', district: 'plaza', name: 'El mirador olvidado', icon: '🔭', hidden: true, ph: [0, 2], cd: 6, desc: 'Una torre sin nombre sobre el Capitolio.', script: [
     N('Desde aquí se ve todo: las patrullas, las campanas, el ir y venir de bronce. Alguien ha dejado un catalejo.'),
-    { t: 'choice', prompt: 'Observáis la ciudad.', options: [
-      { label: 'Memorizar las rondas', hint: '−2 Alerta', e: { alert: -2 }, result: ['Tres rutas de patrulla, dos horarios. Podréis evitarlos.'] },
+    { t: 'choice', prompt: 'Observan la ciudad.', options: [
+      { label: 'Memorizar las rondas', hint: '−2 Alerta', e: { alert: -2 }, result: ['Tres rutas de patrulla, dos horarios. Podrán evitarlos.'] },
       { label: 'Contar los refuerzos', hint: '+2 rumores · +4 PF', e: { rumors: 2, pf: 4 }, result: ['Más soldados de los que el Vizir admite. Más de los que la ciudad puede pagar.'] },
     ] },
   ] },
   { id: 'nafisa_salon', district: 'jardin', name: 'El salón de Lady Nafisa', icon: '🎭', npc: 'nafisa', ph: [1, 2], cd: 5, desc: 'Máscaras, té y venenos de buena crianza.', script: [
     S('Lady Nafisa', 'Aquí nadie miente. Todos fingen, que es más elegante.', 'agitando el abanico'),
     { t: 'choice', prompt: 'Nafisa ofrece té.', options: [
-      { label: 'Aceptar el té', hint: 'Medicina CD 12 · vínculo ×2', check: { skill: 'medicina', dc: 12 }, e: { bond: { nafisa: 2 } }, result: ['Reconocéis la hierba amarga antes de beber. Nafisa asiente, como quien aprueba un examen.'], fail: { e: { pf: -3, bond: { nafisa: 1 } }, result: ['Estaba envenenado. Poco. Un recordatorio, no una amenaza.'] } },
-      { label: 'Declinar con elegancia', hint: 'vínculo · +2 rumores', e: { bond: { nafisa: 1 }, rumors: 2 }, result: ['«Precavidos. Me gusta.» Os cuenta un chisme a cambio de ninguno.'] },
+      { label: 'Aceptar el té', hint: 'Medicina CD 12 · vínculo ×2', check: { skill: 'medicina', dc: 12 }, e: { bond: { nafisa: 2 } }, result: ['Reconocen la hierba amarga antes de beber. Nafisa asiente, como quien aprueba un examen.'], fail: { e: { pf: -3, bond: { nafisa: 1 } }, result: ['Estaba envenenado. Poco. Un recordatorio, no una amenaza.'] } },
+      { label: 'Declinar con elegancia', hint: 'vínculo · +2 rumores', e: { bond: { nafisa: 1 }, rumors: 2 }, result: ['«Precavidos. Me gusta.» Les cuenta un chisme a cambio de ninguno.'] },
     ] },
   ] },
   { id: 'rosas_noche', district: 'jardin', name: 'Las rosas que sangran', icon: '🌹', ph: [2], cd: 6, desc: 'Rosas translúcidas que sangran néctar.', script: [
     N('De noche las rosas se abren. Cada pétalo guarda un deseo de alguien que no volvió.'),
-    { t: 'choice', prompt: 'Un pétalo cae en vuestra mano.', options: [
-      { label: 'Guardarlo para el altar', hint: '+6 PF · +1 Corrupción', e: { pf: 6, c: 1 }, result: ['El deseo ajeno os da fuerza. Y un poco de culpa, que es parecida.'] },
-      { label: 'Devolverlo a la tierra', hint: '+1 Devoción', e: { d: 1 }, result: ['Lo enterráis bajo el ciprés más viejo. La rosa se cierra, aliviada.'] },
+    { t: 'choice', prompt: 'Un pétalo cae en su mano.', options: [
+      { label: 'Guardarlo para el altar', hint: '+6 PF · +1 Corrupción', e: { pf: 6, c: 1 }, result: ['El deseo ajeno les da fuerza. Y un poco de culpa, que es parecida.'] },
+      { label: 'Devolverlo a la tierra', hint: '+1 Devoción', e: { d: 1 }, result: ['Lo entierran bajo el ciprés más viejo. La rosa se cierra, aliviada.'] },
     ] },
   ] },
-  { id: 'banos_olvidados', district: 'acueductos', name: 'Los baños olvidados', icon: '♨', ph: [0, 1], cd: 6, desc: 'Un lugar para que nadie os busque.', script: [
+  { id: 'banos_olvidados', district: 'acueductos', name: 'Los baños olvidados', icon: '♨', ph: [0, 1], cd: 6, desc: 'Un lugar para que nadie los busque.', script: [
     N('Agua tibia, vapor y silencio. En las paredes quedan mosaicos de gente que se bañaba sin miedo.'),
     { t: 'fx', e: { alert: -1, pf: 2 }, note: 'Un buen baño: Alerta −1, +2 PF.' },
   ] },
   { id: 'ratas_acueducto', district: 'acueductos', name: 'El contrabandista del canal', icon: '🐀', hidden: true, ph: [2], cd: 6, desc: 'Un hombre sin nombre vende lo que nadie debería poder comprar.', script: [
-    S('El Cojo', 'Nunca me habéis visto. Mejor para los dos.', 'desde la sombra de un arco'),
+    S('El Cojo', 'Nunca me han visto. Mejor para los dos.', 'desde la sombra de un arco'),
     { t: 'choice', prompt: 'El contrabandista abre una caja.', options: [
       { label: 'Comprar pociones', hint: '−30 PO · 2 pociones', e: { gold: -30, items: { pocion: 2 } }, result: ['Dos frascos, cerrados con cera negra. Probablemente son lo que dice la etiqueta.'] },
       { label: 'Venderle información del Conclave', hint: '+40 PO · +1 Alerta', e: { gold: 40, alert: 1 }, result: ['Paga bien. Demasiado bien para no ser sospechoso.'] },
@@ -107,37 +107,37 @@ export const POIS: Poi[] = [
   ] },
   { id: 'lago_orilla', district: 'pozo', name: 'La orilla del Lago', icon: '🌊', ph: [2], cd: 6, desc: 'Un cielo invertido en el agua.', script: [
     N('La Lengua Muerta crece unos dedos más cada noche. En el agua, el cielo gira al revés.'),
-    { t: 'choice', prompt: 'Algo en el reflejo os hace señas.', options: [
-      { label: 'Mirar sin parpadear', hint: 'Arcanos CD 14 · +8 PF', check: { skill: 'arcanos', dc: 14 }, e: { pf: 8 }, result: ['Veis una escena: siete figuras sentadas en círculo. Una os mira. Lleva vuestra cara.'], fail: { e: { c: 1 }, result: ['El reflejo os devuelve la mirada y vosotros no lo olvidáis.'] } },
+    { t: 'choice', prompt: 'Algo en el reflejo les hace señas.', options: [
+      { label: 'Mirar sin parpadear', hint: 'Arcanos CD 14 · +8 PF', check: { skill: 'arcanos', dc: 14 }, e: { pf: 8 }, result: ['Ven una escena: siete figuras sentadas en círculo. Una los mira. Lleva su cara.'], fail: { e: { c: 1 }, result: ['El reflejo les devuelve la mirada y ustedes no lo olvidan.'] } },
       { label: 'Rezar al Simurg', hint: '+1 Devoción', e: { d: 1 }, result: ['El agua se aquieta un instante. Es suficiente.'] },
     ] },
   ] },
   { id: 'abril_puesto', district: 'medinat', name: 'El puesto de Abril', icon: '🍯', npc: 'abril', when: after('cap6_done'), cd: 4, desc: 'Dulces de dátil y noticias de primera mano.', script: [
-    S('Abril', 'Joren dice que sois de fiar. Joren no suele decir eso de nadie.', 'repartiendo dátiles'),
-    { t: 'choice', prompt: 'Abril os mira esperando.', options: [
-      { label: 'Ayudarla a repartir comida', hint: '−2 víveres · vínculo ×2', e: { food: -2, bond: { abril: 2 } }, result: ['El barrio os ve repartiendo dátiles. Nadie pregunta de qué lado estáis.'] },
+    S('Abril', 'Joren dice que son de fiar. Joren no suele decir eso de nadie.', 'repartiendo dátiles'),
+    { t: 'choice', prompt: 'Abril los mira esperando.', options: [
+      { label: 'Ayudarla a repartir comida', hint: '−2 víveres · vínculo ×2', e: { food: -2, bond: { abril: 2 } }, result: ['El barrio los ve repartiendo dátiles. Nadie pregunta de qué lado están.'] },
       { label: 'Contarle historias del santuario', hint: 'vínculo · +1 Devoción', e: { d: 1, bond: { abril: 1 } }, result: ['Abril escucha como quien no ha tenido a nadie que le cuente cosas.'] },
     ] },
   ] },
   { id: 'ring_punos', district: 'medinat', name: 'El ring de los Puños Cerrados', icon: '🥊', when: after('cap6_done'), ph: [1, 2], cd: 5, desc: 'Apuestas, sudor y un gong oxidado.', script: [
     N('Panchi no puede evitarlo: se acerca al ring y mide con los ojos al campeón de turno.'),
-    { t: 'choice', prompt: 'Alguien os ofrece una apuesta.', options: [
-      { label: 'Apostar a que Panchi gana', hint: 'Atletismo CD 14 · ±40 PO', check: { skill: 'atletismo', dc: 14 }, e: { gold: 40 }, result: ['Panchi no pelea siquiera: el campeón retrocede. Cobráis sin sudar.'], fail: { e: { gold: -20 }, result: ['El campeón era mejor de lo que parecía.'] } },
-      { label: 'Mirar y aprender', hint: '+3 PF', e: { pf: 3 }, result: ['Anotáis tres ideas y un nombre. Los nombres, a veces, valen más que las ideas.'] },
+    { t: 'choice', prompt: 'Alguien les ofrece una apuesta.', options: [
+      { label: 'Apostar a que Panchi gana', hint: 'Atletismo CD 14 · ±40 PO', check: { skill: 'atletismo', dc: 14 }, e: { gold: 40 }, result: ['Panchi no pelea siquiera: el campeón retrocede. Cobran sin sudar.'], fail: { e: { gold: -20 }, result: ['El campeón era mejor de lo que parecía.'] } },
+      { label: 'Mirar y aprender', hint: '+3 PF', e: { pf: 3 }, result: ['Anotan tres ideas y un nombre. Los nombres, a veces, valen más que las ideas.'] },
     ] },
   ] },
   { id: 'fuego_nomada', district: 'pico', name: 'El fuego de los Nómadas', icon: '🔥', when: after('cap6_done'), ph: [2], cd: 6, desc: 'Fuegos en las alturas, canciones del Vacío.', script: [
-    N('Los Nómadas del Vacío cantan al cielo desnudo. Os hacen sitio sin preguntar.'),
-    { t: 'choice', prompt: 'Una anciana os ofrece un cuenco.', options: [
+    N('Los Nómadas del Vacío cantan al cielo desnudo. Les hacen sitio sin preguntar.'),
+    { t: 'choice', prompt: 'Una anciana les ofrece un cuenco.', options: [
       { label: 'Compartir el cuenco', hint: '+1 rep. Nómadas · +3 PF', e: { rep: { nomadas: 1 }, pf: 3 }, result: ['Es té de ceniza. Sabe a algo que no se puede nombrar, y por eso es sagrado.'] },
-      { label: 'Preguntar por el tigre alado', hint: '+2 rumores', e: { rumors: 2 }, result: ['«Sólo mira sin miedo a quien no tiene nada que perder.» Os dan una pista y una advertencia.'] },
+      { label: 'Preguntar por el tigre alado', hint: '+2 rumores', e: { rumors: 2 }, result: ['«Sólo mira sin miedo a quien no tiene nada que perder.» Les dan una pista y una advertencia.'] },
     ] },
   ] },
   { id: 'lapidas_noche', district: 'cementerio', name: 'Las lápidas sin nombre', icon: '🪦', when: after('cap6_done'), ph: [2], cd: 6, desc: 'Un ejército que Zaryab olvidó.', script: [
-    N('Todas las lápidas están en blanco. Algunas se mueven un dedo cuando las miráis.'),
+    N('Todas las lápidas están en blanco. Algunas se mueven un dedo cuando las miran.'),
     { t: 'choice', prompt: 'Una de ellas tiene un nombre a medio grabar.', options: [
       { label: 'Terminar de grabarlo', hint: '+1 Devoción · +4 PF', e: { d: 1, pf: 4 }, result: ['Al terminar, el muerto deja de marchar. Descansa, al fin.'] },
-      { label: 'Llevaros un hueso para el altar', hint: '+10 PF · +2 Corrupción', e: { pf: 10, c: 2 }, result: ['El hueso pesa más de lo que debería. El altar lo recibe con avidez.'] },
+      { label: 'Llevarse un hueso para el altar', hint: '+10 PF · +2 Corrupción', e: { pf: 10, c: 2 }, result: ['El hueso pesa más de lo que debería. El altar lo recibe con avidez.'] },
     ] },
   ] },
 ];
@@ -163,16 +163,16 @@ export const poiState = (c: Campaign, p: Poi): 'ok' | 'night' | 'cd' | 'front' |
 /** Escenas alternativas de un lugar según la fase (sustituyen a `script`). */
 export const VARIANTS: Record<string, Partial<Record<number, Node[]>>> = {
   aisha_cocina: {
-    0: [N('Antes del alba, Aisha enciende el horno sola. Amasa a oscuras, con los ojos cerrados.'), S('Aisha', 'A esta hora no me hace falta mentir. Siéntate.', 'bajito'), { t: 'fx', e: { food: 2, bond: { aisha: 1 } }, note: 'Pan recién hecho: +2 víveres, vínculo con Aisha.' }],
-    2: [N('De noche la cocina huele a ceniza y a nana. Aisha tararea la melodía entera, por primera vez, sin darse cuenta.'), { t: 'fx', e: { d: 1, bond: { aisha: 1 } }, note: 'Escucháis la nana completa: +1 Devoción, vínculo con Aisha.' }],
+    0: [N('Antes del alba, Aisha enciende el horno sola. Amasa a oscuras, con los ojos cerrados.'), S('Aisha', 'A esta hora no me hace falta mentir. Sentate.', 'bajito'), { t: 'fx', e: { food: 2, bond: { aisha: 1 } }, note: 'Pan recién hecho: +2 víveres, vínculo con Aisha.' }],
+    2: [N('De noche la cocina huele a ceniza y a nana. Aisha tararea la melodía entera, por primera vez, sin darse cuenta.'), { t: 'fx', e: { d: 1, bond: { aisha: 1 } }, note: 'Escuchan la nana completa: +1 Devoción, vínculo con Aisha.' }],
   },
   farid_calle: {
-    0: [N('Al amanecer Farid duerme sentado, abrazado al arpa. Alguien le ha dejado una manta.'), { t: 'fx', e: { bond: { farid: 1 }, rumors: 1 }, note: 'Lo cubrís con vuestra capa. Farid murmura un secreto en sueños: +1 rumor.' }],
+    0: [N('Al amanecer Farid duerme sentado, abrazado al arpa. Alguien le ha dejado una manta.'), { t: 'fx', e: { bond: { farid: 1 }, rumors: 1 }, note: 'Lo cubren con su capa. Farid murmura un secreto en sueños: +1 rumor.' }],
     2: [N('De noche Farid toca la cuarta nota. Solo una vez. Las lámparas del barrio parpadean al unísono.'), { t: 'fx', e: { d: 1, pf: 3, bond: { farid: 1 } }, note: 'La cuarta nota: +1 Devoción, +3 PF, vínculo con Farid.' }],
   },
   ea_puesto: {
     0: [S('EaNassr', 'Aún no abro. Pero a ti, a esta hora, te vendo lo que sea al precio de ayer.', 'bostezando'), { t: 'fx', e: { gold: 15, bond: { ea: 1 } }, note: 'Un trato de madrugada: +15 PO, vínculo con EaNassr.' }],
-    2: [S('EaNassr', 'Lo que se vende de noche no se compra de día. Pasa, pasa.', 'bajando la voz'), { t: 'choice', prompt: 'Mercancía de contrabando.', options: [
+    2: [S('EaNassr', 'Lo que se vende de noche no se compra de día. Pasá, pasá.', 'bajando la voz'), { t: 'choice', prompt: 'Mercancía de contrabando.', options: [
       { label: 'Comprar un secreto', hint: '−15 PO · +3 rumores', e: { gold: -15, rumors: 3, bond: { ea: 1 } }, result: ['EaNassr susurra un nombre y una dirección. Ninguno es suyo.'] },
       { label: 'Venderle algo "encontrado"', hint: '+35 PO · +1 Alerta', e: { gold: 35, alert: 1, bond: { ea: 1 } }, result: ['No pregunta de dónde. Eso tiene un precio y él lo cobra después.'] },
     ] }],
@@ -181,26 +181,26 @@ export const VARIANTS: Record<string, Partial<Record<number, Node[]>>> = {
     0: [S('Capitana Samira', 'Cambio de guardia. Es la única hora en la que nadie mira el registro.', 'ordenando papeles'), { t: 'fx', e: { alert: -1, bond: { samira: 1 } }, note: 'Samira "extravía" una hoja: −1 Alerta, vínculo.' }],
   },
   banos_olvidados: {
-    0: [N('El vapor del alba hace de las paredes un espejo borroso. Os veis, un momento, como erais antes de Zahir.'), { t: 'fx', e: { d: 1, alert: -1 }, note: 'Un baño al amanecer: +1 Devoción, −1 Alerta.' }],
+    0: [N('El vapor del alba hace de las paredes un espejo borroso. Se ven, por un momento, como eran antes de Zahir.'), { t: 'fx', e: { d: 1, alert: -1 }, note: 'Un baño al amanecer: +1 Devoción, −1 Alerta.' }],
   },
   nafisa_salon: {
-    1: [S('Lady Nafisa', 'De día soy anfitriona. Tomad el té y fingid que os importa la política.', 'sonriendo'), { t: 'fx', e: { rumors: 2, bond: { nafisa: 1 } }, note: 'Cotilleo de salón: +2 rumores, vínculo.' }],
-    2: [S('Lady Nafisa', 'De noche las máscaras caen y los nobles hablan. Escuchad detrás del biombo.', 'en un susurro'), { t: 'choice', prompt: 'Tras el biombo se oye una conversación.', options: [
-      { label: 'Escuchar con atención', check: { skill: 'percepcion', dc: 14 }, hint: 'Percepción CD 14 · +4 rumores · −2 Alerta', e: { rumors: 4, alert: -2, bond: { nafisa: 1 } }, result: ['Oís los planes de una patrulla. Sabréis esquivarla.'], fail: { e: { alert: 1 }, result: ['Crujen las tablas. Nafisa os cubre con una carcajada, pero algo se oyó.'] } },
-      { label: 'Salir a la terraza con ella', hint: 'vínculo ×2', e: { bond: { nafisa: 2 } }, result: ['Nafisa os habla del hombre que fue su marido. Es la primera vez que no usa abanico.'] },
+    1: [S('Lady Nafisa', 'De día soy anfitriona. Tomen el té y finjan que les importa la política.', 'sonriendo'), { t: 'fx', e: { rumors: 2, bond: { nafisa: 1 } }, note: 'Chismes de salón: +2 rumores, vínculo.' }],
+    2: [S('Lady Nafisa', 'De noche las máscaras caen y los nobles hablan. Escuchen detrás del biombo.', 'en un susurro'), { t: 'choice', prompt: 'Tras el biombo se oye una conversación.', options: [
+      { label: 'Escuchar con atención', check: { skill: 'percepcion', dc: 14 }, hint: 'Percepción CD 14 · +4 rumores · −2 Alerta', e: { rumors: 4, alert: -2, bond: { nafisa: 1 } }, result: ['Oyen los planes de una patrulla. Sabrán esquivarla.'], fail: { e: { alert: 1 }, result: ['Crujen las tablas. Nafisa los cubre con una carcajada, pero algo se oyó.'] } },
+      { label: 'Salir a la terraza con ella', hint: 'vínculo ×2', e: { bond: { nafisa: 2 } }, result: ['Nafisa les habla del hombre que fue su marido. Es la primera vez que no usa abanico.'] },
     ] }],
   },
   shub_trastienda: {
-    1: [S('Madam Shub', 'De día vendo espejos. Pregunta por los de la trastienda y pagarás el doble.', 'seca'), { t: 'fx', e: { gold: -8, rumors: 2, bond: { shub: 1 } }, note: '−8 PO, +2 rumores, vínculo.' }],
+    1: [S('Madam Shub', 'De día vendo espejos. Preguntá por los de la trastienda y pagás el doble.', 'seca'), { t: 'fx', e: { gold: -8, rumors: 2, bond: { shub: 1 } }, note: '−8 PO, +2 rumores, vínculo.' }],
   },
   taberna_escorpion: {
-    1: [N('A mediodía la taberna es un mercado de oficios: tintoreros, soldados, un cantor ciego.'), { t: 'fx', e: { rumors: 1, gold: 8 }, note: 'Ayudáis a cargar barriles: +8 PO, +1 rumor.' }],
+    1: [N('A mediodía la taberna es un mercado de oficios: tintoreros, soldados, un cantor ciego.'), { t: 'fx', e: { rumors: 1, gold: 8 }, note: 'Ayudan a cargar barriles: +8 PO, +1 rumor.' }],
   },
   ring_punos: {
-    1: [N('De día el ring es una escuela. Panchi enseña a los críos a cerrar el puño sin odio.'), { t: 'fx', e: { d: 1, rep: { nomadas: 0 }, bond: { abril: 1 } }, note: '+1 Devoción, vínculo con Abril.' }],
+    1: [N('De día el ring es una escuela. Panchi enseña a los chicos a cerrar el puño sin odio.'), { t: 'fx', e: { d: 1, rep: { nomadas: 0 }, bond: { abril: 1 } }, note: '+1 Devoción, vínculo con Abril.' }],
   },
   mirador_plaza: {
-    0: [N('Desde el mirador, el alba tiñe de violeta la plaza. Las patrullas cambian de turno en perfecto orden. Tomáis nota.'), { t: 'fx', e: { alert: -2 }, note: 'Memorizáis el cambio de turno: −2 Alerta.' }],
+    0: [N('Desde el mirador, el alba tiñe de violeta la plaza. Las patrullas cambian de turno en perfecto orden. Toman nota.'), { t: 'fx', e: { alert: -2 }, note: 'Memorizan el cambio de turno: −2 Alerta.' }],
   },
 };
 
@@ -214,34 +214,34 @@ export const AMBIENT: Record<string, string[]> = {
   plaza: ['Cambio de guardia en el Capitolio. Las campanas suenan con más pereza.', 'Plaza llena: ejecuciones menores, proclamas y palomas de bronce.', 'Silencio de mármol. Solo los centinelas, y alguna sombra que no lo es.'],
   jardin: ['Rocío en las rosas translúcidas. Los jardineros podan ciprés a ciprés.', 'Té, risas con máscara y puñales de abanico.', 'Faroles de cristal. Los invitados dejan de fingir.'],
   pozo: ['Niebla sobre el cráter; el cielo invertido aún no se ha despertado.', 'El agua refleja un cielo que no es el de hoy.', 'La Lengua Muerta crece. Se oyen susurros desde el agua.'],
-  cementerio: ['Un frío blanco; las lápidas parecen más quietas.', 'Visitantes con flores. Los muertos no marchan de día… del todo.', 'Los muertos marchan en formación. Que no os vean.'],
+  cementerio: ['Un frío blanco; las lápidas parecen más quietas.', 'Visitantes con flores. Los muertos no marchan de día… del todo.', 'Los muertos marchan en formación. Que no los vean.'],
 };
 export const ambient = (d: string, ph: number) => AMBIENT[d]?.[ph] ?? AMBIENT_GEN[ph];
 
 /** Incidentes de camino, distintos a cada hora. */
 export const INCIDENTS: Record<number, { chance: number; scenes: Node[][] }> = {
   0: { chance: 0.25, scenes: [
-    [N('Un panadero madrugador os planta una hogaza en las manos: «Los clientes de ayer no vinieron».'), { t: 'fx', e: { food: 1 }, note: '+1 víveres.' }],
-    [N('Un niño os sigue unas calles, orgulloso de ser vuestro espía. Termina contándoos lo que oyó anoche.'), { t: 'fx', e: { rumors: 1 }, note: '+1 rumor.' }],
+    [N('Un panadero madrugador les planta una hogaza en las manos: «Los clientes de ayer no vinieron».'), { t: 'fx', e: { food: 1 }, note: '+1 víveres.' }],
+    [N('Un niño los sigue unas calles, orgulloso de ser su espía. Termina contándoles lo que oyó anoche.'), { t: 'fx', e: { rumors: 1 }, note: '+1 rumor.' }],
     [N('En un portal vacío brilla una moneda. Y otra. Alguien las dejó para quien madrugue.'), { t: 'fx', e: { gold: 12 }, note: '+12 PO.' }],
   ] },
   1: { chance: 0.25, scenes: [
-    [N('En la multitud, una mano os roza el cinto. Cuando miráis, solo queda un perfume de especias.'), { t: 'choice', prompt: '¿Perseguís al ladrón?', options: [
-      { label: 'Perseguirlo', check: { skill: 'atletismo', dc: 12 }, hint: 'Atletismo CD 12', e: { gold: 20, d: 0 }, result: ['Lo alcanzáis y recuperáis la bolsa… con propina de disculpa.'], fail: { e: { gold: -12 }, result: ['Se pierde entre el gentío. La bolsa, también.'] } },
+    [N('En la multitud, una mano les roza el cinto. Cuando miran, solo queda un perfume de especias.'), { t: 'choice', prompt: '¿Persiguen al ladrón?', options: [
+      { label: 'Perseguirlo', check: { skill: 'atletismo', dc: 12 }, hint: 'Atletismo CD 12', e: { gold: 20, d: 0 }, result: ['Lo alcanzan y recuperan la bolsa… con propina de disculpa.'], fail: { e: { gold: -12 }, result: ['Se pierde entre el gentío. La bolsa, también.'] } },
       { label: 'Dejarlo', e: { gold: -5 }, result: ['Cinco monedas. Un precio barato por no perder el día.'] },
     ] }],
-    [N('Un pregonero lee un edicto del Vizir a gritos. Hay descontento. Alguien entre la gente os mira y asiente.'), { t: 'fx', e: { rumors: 1, rep: { hijos: 1 } }, note: '+1 rumor, +1 rep. Hijos del Simurg.' }],
+    [N('Un pregonero lee un edicto del Vizir a gritos. Hay descontento. Alguien entre la gente los mira y asiente.'), { t: 'fx', e: { rumors: 1, rep: { hijos: 1 } }, note: '+1 rumor, +1 rep. Hijos del Simurg.' }],
     [N('Un mercader os para: «Prueben esto, gratis». Es té de menta. Realmente está buenísimo.'), { t: 'fx', e: { pf: 2 }, note: '+2 PF.' }],
   ] },
   2: { chance: 0.35, scenes: [
-    [N('En un callejón, tres sombras con tiza violeta en las manos os cierran el paso.'), { t: 'choice', prompt: 'Una emboscada nocturna.', options: [
+    [N('En un callejón, tres sombras con tiza violeta en las manos les cierran el paso.'), { t: 'choice', prompt: 'Una emboscada nocturna.', options: [
       { label: 'Plantar cara', hint: 'Combate · botín', e: {}, result: ['Los faroles se apagan de golpe.'], then: [{ t: 'battle', enc: 'infiltrado' }] },
-      { label: 'Esconderos', check: { skill: 'sigilo', dc: 14 }, hint: 'Sigilo CD 14', e: {}, result: ['Contenéis la respiración. Pasan de largo.'], fail: { e: { pf: -3, alert: 1 }, result: ['Os descubren: huís con el cristal temblando.'] } },
+      { label: 'Esconderse', check: { skill: 'sigilo', dc: 14 }, hint: 'Sigilo CD 14', e: {}, result: ['Contienen la respiración. Pasan de largo.'], fail: { e: { pf: -3, alert: 1 }, result: ['Los descubren: huyen con el cristal temblando.'] } },
     ] }],
-    [N('Una voz os llama desde un balcón oscuro: «Sois vosotros. Los que huelen a cristal».'), { t: 'choice', prompt: 'Una desconocida os ofrece algo.', options: [
-      { label: 'Escucharla', hint: '+2 rumores · +1 Corrupción', e: { rumors: 2, c: 1 }, result: ['Os vende una verdad a medias. La otra mitad la pagaréis luego.'] },
+    [N('Una voz os llama desde un balcón oscuro: «Son ustedes. Los que huelen a cristal».'), { t: 'choice', prompt: 'Una desconocida les ofrece algo.', options: [
+      { label: 'Escucharla', hint: '+2 rumores · +1 Corrupción', e: { rumors: 2, c: 1 }, result: ['Les vende una verdad a medias. La otra mitad la pagarán después.'] },
       { label: 'Seguir de largo', hint: '+1 Devoción', e: { d: 1 }, result: ['La voz ríe. Algo en el cristal se calma.'] },
     ] }],
-    [N('Un perro de arena del Conclave husmea vuestro rastro. Está solo.'), { t: 'fx', e: { alert: 1 }, note: '+1 Alerta: os ha olido.' }],
+    [N('Un perro de arena del Conclave husmea vuestro rastro. Está solo.'), { t: 'fx', e: { alert: 1 }, note: '+1 Alerta: los ha olido.' }],
   ] },
 };

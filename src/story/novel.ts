@@ -21,13 +21,13 @@ export const NOVEL: Record<string, Node[]> = {
   cap0: [
     T('Entreacto', 'Lo que callan los pilares', 'dunas'),
     N('Cuando la compañía se durmió, el viento cambió de dirección. No fue de golpe; el viento es discreto. Primero movió la arena sobre las huellas, borrando las de seis pares de botas. Luego se detuvo sobre los cuatro pilares torcidos y los escuchó.'),
-    N('Los pilares no son de piedra. Son de lo que queda de una pluma cuando el pájaro que la perdió lleva demasiado tiempo muerto. Guardan una sola idea, repetida desde antes de las ciudades: «vuelve».'),
+    N('Los pilares no son de piedra. Son de lo que queda de una pluma cuando el pájaro que la perdió lleva demasiado tiempo muerto. Guardan una sola idea, repetida desde antes de las ciudades: «volvé».'),
     N('A varias leguas, tras la ventana de una torre de bronce, un hombre de ojos cansados levantó la cabeza de un libro de cuentas. Sintió, sin saber por qué, que la arena de su ciudad pesaba un poco más que ayer. Anotó la hora. Era un hombre que anotaba todo.'),
   ],
   cap1: [
     T('Entreacto', 'El Vizir lee sus cuentas', 'prison'),
     N('Razul ibn Tameer no había ordenado una ejecución en cuatro años. Se lavó las manos en el aguamanil de plata y se miró el reflejo: una cara de funcionario, sin edad, con la fatiga de quien conoce el final de las historias antes de que empiecen.'),
-    S('Vizir Razul', 'Seis. Seis extranjeros con el mismo cristal en el pecho. Dime, escriba, ¿cuántos cristales así hemos visto en esta ciudad?', 'sin dejar de secarse las manos'),
+    S('Vizir Razul', 'Seis. Seis extranjeros con el mismo cristal en el pecho. Decime, escriba, ¿cuántos cristales así hemos visto en esta ciudad?', 'sin dejar de secarse las manos'),
     S('Escriba', 'Ninguno, Vizir.', 'tragando saliva'),
     S('Vizir Razul', 'Cuatro. Pero ninguno de ellos llegó a mí colgado de un cuello. Llegaron como cuentos. Como sermones. Como el siglo pasado, que fue un sermón muy largo.', 'casi en un susurro'),
     N('Dejó el aguamanil. Fuera, las campanas del Conclave marcaban la hora con la precisión de un reloj que ya no cree en el tiempo.'),
@@ -61,7 +61,7 @@ export const NOVEL: Record<string, Node[]> = {
     T('ACTO II', 'Los falsos dioses', 'plaza'),
     N('El Capitolio sigue sangrando aceite violeta, y la ciudad ha empezado a hablar de ello con la voz baja de los que ya han elegido un bando. Hay quien dice que cayó un coloso. Hay quien dice que cayó un régimen. Los dos tienen razón y los dos mienten.'),
     S('Zahir', 'Tres veces el mundo intentó tener un dios. Tres veces se equivocó. Merab prometió agua a los sedientos y, al segundo año, se la quitó. Hadir predicó la paz y terminó dirigiendo una guerra. El Profeta de los Vientos prometió que el viento nunca se iría, y se fue.', 'desde el limbo, con las plumas apagadas'),
-    S('Zahir', 'Yo no soy como ellos. Eso os he dicho. No os mentí: no soy como ellos. Soy peor, porque yo sé por qué fallaron.', 'una confesión que nadie entiende todavía'),
+    S('Zahir', 'Yo no soy como ellos. Eso les dije. No les mentí: no soy como ellos. Soy peor, porque yo sé por qué fallaron.', 'una confesión que nadie entiende todavía'),
     N('Siete fragmentos de un mismo meteorito duermen en siete manos distintas. Cada uno es un trozo de aquel pájaro que dio sombra a cuarenta ciudades. Cada uno ha encontrado a alguien con una herida del tamaño exacto para alojarlo.'),
     N('Se les llamará falsos dioses porque eso es lo que serán al final. Pero antes habrá un tiempo —breve, hermoso— en el que cada uno de ellos sea sinceramente adorado.'),
   ],
@@ -69,7 +69,7 @@ export const NOVEL: Record<string, Node[]> = {
     T('Entreacto', 'Sifra no olvida', 'medinat'),
     N('Lejos de Medinat, en las ruinas móviles de Qadir-Kalmah, una mujer encapuchada escribía una carta que nunca enviaría. Tenía una muñeca vendada con lino blanco y la costumbre de no hablar. Los monjes la llamaban Sifra la Silente. Ella, a veces, se llamaba Ellie.'),
     N('«Perdió», escribió. Y debajo: «Pero no se fue». Subrayó la segunda frase tres veces. Era la letra de alguien que hacía mucho tiempo que no se permitía esperar a nadie.'),
-    N('Dobló la carta, la metió en la manga y miró por la ventana: la ciudad entera cambiaba de sitio otra vez, como si no se atreviese a quedarse quieta. Pensó que a veces también le pasaba a la gente.'),
+    N('Dobló la carta, la metió en la manga y miró por la ventana: la ciudad entera cambiaba de lugar otra vez, como si no se atreviese a quedarse quieta. Pensó que a veces también le pasaba a la gente.'),
   ],
   m_cap7: [
     T('Entreacto', 'Las plumas del Simurg', 'limbo'),
@@ -87,14 +87,14 @@ export const NOVEL: Record<string, Node[]> = {
     T('Entreacto', 'La máscara de Lady Nafisa', 'espejos'),
     N('Cuando la fiesta terminó y los invitados desfilaron hacia sus carruajes, Lady Nafisa se quedó sola en el salón con una copa que no había tocado. Se quitó la máscara de plata y la dejó sobre el aparador. Debajo, su cara era exactamente la misma.'),
     S('Lady Nafisa', 'Es curioso. Cuando era joven creía que la máscara escondía a otra persona.', 'a su propio reflejo'),
-    N('El Marid había salido de su lago hacía una hora y el agua aún no había vuelto a su sitio. En la orilla, un pez plateado se debatía sobre la hierba. Nafisa lo recogió y lo devolvió al estanque con las dos manos, como se devuelve algo prestado.'),
+    N('El Marid había salido de su lago hacía una hora y el agua aún no había vuelto a su lugar. En la orilla, un pez plateado se debatía sobre la hierba. Nafisa lo recogió y lo devolvió al estanque con las dos manos, como se devuelve algo prestado.'),
   ],
 
   // ───────────────────────── Hilos opcionales ─────────────────────────
   o_maunator: [
     T('Entreacto', 'El sótano que se mueve', 'cubo'),
     N('Hay ciudades que se hunden. Maunator, la de los escribas de los muertos, se hundió con método: primero los libros, luego las casas, al final los propios escribas, de pie en sus mesas, tomando nota de cómo les llegaba el agua. Dos mil años después, bajo un consulado extranjero del Zoco, sus salas todavía se desplazan en un orden que nadie recuerda haber fijado.'),
-    N('Alguien en Zaryab dijo una vez que el Cubo no era un sótano, sino una frase larga que se escribía a sí misma. Si es verdad, vosotros habéis leído un párrafo.'),
+    N('Alguien en Zaryab dijo una vez que el Cubo no era un sótano, sino una frase larga que se escribía a sí misma. Si es verdad, ustedes han leído un párrafo.'),
   ],
   o_cyric: [
     T('Entreacto', 'La mentira que sostenía la ciudad', 'oraculo'),
@@ -107,22 +107,22 @@ export const NOVEL: Record<string, Node[]> = {
     T('ACTO III', 'El Eclipse', 'limbo'),
     N('Una mañana el sol salió con un borde mordido. Fue un instante, nada más, y casi nadie levantó la cabeza. Pero los niños lo señalaron, y los ancianos del Zoco se tocaron la frente con los dedos, como si temieran haber olvidado algo.'),
     S('Zahir', 'Cuento los días porque es lo único que me queda por hacer. Si no los cuento, ¿qué soy? ¿Un pájaro que espera?', 'con la voz más humana que ha tenido nunca'),
-    S('Zahir', 'No os he mentido. Os he dejado creer. No es lo mismo. Eso me dije durante tres siglos. Ahora no estoy seguro de que haya diferencia.', 'bajando la cabeza'),
+    S('Zahir', 'No les mentí. Los dejé creer. No es lo mismo. Eso me dije durante tres siglos. Ahora no estoy seguro de que haya diferencia.', 'bajando la cabeza'),
     N('Debajo de la biblioteca, en las Catacumbas del Simurg, siete pedestales aguardan en la oscuridad. Alguien los limpia cada semana, sin saber para qué. Los estantes sangran un poco más cada noche.'),
     N('Farid canta una canción que no recuerda haber aprendido. Aisha tararea el final, que nunca llega. Y en la Ciudadela de los Susurros, un hombre que ha visto caer a tres dioses sube una escalera muy lenta y se detiene en el último peldaño para tomar aire.'),
   ],
   m_cap11: [
     T('Entreacto', 'El libro de la Veta', 'prison'),
-    N('En el cuarto nivel de la mina, bajo una capa de polvo de alabastro, alguien dejó un libro de cuentas. Las entradas son regulares: nombres de mineros, jornales, raciones. Las últimas páginas están en blanco. Antes de la última entrada hay una nota, escrita con tiza: «Esta noche el silencio ha vuelto a respirar. No se lo digas a nadie».'),
+    N('En el cuarto nivel de la mina, bajo una capa de polvo de alabastro, alguien dejó un libro de cuentas. Las entradas son regulares: nombres de mineros, jornales, raciones. Las últimas páginas están en blanco. Antes de la última entrada hay una nota, escrita con tiza: «Esta noche el silencio ha vuelto a respirar. No se lo digás a nadie».'),
     N('Los vigilantes bajaron a recoger los cuerpos y no encontraron ninguno. Se llevaron las herramientas, cerraron la puerta y declararon el pozo agotado. Una forma elegante de decir que nadie quería volver a hablar de ello.'),
     S('Capitana Samira', 'Hay secretos que el Conclave no esconde porque sean peligrosos, sino porque son vergonzosos.', 'mirando una puerta cerrada'),
   ],
   m_cap12: [
     T('Entreacto', 'La noche antes', 'limbo'),
     N('Nadie durmió bien esa noche en el Bajo Zaryab. Aisha dejó pan en la mesa y no lo tocó. Farid tocó las cuatro notas, por fin, una detrás de otra, y las lámparas del barrio se apagaron al unísono, como si alguien hubiera soplado.'),
-    S('Zahir', 'He visto esta noche muchas veces. En todas, alguien me miraba como me miráis vosotros. En todas, yo prometía algo.', 'sentado entre siete pedestales vacíos'),
+    S('Zahir', 'He visto esta noche muchas veces. En todas, alguien me miraba como me miran ustedes. En todas, yo prometía algo.', 'sentado entre siete pedestales vacíos'),
     N('Zahir pasó la mano por la piedra del círculo. Estaba fría. Nunca había sentido la piedra; desde que era pájaro había habido siempre viento entre él y las cosas. Ahora tocaba el suelo y el suelo lo tocaba a él.'),
-    S('Zahir', 'Quiero que me perdonéis. Pero también quiero que no me perdonéis, porque de lo contrario habría que aceptar que lo que hice estuvo bien.', 'a la oscuridad'),
+    S('Zahir', 'Quiero que me perdonen. Pero también quiero que no me perdonen, porque de lo contrario habría que aceptar que lo que hice estuvo bien.', 'a la oscuridad'),
     N('Afuera, la ciudad contenía la respiración. En alguna parte, una campana tocó dos veces y se calló. Era el tipo de silencio que viene antes de que un pájaro vuelva a abrir las alas.'),
   ],
 };

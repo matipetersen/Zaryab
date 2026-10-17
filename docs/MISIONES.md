@@ -45,7 +45,7 @@ Estado de las 31 misiones secundarias del documento «Expansión: misiones secun
 - **Pruebas de habilidad** (`Opt.check` / `Opt.fail`): el mejor modificador de la compañía tira d20 + mod; la interfaz muestra «mejor: Pact Risen +5». Las competencias de Zyr'thar y Panchi son estimadas, como sus fichas (`src/world/checks.ts`).
 - **Ecos** (`Effect.echo`): una decisión programa un evento para dentro de N días (`eco_*` en `src/world/morales.ts`). Aparecen en el hub antes que los eventos del reloj.
 - **Huellas** (`Effect.huella`): frases de legado que acumula la campaña y que se muestran en el Diario; base del epílogo.
-- **Irreversibles**: Marid (pierdes un recuerdo), djinn usado, niño muerto, guardia colgado, niños enfermos: no hay vuelta atrás ni «recargar» en el juego.
+- **Irreversibles**: Marid (perdés un recuerdo), djinn usado, niño muerto, guardia colgado, niños enfermos: no hay vuelta atrás ni «recargar» en el juego.
 - **Economía**: `gold` (PO), tienda de EaNassr (−15 % con Mercaderes ≥ 2, +25 % con ≤ −2), taller de Aisha (materiales), botín por enemigo.
 
 ## Acto II · Capítulo VI (v0.4): La Guerra Civil — Medinat al-Rih

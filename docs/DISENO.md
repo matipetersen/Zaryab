@@ -142,13 +142,13 @@ Cada seguidor es una persona con **oficio**, **fe (0–10)**, **rasgo** y necesi
 | Espía | Rumores; baja la Alerta (cada 2 ciclos, cada ciclo con 3 espías); permite «preguntar a los espías» qué evento espera en un distrito |
 | Artesano | Materiales: abaratan edificios (hasta la mitad del coste) |
 | Curandero | Cura enfermos; la muerte de un PJ cuesta 1 PF menos |
-| Guardia | **Combate a vuestro lado** en defensas (patrulla, asalto, Coloso), máx. 3 |
+| Guardia | **Combate a su lado** en defensas (patrulla, asalto, Coloso), máx. 3 |
 | Mercader | PF y rumores |
 | Visionario | Rumores; revela la verdad tras el augurio del Oráculo |
 
 **Rasgos:** Fanático (el doble de fe con sermones; sube con la Corrupción), Escéptico (pierde fe si la Corrupción es alta), Glotón (come el doble), Soñador (+rumores), Leal (nunca deserta), Valiente (guardia con +10 PG).
 **Acciones del santuario:** Sermón de Fe / Sermón de Hierro (+Corrupción), *predicar y reclutar*, y **rituales**: el Dab de Zaryab, banquete de pan de arena, casamiento de telas blancas (canon), Ofrenda de Huesos (sacrificio) y Ascensión (fe 10: ascender o convertir en reliquia).
-**Deserción:** con fe ≤ 2 un seguidor puede irse; con fe 0 os denuncia (+1 Alerta).
+**Deserción:** con fe ≤ 2 un seguidor puede irse; con fe 0 los denuncia (+1 Alerta).
 **Seguidores canon:** Aisha, Farid, Shib, Al-Khush, y los conversos Ranma, Cabernet y Apu (el canon sólo da el nombre: su oficio es **provisional**).
 
 ### 4.4b Reputación
@@ -204,7 +204,7 @@ Cada arco es una **misión personal** en el mapa. El tercer beat decide el epíl
 
 ### Panchi — *La Ira del Monje* (Guanteletes de la Ira Rígida)
 1. **El Golem Defectuoso** (Acto I, *implementado*): un golem roto en el santuario. *Desmantelar / Redirigir / Controlar*.
-2. **El Torneo de los Puños Cerrados** (Acto II, Medinat): Sifra la Silente (Ellie) lo vence y le deja una venda: «Tráelo o no vengas».
+2. **El Torneo de los Puños Cerrados** (Acto II, Medinat): Sifra la Silente (Ellie) lo vence y le deja una venda: «Traelo o no vengas».
 3. **Qadir-Kalmah** (Acto III): el monasterio en ruinas móviles. Epílogo: maestro de un nuevo monasterio / leyenda de violencia / ya no está solo.
 
 ---

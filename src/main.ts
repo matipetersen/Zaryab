@@ -64,7 +64,7 @@ class App {
       h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.start(); } }, 'Nueva campaña'),
       h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar (día ${save.day})` : 'Continuar'),
       h('label', { class: 'small', style: { display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' } }, perm, 'Muerte permanente (si no, el cristal de Zahir devuelve a los caídos a cambio de Corrupción y PF)'),
-      h('div', { class: 'mnote' }, 'Combate de D&D 5.ª edición sobre cuadrícula isométrica. Fichas reales de Romain, Pact Risen, Rabb Locke y Joren Hell. ⚠ Zyr\'thar y Panchi usan estadísticas estimadas. Controles: clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar. En el teléfono: toca una casilla para ver la previsualización y tócala otra vez para confirmar; arrastra para mover el tablero y pellizca para el zoom; los botones 👥 y 📖 abren las listas de unidades e información.'));
+      h('div', { class: 'mnote' }, 'Combate de D&D 5.ª edición sobre cuadrícula isométrica. Fichas reales de Romain, Pact Risen, Rabb Locke y Joren Hell. ⚠ Zyr\'thar y Panchi usan estadísticas estimadas. Controles: clic para mover/atacar · M mover · A atacar · H habilidades · Espacio terminar turno · rueda zoom · botón derecho arrastrar. En el teléfono: tocá una casilla para ver la previsualización y tocala otra vez para confirmar; arrastrá para mover el tablero y pellizcá para el zoom; los botones 👥 y 📖 abren las listas de unidades e información.'));
   }
 
   // ───────── guiones ─────────
@@ -98,11 +98,11 @@ class App {
   }
   /** Una visita consume una fase del día (amanecer → día → noche); la tercera pasa el día. */
   passPhase() { const c = this.camp; c.phase++; if (c.phase >= 3) this.advance(1); else this.renderHud(); }
-  /** El Eclipse llegó sin que lo detuvierais: los capítulos que faltan quedan sin resolver y empieza el ritual. */
+  /** El Eclipse llegó sin que lo detuvieran: los capítulos que faltan quedan sin resolver y empieza el ritual. */
   async forceEclipse() {
     const c = this.camp; const skipped: number[] = [];
     for (let i = 6; i <= 12; i++) if (!has(c, `cap${i}_done`)) { skipped.push(i); applyEffect(c, { flags: [`cap${i}_done`, `skipped_cap${i}`] }); }
-    if (skipped.length) c.journal.push(`Día ${c.day}: el Eclipse os alcanzó antes de los capítulos ${skipped.join(', ')}.`);
+    if (skipped.length) c.journal.push(`Día ${c.day}: el Eclipse los alcanzó antes de los capítulos ${skipped.join(', ')}.`);
     if (!c.flags.some(f => f.startsWith('ruta_'))) applyEffect(c, { flags: ['ruta_' + computeRuta(c)] });
     applyEffect(c, { flags: finalFlags(c) }); c.squad = []; await this.runScript('q:m_cap13'); c.quests['m_cap13'] = 'done'; saveGame(c); this.renderHud();
   }
@@ -115,7 +115,7 @@ class App {
   async prologueLevels() {
     const c = this.camp; let n = pendingLevel(c), last = 0;
     for (; n && n <= 3; n = pendingLevel(c)) { c.lvl = n; last = n; }
-    if (last) { c.journal.push(`Día ${c.day}: la compañía alcanza el nivel ${last}.`); saveGame(c); await this.runScript('lvl', 0, [{ t: 'fx', e: {}, note: `¡Subís al nivel ${last}! ${last === 2 ? 'Ganáis Canalizar Divinidad, Oleada de Acción, Ki y Acción Astuta.' : 'Cada personaje recibe su arquetipo.'}` }]); }
+    if (last) { c.journal.push(`Día ${c.day}: la compañía alcanza el nivel ${last}.`); saveGame(c); await this.runScript('lvl', 0, [{ t: 'fx', e: {}, note: `¡Suben al nivel ${last}! ${last === 2 ? 'Ganan Canalizar Divinidad, Oleada de Acción, Ki y Acción Astuta.' : 'Cada personaje recibe su arquetipo.'}` }]); }
   }
   /** Escena de novela entre capítulos o actos: se reproduce una sola vez. */
   async cutscene(key: string) {
@@ -143,38 +143,38 @@ class App {
       if (has(this.camp, 'eclipse_forzado') && !has(this.camp, 'cap13_done')) { await this.forceEclipse(); continue; }
       const ev = pendingEvent(this.camp);
       if (ev) { applyEffect(this.camp, { flags: [`ev_${ev}_done`] }); if (ev === 'zahir_llama') this.camp.lastMainDay = this.camp.day; await this.runScript('ev:' + ev);
-        if (ev === 'gusano_caza') { const g = this.camp.gusano; g.seen++; this.camp.journal.push(`Día ${this.camp.day}: el Gusano os alcanza (${STAGES[stage(this.camp)]}).`); if (g.next <= this.camp.day) g.next = this.camp.day + interval(this.camp); }
+        if (ev === 'gusano_caza') { const g = this.camp.gusano; g.seen++; this.camp.journal.push(`Día ${this.camp.day}: el Gusano los alcanza (${STAGES[stage(this.camp)]}).`); if (g.next <= this.camp.day) g.next = this.camp.day + interval(this.camp); }
         this.renderHud(); saveGame(this.camp); continue; }
       if ((window as any).__autolevel) { const c = this.camp; for (let n = pendingLevel(c); n; n = pendingLevel(c)) { for (const pc of c.party.filter(p => !c.dead.includes(p))) (c.picks[pc] ??= []).push(...autoPicks(pc, n, c.d, c.c)); c.lvl = n; } }
       ensureFronts(this.camp); this.show('hub'); this.renderHud();
       const a = await this.hub.choose(this.camp);
       if (a.t === 'menu') { saveGame(this.camp); location.reload(); return; }
       if (a.t === 'poi') {
-        const p = POI_BY_ID[a.id]; this.camp.poiCd[p.id] = this.camp.day + p.cd; this.camp.journal.push(`Día ${this.camp.day}: visitáis ${p.name}.`);
+        const p = POI_BY_ID[a.id]; this.camp.poiCd[p.id] = this.camp.day + p.cd; this.camp.journal.push(`Día ${this.camp.day}: visitan ${p.name}.`);
         await this.runScript('poi:' + p.id);
         const inc = INCIDENTS[this.camp.phase]; if (p.district !== 'santuario' && Math.random() < inc.chance) { const i = Math.floor(Math.random() * inc.scenes.length); await this.runScript('inc:' + this.camp.phase + '_' + i); }
         this.passPhase(); this.renderHud(); saveGame(this.camp); continue;
       }
       if (a.t === 'roamer') {
         const r = this.camp.roamers.find(x => x.id === a.id); if (!r) continue; const won = await this.runBattle(ROAMER_ENC[r.kind]);
-        if (won) { this.camp.roamers = this.camp.roamers.filter(x => x.id !== r.id); const g = 25 + Math.floor(Math.random() * 30); applyEffect(this.camp, { gold: g, alert: -1, rep: r.kind === 'conclave' ? { conclave: -1 } : {} }); this.camp.journal.push(`Día ${this.camp.day}: abatís a un errante (${r.kind}) en ${DISTRICT_BY_ID[r.district].name}. +${g} PO.`); this.passPhase(); }
+        if (won) { this.camp.roamers = this.camp.roamers.filter(x => x.id !== r.id); const g = 25 + Math.floor(Math.random() * 30); applyEffect(this.camp, { gold: g, alert: -1, rep: r.kind === 'conclave' ? { conclave: -1 } : {} }); this.camp.journal.push(`Día ${this.camp.day}: abaten a un errante (${r.kind}) en ${DISTRICT_BY_ID[r.district].name}. +${g} PO.`); this.passPhase(); }
         saveGame(this.camp); continue;
       }
       if (a.t === 'reinforce') {
-        const c = this.camp; if (c.pf < 3 || !c.front[a.district]) continue; c.pf -= 3; c.front[a.district] = 'libre'; c.journal.push(`Día ${c.day}: reforzáis ${DISTRICT_BY_ID[a.district].name}; vuelve a ser libre.`); this.passPhase(); saveGame(c); continue;
+        const c = this.camp; if (c.pf < 3 || !c.front[a.district]) continue; c.pf -= 3; c.front[a.district] = 'libre'; c.journal.push(`Día ${c.day}: refuerzan ${DISTRICT_BY_ID[a.district].name}; vuelve a ser libre.`); this.passPhase(); saveGame(c); continue;
       }
       if (a.t === 'leave') {
         applyEffect(this.camp, { flags: ['final_desierto'] });
         await this.runScript('ev:desierto'); clearSave(); location.reload(); return;
       }
-      if (a.t === 'rest') { this.camp.phase = 0; this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansáis en la biblioteca.`); saveGame(this.camp); continue; }
+      if (a.t === 'rest') { this.camp.phase = 0; this.advance(1); this.camp.journal.push(`Día ${this.camp.day}: descansan en la biblioteca.`); saveGame(this.camp); continue; }
       if (a.t === 'quest') {
         const q = QUEST_BY_ID[a.id]; if (a.id === 'm_cap13') applyEffect(this.camp, { flags: finalFlags(this.camp) }); await this.runScript('q:' + a.id);
-        if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: vuestra Ruta es el ${RUTA_LABEL[r]}.`); }
-        this.camp.quests[q.id] = 'done'; this.camp.squad = []; this.camp.journal.push(`Día ${this.camp.day}: completáis «${q.title}».`);
+        if (a.id === 'm_cap8') { const r = computeRuta(this.camp); applyEffect(this.camp, { flags: ['ruta_' + r] }); this.camp.journal.push(`Día ${this.camp.day}: su Ruta es el ${RUTA_LABEL[r]}.`); }
+        this.camp.quests[q.id] = 'done'; this.camp.squad = []; this.camp.journal.push(`Día ${this.camp.day}: completan «${q.title}».`);
         if (q.kind === 'main') this.camp.lastMainDay = this.camp.day;
         this.advance(q.days); await this.novel(q.id); let nx = q.next;
-        while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completáis «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); await this.novel(nx); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
+        while (nx) { const nq = QUEST_BY_ID[nx]; await this.runScript('q:' + nx); this.camp.quests[nx] = 'done'; this.camp.journal.push(`Día ${this.camp.day}: completan «${nq.title}».`); this.camp.lastMainDay = this.camp.day; this.advance(nq.days); await this.novel(nx); nx = nq.next; } if (q.alert) applyEffect(this.camp, { alert: q.alert }); this.renderHud(); saveGame(this.camp); continue;
       }
       if (a.t === 'peek') {
         const dr = drawOracle(this.camp, a.district); this.camp.rumors -= 2; this.camp.peek = { district: a.district, n: dr.ev.n }; this.camp.journal.push(`Día ${this.camp.day}: los espías avisan: «${dr.ev.title}» en ${DISTRICT_BY_ID[a.district].name}.`); saveGame(this.camp); continue;
@@ -214,7 +214,7 @@ class App {
     setMonsterXp(Object.fromEntries(Object.values(MONSTERS).map(m => [m.id, m.xp])));
     for (const [k, n] of Object.entries(res.used)) c.inv[k] = Math.max(0, (c.inv[k] ?? 0) - n);
     const loot = victory && !duel ? lootFor(res.kills) : null; if (loot) { c.gold += loot.gold; c.mats += loot.mats; for (const [k, n] of Object.entries(loot.items)) c.inv[k] = (c.inv[k] ?? 0) + n; }
-    const overlay = (soft && !victory && !duel) ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, 'Capturados'), h('div', { class: 'res' }, h('div', {}, 'El Cubo —o Kethras— os ha cercado. Nadie ha muerto todavía.')), h('button', { class: 'btn' }, 'Continuar'))) : duel ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, res.result === 'victory' ? 'Ganas el combate' : 'Panchi cae'), h('div', { class: 'res' }, h('div', {}, `Rondas: ${res.rounds}. Sifra ${Math.round((res.foeHpPct ?? 1) * 100)} % en pie.`)), h('button', { class: 'btn' }, 'Continuar'))) : this.resultOverlay(res, loot); this.battleEl.append(overlay);
+    const overlay = (soft && !victory && !duel) ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, 'Capturados'), h('div', { class: 'res' }, h('div', {}, 'El Cubo —o Kethras— los ha cercado. Nadie ha muerto todavía.')), h('button', { class: 'btn' }, 'Continuar'))) : duel ? h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, res.result === 'victory' ? 'Ganás el combate' : 'Panchi cae'), h('div', { class: 'res' }, h('div', {}, `Rondas: ${res.rounds}. Sifra ${Math.round((res.foeHpPct ?? 1) * 100)} % en pie.`)), h('button', { class: 'btn' }, 'Continuar'))) : this.resultOverlay(res, loot); this.battleEl.append(overlay);
     await new Promise<void>(r => overlay.querySelector('button')!.addEventListener('click', () => r()));
     ui.destroy(); overlay.remove(); this.battleEl.innerHTML = ''; this.show('story');
     c.pf = Math.max(0, c.pf - res.pfSpent);
@@ -230,12 +230,12 @@ class App {
     if (won) {
       lines.push(h('div', {}, `Rondas: ${res.rounds} · Experiencia: `, h('b', {}, String(res.xp)), ' XP'));
       if (loot) lines.push(h('div', {}, '💰 Botín: ', h('b', {}, `${loot.gold} PO`), loot.mats ? ` · ${loot.mats} materiales` : '', ...Object.entries(loot.items).map(([k, n]) => ` · ${ITEM[k].icon} ${ITEM[k].name} ×${n}`)));
-      if (pendingLevel(this.camp)) lines.push(h('div', { style: { color: '#e8c872' } }, '⬆ ¡Habéis ganado experiencia suficiente para subir de nivel! Hacedlo desde el mapa.'));
+      if (pendingLevel(this.camp)) lines.push(h('div', { style: { color: '#e8c872' } }, '⬆ ¡Han ganado experiencia suficiente para subir de nivel! Háganlo desde el mapa.'));
       if (res.pfSpent) lines.push(h('div', {}, `PF gastados en milagros: ${res.pfSpent}`));
       if (res.downed.length) lines.push(h('div', {}, `Caídos que se recuperan: ${names(res.downed.filter(d => !res.dead.includes(d)))}`));
       if (res.dead.length) lines.push(h('div', { style: { color: '#ff9c8f' } }, this.settings.permadeath ? `Han muerto para siempre: ${names(res.dead)}.` : `${names(res.dead)} murió… y el cristal de Zahir lo devuelve. +1 Corrupción, −3 PF.`));
       lines.push(h('div', { class: 'small' }, 'Tras el combate, un descanso corto restaura PG y recursos.'));
-    } else lines.push(h('div', {}, 'La compañía ha caído. Zahir susurra: «Aún no.» Puedes reintentar el combate.'));
+    } else lines.push(h('div', {}, 'La compañía ha caído. Zahir susurra: «Aún no.» Pueden reintentar el combate.'));
     return h('div', { class: 'overlay' }, h('div', { class: 'card' }, h('h2', {}, won ? 'Victoria' : 'Derrota'), h('div', { class: 'res' }, ...lines), h('button', { class: 'btn' }, won ? 'Continuar' : 'Reintentar')));
   }
   async devBattle(enc: string) {

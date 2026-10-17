@@ -68,7 +68,7 @@ La misión ya no es una isla: sus finales y objetos cambian cinco puntos de la t
 |---|---|---|
 | **Cap. X · Al-Mazhar** | Nueva opción: **leer el Tomo de Maunator** (Romain nombra al Lich con las trece palabras). Se apaga sin combate; da Devoción y el fragmento. Además Romain reconoce el tono del Lich | Final «completo» o «incompleto» del Cubo (`mz_tomo_conserva`) |
 | **Cap. XI · Mina** | El símbolo de Gul-Amarat de los túneles de Maunator aparece en la pared: se reconoce y se sabe cómo respira (`gusano_patron`, +3 PF) | Haber hecho el Cubo (`q_o_maunator`) |
-| **Cap. XII · Ciudadela** | **Kethras reaparece como lugarteniente de Razul**. Con «trato limpio» os deja pasar y baja la Alerta; si no, hay que convencerlo (Persuasión CD 17), pelear (combate corto) o, con Seraphel libre, que ella lo distraiga | `q_o_maunator` |
+| **Cap. XII · Ciudadela** | **Kethras reaparece como lugarteniente de Razul**. Con «trato limpio» los deja pasar y baja la Alerta; si no, hay que convencerlo (Persuasión CD 17), pelear (combate corto) o, con Seraphel libre, que ella lo distraiga | `q_o_maunator` |
 | **Cap. XII · Romain** | Opción de pesar a Razul con los ojos abiertos: Seraphel ya le avisó del plan de cegar al Juez de la Balanza | Seraphel liberada (`mz_seraphel_libre`) |
 | **Cap. XIII · Eclipse** | Los aliados liberados (Seraphel, Grethak, esclavos) siguen apareciendo y cuentan como ventaja de campaña | Ya existía |
 | **Medinat · nueva misión «La Herencia de Cyric»** | El artefacto bajo el Oráculo: silenciarlo (el Oráculo dice siempre la verdad), quedárselo (+PF, +Corrupción) o entregarlo al Conclave (−Alerta) | Tras el Cubo y el Cap. VI |

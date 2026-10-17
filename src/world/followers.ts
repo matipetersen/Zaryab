@@ -16,7 +16,7 @@ export const ROLES: Record<Role, { label: string; icon: string; out: string }> =
   espia: { label: 'Espía', icon: '👁', out: '+2 rumores. Baja la Alerta 1 cada dos ciclos (cada ciclo con 3 espías).' },
   artesano: { label: 'Artesano', icon: '🧵', out: '+2 materiales por ciclo (+1 con fe ≥ 7). Los materiales abaratan edificios.' },
   curandero: { label: 'Curandero', icon: '⚕', out: 'Cura a los enfermos cada ciclo. Si un PJ cae, el cristal cobra 1 PF menos.' },
-  guardia: { label: 'Guardia', icon: '🛡', out: 'Combate a vuestro lado en las defensas del santuario y patrullas (máx. 3).' },
+  guardia: { label: 'Guardia', icon: '🛡', out: 'Combate a su lado en las defensas del santuario y patrullas (máx. 3).' },
   mercader: { label: 'Mercader', icon: '⚖', out: '+2 PF y +1 rumor por ciclo.' },
   visionario: { label: 'Visionario', icon: '☽', out: '+2 rumores. Sus sueños revelan la verdad tras el augurio del Oráculo.' },
   descanso: { label: 'Descansando', icon: '🌙', out: '+1 fe por ciclo. No produce.' },
@@ -106,7 +106,7 @@ export function tick(c: Campaign): string[] {
   // Deserción
   for (const f of [...c.followers]) if (f.fe <= 2 && f.trait !== 'leal' && d(10) <= (f.fe === 0 ? 6 : 3)) {
     c.followers = c.followers.filter(x => x !== f);
-    if (f.fe === 0) { c.alert = Math.min(10, c.alert + 1); out.push(`${f.name} pierde la fe y os denuncia al Conclave. +1 Alerta.`); } else out.push(`${f.name} abandona el culto en silencio.`);
+    if (f.fe === 0) { c.alert = Math.min(10, c.alert + 1); out.push(`${f.name} pierde la fe y los denuncia al Conclave. +1 Alerta.`); } else out.push(`${f.name} abandona el culto en silencio.`);
   }
   return out;
 }
@@ -119,18 +119,18 @@ export interface ActResult { ok: boolean; text: string; days: number }
 const spend = (c: Campaign, pf: number) => c.pf >= pf;
 export function sermon(c: Campaign, kind: 'fe' | 'hierro'): ActResult {
   if (!c.followers.length) return { ok: false, text: 'No hay nadie que escuche.', days: 0 };
-  if (c.sermonDay === c.day) return { ok: false, text: 'Hoy ya habéis predicado.', days: 0 };
+  if (c.sermonDay === c.day) return { ok: false, text: 'Hoy ya predicaron.', days: 0 };
   c.sermonDay = c.day; let up = 0, down = 0;
   for (const f of c.followers) {
     if (kind === 'fe') { const g = f.trait === 'fanatico' ? 2 : 1; f.fe = Math.min(10, f.fe + g); up++; }
     else { if (f.trait === 'esceptico') { f.fe = Math.max(0, f.fe - 1); down++; } else { f.fe = Math.min(10, f.fe + (f.trait === 'fanatico' ? 3 : 2)); up++; } }
   }
   c.pf += kind === 'hierro' ? 2 : 1; c.seal += kind === 'hierro' ? 2 : 1; if (kind === 'hierro') c.c = Math.min(10, c.c + 1);
-  return { ok: true, days: 1, text: kind === 'fe' ? `Predicáis sobre el Simurg que perdona. ${up} seguidores ganan fe.` : `Predicáis sobre el hierro y la sangre. ${up} se enardecen${down ? `; ${down} escépticos se alejan` : ''}. +1 Corrupción.` };
+  return { ok: true, days: 1, text: kind === 'fe' ? `Predican sobre el Simurg que perdona. ${up} seguidores ganan fe.` : `Predican sobre el hierro y la sangre. ${up} se enardecen${down ? `; ${down} escépticos se alejan` : ''}. +1 Corrupción.` };
 }
 export function recruit(c: Campaign): ActResult {
   const chance = Math.max(0.35, 0.9 - c.alert * 0.06 - (c.followers.length > 12 ? 0.2 : 0));
-  if (Math.random() > chance) return { ok: true, days: 1, text: 'Predicáis en el Bajo Zaryab. Las puertas se cierran: el barrio tiene miedo. Nadie se une hoy.' };
+  if (Math.random() > chance) return { ok: true, days: 1, text: 'Predican en el Bajo Zaryab. Las puertas se cierran: el barrio tiene miedo. Nadie se une hoy.' };
   const n = 1 + (Math.random() < 0.3 ? 1 : 0); const names: string[] = [];
   for (let i = 0; i < n; i++) { const f = randomRecruit(c.day); c.followers.push(f); names.push(`${f.name} (${ROLES[f.role].label})`); }
   c.pf += n; c.seal += n; return { ok: true, days: 1, text: `Se unen: ${names.join(' y ')}. Cada creyente es un latido más en el cristal (+${n} PF).` };
@@ -140,7 +140,7 @@ export const RITUALS = [
   { id: 'banquete', name: 'Banquete de pan de arena', cost: '6 víveres · 1 día', desc: 'Una comida común. +2 fe a todos y se curan los enfermos.' },
   { id: 'boda', name: 'Casamiento de telas blancas', cost: '2 víveres · 2 días', desc: 'Dos seguidores se casan con telas blancas en la mano, gritando. +3 fe a la pareja, +1 al resto, +4 PF.' },
   { id: 'ofrenda', name: 'Ofrenda de Huesos', cost: 'Un seguidor · 1 día', desc: 'Sacrificar al seguidor con menos fe en el altar: +10 PF y +3 Corrupción, el resto pierde 2 de fe.' },
-  { id: 'ascension', name: 'Ascensión', cost: 'Un seguidor con fe 10 · 1 día', desc: 'Un devoto alcanza la plenitud. Elegís: ascender (+1 Devoción, +5 PF) o convertirlo en reliquia (+1 Corrupción, +8 PF).' },
+  { id: 'ascension', name: 'Ascensión', cost: 'Un seguidor con fe 10 · 1 día', desc: 'Un devoto alcanza la plenitud. Eligen: ascender (+1 Devoción, +5 PF) o convertirlo en reliquia (+1 Corrupción, +8 PF).' },
 ] as const;
 export function ritual(c: Campaign, id: string, opt?: string): ActResult {
   const cd = (c.ritualCd ??= {});
