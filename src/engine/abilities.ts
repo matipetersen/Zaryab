@@ -61,6 +61,17 @@ def({ id: 'shove', name: 'Derribar', desc: 'Prueba de Atletismo (FUE) contra FUE
     const a = roll('1d20').total + u.mods.str + (u.prof ?? 0), d = roll('1d20').total + Math.max(t.mods.str, t.mods.dex);
     if (a >= d) { b.addStatus(t, { id: 'prone', turns: -1, src: u.uid }); b.log(`${u.name} derriba a ${t.name} (${a} vs ${d}).`, 'buff'); } else b.log(`${t.name} resiste el empujón de ${u.name} (${a} vs ${d}).`, 'sys');
   } });
+def({ id: 'ready', name: 'Preparar acción', desc: 'Te quedás en guardia hasta tu próximo turno: el primer enemigo que entre en el alcance de tu arma recibe un ataque como reacción.', cost: 'action', range: 0, target: 'self', tag: 'utility',
+  run: (b, u) => { b.addStatus(u, { id: 'ready', turns: -1, src: u.uid }, true); b.log(`${u.name} prepara una acción y espera.`, 'sys'); } });
+def({ id: 'grapple', name: 'Agarrar', desc: 'Atletismo (FUE) contra FUE o DES del enemigo adyacente (no más de un tamaño mayor). Si ganás, queda agarrado: velocidad 0 hasta que se zafe (acción) o vos te alejes o caigas.', cost: 'action', range: 1, target: 'enemy', tag: 'control',
+  run: (b, u, t: Unit) => {
+    if (t.size > u.size + 1) { b.log(`${t.name} es demasiado grande para agarrarlo.`, 'sys'); return; }
+    const a = roll('1d20').total + u.mods.str + (u.prof ?? 0), d = roll('1d20').total + Math.max(t.mods.str, t.mods.dex);
+    if (a >= d) { b.addStatus(t, { id: 'grappled', turns: -1, src: u.uid }); b.log(`${u.name} agarra a ${t.name} (${a} vs ${d}): su velocidad pasa a 0.`, 'buff'); } else b.log(`${t.name} se escurre de ${u.name} (${a} vs ${d}).`, 'sys');
+  } });
+def({ id: 'escape', name: 'Zafarse', desc: 'Si estás agarrado: prueba de FUE o DES contra el Atletismo de quien te agarra.', cost: 'action', range: 0, target: 'self', tag: 'move',
+  validate: (b, u) => b.has(u, 'grappled') ? undefined : { ok: false, msg: 'No estás agarrado.' },
+  run: (b, u) => { b.tryEscape(u); } });
 def({ id: 'dodge', name: 'Esquivar', desc: 'Los ataques contra ti tienen desventaja hasta tu próximo turno.', cost: 'action', range: 0, target: 'self', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); b.log(`${u.name} se pone a la defensiva.`, 'sys'); } });
 

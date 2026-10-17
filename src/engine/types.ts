@@ -8,7 +8,7 @@ export type CondId =
   | 'prone' | 'blinded' | 'poisoned' | 'frightened' | 'charmed' | 'paralyzed' | 'stunned' | 'restrained' | 'invisible'
   | 'burning' | 'dodging' | 'bless' | 'bane' | 'shieldFaith' | 'hex' | 'hunterMark' | 'hexCurse' | 'enfeebled'
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
-  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped';
+  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped' | 'grappled' | 'ready';
 
 export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string }
 

@@ -5,6 +5,7 @@ import { Renderer } from './render';
 import { h, sleep, avatar } from './dom';
 import { cheb, key } from '../engine/grid';
 import { avg } from '../engine/dice';
+import { Coach, coachSeen } from './tutorial';
 import { MAPS } from '../data/maps';
 import { PARTY_BY_ID } from '../data/party';
 import { ITEM } from '../data/items';
@@ -15,7 +16,7 @@ import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
 type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' } | { k: 'deploy' };
-export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number> }
+export interface BattleResult { chem?: Record<string, number>; result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number> }
 
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
@@ -37,7 +38,7 @@ export class BattleUI {
     // En pantallas pequeñas, las columnas laterales pasan a ser cajones que se abren con estos botones.
     const drawer = (side: HTMLElement, other: HTMLElement) => () => { const open = !side.classList.contains('open'); other.classList.remove('open'); side.classList.toggle('open', open); };
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
-    stage.append(dBtns);
+    stage.append(dBtns); this.coach = new Coach(stage); const help = h('button', { class: 'dbtn', title: 'Guía rápida', onClick: () => this.coach?.open() }, '?'); dBtns.append(help);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
     this.root.id = 'battle'; this.root.className = 'screen';
     this.r = new Renderer(this.canvas); this.r.setBattle(b, map);
@@ -60,7 +61,7 @@ export class BattleUI {
   }
   addLog(t: string, cls = '') { const d = h('div', { class: cls }, t); this.logEl.append(d); this.logEl.scrollTop = this.logEl.scrollHeight; }
   // ───── despliegue previo (Tactics Ogre): se elige dónde empieza cada personaje ─────
-  deployDone?: () => void; deploySel = -1;
+  coach?: Coach; deployDone?: () => void; deploySel = -1;
   async deployPhase() {
     const pcs = this.b.units.filter(u => u.pcId); const spawns = this.b.grid.spawns.pc;
     if (pcs.length < 2 || this.b.cube || this.b.scripts.length || spawns.length < 2 || (window as any).__fast) return;
@@ -94,7 +95,9 @@ export class BattleUI {
     for (const k of seen) { const [x, y] = k.split(',').map(Number); this.r.overlays.push({ x, y, kind: 'atk' }); }
   }
   async loop() {
+    if (!coachSeen() && !(window as any).__fast) this.coach?.open(this.b.units.filter(u => u.pcId).length >= 2 && this.b.grid.spawns.pc.length >= 2 ? 0 : 1);
     await this.deployPhase();
+    if (this.coach && !this.coach.el.classList.contains('hidden') && this.coach.i === 0) this.coach.open(1);
     const b = this.b; b.start(); await this.flush();
     while (!b.over && !this.stopped) {
       const u = b.cur; if (!u) break;
@@ -116,7 +119,7 @@ export class BattleUI {
     await this.flush(); await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
-    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
+    this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), chem: b.chemGains(), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed } });
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }
@@ -241,6 +244,13 @@ export class BattleUI {
     else { const md = MONSTERS[u.id]; if (md?.lore) R.append(h('div', { class: 'sec' }, 'Bestiario'), h('div', { class: 'lore' }, `${md.type}. ${md.lore}`)); }
     const cp = this.cubePanel(); if (cp) R.append(cp);
     const t = b.grid.at(u.x, u.y); R.append(h('div', { class: 'sec' }, 'Terreno'), h('div', { class: 'small' }, t ? TERRAIN[t.kind] : ''));
+    const tm = b.terrainMods(u), sy = b.synergy(u), fo = b.formation(u);
+    if (tm.notes.length || sy.parts.length || fo.names.length) {
+      R.append(h('div', { class: 'sec' }, 'Bonos de posición'));
+      for (const n of tm.notes) R.append(h('div', { class: 'small' }, '⛰ ' + n));
+      if (sy.parts.length) R.append(h('div', { class: 'small', style: { color: '#e8c872' } }, `🔗 Sinergia: ${sy.ac ? '+' + sy.ac + ' CA ' : ''}${sy.atk ? '+' + sy.atk + ' ataque ' : ''}con ${sy.parts.join(', ')}`));
+      for (const n of fo.names) R.append(h('div', { class: 'small', style: { color: '#9fe0b0' } }, '🛡 ' + n));
+    }
   }
   renderBar() {
     const u = this.cur, B = this.bar; B.innerHTML = ''; this.menuEl = null;

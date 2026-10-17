@@ -1,3 +1,4 @@
+import { chemOf, chemLevel, pairKey } from './synergy';
 import { Grid, P, cheb, key } from './grid';
 import { d20, roll, avg, rand, pick, addFlat } from './dice';
 import type { Unit, Weapon, MAction, BEvent, CondId, Status, DmgType, DmgPart, Ab, Side } from './types';
@@ -19,7 +20,7 @@ export const COND_LABEL: Record<CondId, string> = {
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
-  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado',
+  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado', grappled: 'Agarrado', ready: 'Acción preparada',
 };
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
 const HIDDEN_CONDS: CondId[] = ['surgeUsed', 'sneakUsed'];
@@ -106,7 +107,54 @@ export class Battle {
   has(u: Unit, id: CondId) { return u.statuses.some(s => s.id === id); }
   status(u: Unit, id: CondId) { return u.statuses.find(s => s.id === id); }
   incapacitated(u: Unit) { return u.down || u.dead || this.has(u, 'paralyzed') || this.has(u, 'stunned'); }
-  ac(u: Unit, cover = 0) { return u.ac + (this.has(u, 'shieldFaith') ? 2 : 0) + cover; }
+  /** Relación (puntos) entre pares de la compañía: la fija la campaña; por defecto, la de partida. */
+  chem: Record<string, number> = {};
+  /** Rondas que cada par pasó a ≤ 2 casillas (para subir su relación al terminar). */
+  together: Record<string, number> = {}; roundsSeen = 0;
+  // ───── terreno: dónde estás parado cambia tu defensa y tu ataque ─────
+  terrainMods(u: Unit): { ac: number; atk: number; rangedAtk: number; notes: string[] } {
+    const t = this.grid.at(u.x, u.y); const out = { ac: 0, atk: 0, rangedAtk: 0, notes: [] as string[] };
+    if (!t || u.fly) return out;
+    if (t.kind === 'high') { out.ac += 1; out.rangedAtk += 2; out.notes.push('Posición elevada: +1 CA, +2 a distancia'); }
+    if (t.kind === 'diff') { out.ac += 1; out.notes.push('Escombros: +1 CA'); }
+    if (t.kind === 'water') { out.ac -= 1; out.atk -= 1; out.notes.push('Agua: −1 CA y −1 al ataque'); }
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const k = this.grid.at(u.x + dx, u.y + dy)?.kind; return k === 'wall' || k === 'cover'; })) { out.ac += 1; out.notes.push('Al abrigo de un muro o una caja: +1 CA'); }
+    return out;
+  }
+  // ───── sinergias y formaciones de la compañía ─────
+  pcsNear(u: Unit, r: number) { return this.units.filter(v => v !== u && v.pcId && u.pcId && !v.dead && !v.down && cheb(u, v) <= r); }
+  /** Bonos de química: cada compañero cercano suma según el nivel de relación (adyacente: completo; a 2 casillas: mitad). */
+  synergy(u: Unit): { ac: number; atk: number; parts: string[] } {
+    if (!u.pcId || u.down || u.dead) return { ac: 0, atk: 0, parts: [] };
+    let S = 0; const parts: string[] = [];
+    for (const v of this.pcsNear(u, 2)) { const L = chemLevel(chemOf(this.chem, u.pcId, v.pcId!)); if (!L) continue; const w = cheb(u, v) <= 1 ? L : Math.floor(L / 2); if (w) { S += w; parts.push(`${v.name} (${['', 'Compañeros', 'Aliados', 'Hermanos'][L]})`); } }
+    return { ac: (S >= 1 ? 1 : 0) + (S >= 4 ? 1 : 0), atk: (S >= 2 ? 1 : 0) + (S >= 5 ? 1 : 0), parts };
+  }
+  /** Formaciones (sólo la compañía): Falange (línea de tres: +1 CA), Núcleo (rodeado por 3 aliados: +2 CA). */
+  formation(u: Unit): { ac: number; names: string[] } {
+    if (!u.pcId || u.down || u.dead) return { ac: 0, names: [] };
+    const nb = this.pcsNear(u, 1); const names: string[] = []; let ac = 0;
+    const has = (dx: number, dy: number) => nb.some(v => v.x === u.x + dx && v.y === u.y + dy);
+    if ((has(1, 0) && has(-1, 0)) || (has(0, 1) && has(0, -1)) || (has(1, 1) && has(-1, -1)) || (has(1, -1) && has(-1, 1))) { ac += 1; names.push('Falange +1 CA'); }
+    if (nb.length >= 3) { ac += 2; names.push('Núcleo protegido +2 CA'); }
+    return { ac, names };
+  }
+  /** Enlaces visibles de relación entre compañeros cercanos (para dibujarlos). */
+  synergyLinks(): { a: Unit; b: Unit; level: number }[] {
+    const out: { a: Unit; b: Unit; level: number }[] = []; const pcs = this.units.filter(u => u.pcId && !u.dead && !u.down);
+    for (let i = 0; i < pcs.length; i++) for (let j = i + 1; j < pcs.length; j++) { const L = chemLevel(chemOf(this.chem, pcs[i].pcId!, pcs[j].pcId!)); if (L && cheb(pcs[i], pcs[j]) <= 2) out.push({ a: pcs[i], b: pcs[j], level: L }); }
+    return out;
+  }
+  recordTogether() {
+    this.roundsSeen++; const pcs = this.units.filter(u => u.pcId && !u.dead && !u.down);
+    for (let i = 0; i < pcs.length; i++) for (let j = i + 1; j < pcs.length; j++) if (cheb(pcs[i], pcs[j]) <= 2) { const k = pairKey(pcs[i].pcId!, pcs[j].pcId!); this.together[k] = (this.together[k] ?? 0) + 1; }
+  }
+  /** Pares que pelearon juntos al menos la mitad de las rondas: ganan un punto de relación. */
+  chemGains(): Record<string, number> { const g: Record<string, number> = {}; if (this.roundsSeen < 3) return g; for (const [k, n] of Object.entries(this.together)) if (n >= this.roundsSeen * 0.5) g[k] = 1; return g; }
+  ac(u: Unit, cover = 0) {
+    const tm = this.terrainMods(u).ac; const sy = u.pcId ? this.synergy(u).ac + this.formation(u).ac : 0;
+    return u.ac + (this.has(u, 'shieldFaith') ? 2 : 0) + cover + tm + sy;
+  }
   maxAttacks(u: Unit) { return 1 + (u.extraAtk ?? 0) + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 1 : 0); }
 
   addStatus(t: Unit, s: Status, quiet = false) {
@@ -142,7 +190,7 @@ export class Battle {
   nextTurn(): Unit | undefined {
     for (let guard = 0; guard < 500 && !this.over; guard++) {
       this.idx++;
-      if (this.idx >= this.order.length) { this.idx = 0; this.round++; if (this.surviveRounds && this.round > this.surviveRounds && !this.over) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); return; } if (this.maxRounds && this.round > this.maxRounds && !this.over) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); return; } this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
+      if (this.idx >= this.order.length) { this.idx = 0; this.recordTogether(); this.round++; if (this.surviveRounds && this.round > this.surviveRounds && !this.over) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); return; } if (this.maxRounds && this.round > this.maxRounds && !this.over) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); return; } this.emit({ t: 'round', n: this.round }); this.log(`— Ronda ${this.round} —`, 'round'); this.tickTerrain(); this.onRound?.(this, this.round); }
       const u = this.order[this.idx];
       if (u.dead) continue;
       this.startTurn(u);
@@ -179,7 +227,8 @@ export class Battle {
     if (u.dead) return;
     if (u.down && !u.stable) this.deathSave(u);
     if (this.has(u, 'prone') && !u.down && !this.has(u, 'restrained') && u.moveLeft > 0) { this.removeStatus(u, 'prone'); u.moveLeft = Math.floor(u.moveLeft / 2); this.log(`${u.name} se levanta.`, 'sys'); }
-    if (this.has(u, 'restrained')) u.moveLeft = 0;
+    if (this.has(u, 'restrained') || this.has(u, 'grappled')) u.moveLeft = 0;
+    this.removeStatus(u, 'ready');
     if (this.has(u, 'paralyzed') || this.has(u, 'stunned')) { u.moveLeft = 0; u.actionUsed = true; u.bonusUsed = true; }
   }
   endTurn(auto = false) {
@@ -204,7 +253,7 @@ export class Battle {
     if (t.kind === 'cover' && !u.fly) return true;
     return false;
   }
-  reach(u: Unit, budget = u.moveLeft): Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }> {
+  reach(u: Unit, budget = this.has(u, 'grappled') ? 0 : u.moveLeft): Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }> {
     const out = new Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }>();
     const start = key(u.x, u.y); out.set(start, { x: u.x, y: u.y, cost: 0 });
     const open: string[] = [start];
@@ -227,6 +276,30 @@ export class Battle {
     }
     for (const v of out.values()) { const o = this.unitAt(v.x, v.y); if (o && o !== u) v.occ = true; } // se puede cruzar, no terminar
     return out;
+  }
+  /** Arma o ataque que usa una acción preparada o un ataque de oportunidad: [alcance, ejecutar]. */
+  readyStrike(h: Unit): { range: number; run: (t: Unit) => void } | undefined {
+    const w = h.weapons.find(x => !x.bonusAction);
+    if (w) return { range: w.range, run: t => { const sv = [h.actionUsed, h.bonusUsed, h.extraActions, h.attacksMade] as const; h.actionUsed = false; h.extraActions = 0; h.attacksMade = 0; this.weaponAttack(h, w, t); [h.actionUsed, h.bonusUsed, h.extraActions, h.attacksMade] = sv as any; } };
+    const a = h.actions.find(x => (x.kind === 'melee' || x.kind === 'ranged') && !x.recharge && !x.aoe && !x.aoeSelf);
+    return a ? { range: a.reach ?? 1, run: t => { this.monsterAct(h, a, t); } } : undefined;
+  }
+  /** Acciones preparadas: si `u` entra en el alcance de quien esperaba, este ataca como reacción. */
+  triggerReady(u: Unit, from: P, to: P) {
+    for (const h of this.foesOf(u)) {
+      if (!this.has(h, 'ready') || !this.canReact(h)) continue;
+      const st = this.readyStrike(h); if (!st) continue;
+      if (cheb(to, h) <= st.range && cheb(from, h) > st.range) { h.reactionUsed = true; this.removeStatus(h, 'ready'); this.log(`⏱ ${h.name} ejecuta su acción preparada contra ${u.name}.`, 'sys'); st.run(u); if (u.dead || u.down) return; }
+    }
+  }
+  /** Soltar a quien agarraba si se aleja, cae o queda incapacitado. */
+  releaseGrapples() { for (const t of this.units) { const s = this.status(t, 'grappled'); if (!s) continue; const g = s.src ? this.byUid(s.src) : undefined; if (!g || g.dead || this.incapacitated(g) || cheb(g, t) > 1) this.removeStatus(t, 'grappled'); } }
+  /** Intento de escapar de un agarre: prueba de FUE/DES contra Atletismo de quien agarra. */
+  tryEscape(u: Unit): boolean {
+    const s = this.status(u, 'grappled'); if (!s) return true; const g = s.src ? this.byUid(s.src) : undefined; if (!g) { this.removeStatus(u, 'grappled'); return true; }
+    const a = roll('1d20').total + Math.max(u.mods.str, u.mods.dex) + (u.pcId ? (u.prof ?? 0) : 0), d = roll('1d20').total + g.mods.str + (g.prof ?? 0);
+    if (a >= d) { this.removeStatus(u, 'grappled'); this.log(`${u.name} se zafa del agarre de ${g.name} (${a} vs ${d}).`, 'buff'); return true; }
+    this.log(`${u.name} no logra zafarse de ${g.name} (${a} vs ${d}).`, 'sys'); return false;
   }
   /** Flanqueo: un aliado que pueda actuar está justo al otro lado del objetivo. */
   flanked(a: Unit, t: Unit): boolean {
@@ -275,10 +348,12 @@ export class Battle {
       const nxt = path[i];
       for (const h of this.provokers(u, cur, nxt)) { u.x = cur.x; u.y = cur.y; this.opportunity(h, u); if (u.dead || u.down || this.over) break; }
       if (u.dead || u.down || this.over) break;
+      u.x = nxt.x; u.y = nxt.y; this.triggerReady(u, cur, nxt); u.x = cur.x; u.y = cur.y;
+      if (u.dead || u.down || this.over) break;
       spent += u.fly ? 1 : this.grid.at(nxt.x, nxt.y)!.cost; cur = nxt; trail.push(nxt);
     }
     const stopped = cur.x !== x || cur.y !== y;
-    u.moveLeft = stopped ? 0 : u.moveLeft - dest.cost; u.x = cur.x; u.y = cur.y;
+    u.moveLeft = stopped ? 0 : u.moveLeft - dest.cost; u.x = cur.x; u.y = cur.y; this.releaseGrapples();
     if (trail.length > 1) this.emit({ t: 'move', uid: u.uid, path: trail });
     if (u.dead || u.down) return { ok: true };
     const tile = this.grid.at(u.x, u.y);
@@ -317,7 +392,8 @@ export class Battle {
     let nat = d20(); let n2 = nat;
     if (adv && !dis) { n2 = d20(); nat = Math.max(nat, n2); } else if (dis && !adv) { n2 = d20(); nat = Math.min(nat, n2); }
     let bonus = toHit;
-    if (o.ranged && (this.grid.at(a.x, a.y)?.h ?? 0) > (this.grid.at(t.x, t.y)?.h ?? 0)) bonus += 2; // terreno elevado
+    const tm = this.terrainMods(a); bonus += tm.atk + (o.ranged ? tm.rangedAtk : 0);
+    if (a.pcId) { bonus += this.synergy(a).atk; if (melee && !this.flanked(a, t) && this.units.some(v => v !== a && v.pcId && !v.dead && !v.down && cheb(v, t) <= 1)) bonus += 1; } // Cerco: dos aliados sobre el mismo objetivo
     if (this.has(a, 'bless')) bonus += Math.floor(rand() * 4) + 1;
     if (this.has(a, 'bane')) bonus -= Math.floor(rand() * 4) + 1;
     const ac = this.ac(t, cover);

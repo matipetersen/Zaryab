@@ -76,9 +76,9 @@ export const ARQ: Record<string, Node[]> = {
     T('La Vigilia', 'De qué huye cada uno', 'plaza'),
     N('La noche antes del Coloso nadie duerme. En un rincón de la plaza, alrededor de un brasero medio apagado, alguien rompe el silencio.'),
     { t: 'choice', prompt: 'Cada uno cuenta de qué huye. ¿A quién dejan hablar primero?', options: [
-      { label: 'A Romain', hint: 'Su templo, su balanza.', e: { d: 1, ...a('romain') }, result: ['Romain habla de la noche en que su templo ardió, y de cómo desde entonces pesa a todo el mundo para no pesarse a sí mismo.'] },
-      { label: 'A Rabb', hint: 'Su nombre, su espada.', e: { ...a('rabb') }, result: ['Rabb confiesa que lleva meses fingiendo recordar. A veces cree que el nombre que dice es solo uno que le dijeron. Nadie ríe.'] },
-      { label: 'A Panchi', hint: 'Su rabia.', e: { ...a('panchi') }, result: ['Panchi dice: «Tengo miedo de no volver a ser el que era». Hace una pausa. «Pero tengo más miedo de volver a serlo».'] },
+      { label: 'A Romain', hint: 'Su templo, su balanza. (+2 relación con Pact)', e: { d: 1, chem: { 'pact+romain': 2 }, ...a('romain') }, result: ['Romain habla de la noche en que su templo ardió, y de cómo desde entonces pesa a todo el mundo para no pesarse a sí mismo.'] },
+      { label: 'A Rabb', hint: 'Su nombre, su espada. (+2 relación con Zyr\'thar)', e: { chem: { 'rabb+zyrthar': 2 }, ...a('rabb') }, result: ['Rabb confiesa que lleva meses fingiendo recordar. A veces cree que el nombre que dice es solo uno que le dijeron. Nadie ríe.'] },
+      { label: 'A Panchi', hint: 'Su rabia. (+2 relación con Joren)', e: { chem: { 'joren+panchi': 2 }, ...a('panchi') }, result: ['Panchi dice: «Tengo miedo de no volver a ser el que era». Hace una pausa. «Pero tengo más miedo de volver a serlo».'] },
       { label: 'Callar y dejar que nadie hable', hint: 'Cada uno se queda con lo suyo.', e: { c: 1 }, result: ['Se apaga el brasero. A la mañana, todos lucharán un poco más solos de lo necesario.'] },
     ] },
   ],

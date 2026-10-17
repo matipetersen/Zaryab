@@ -77,6 +77,7 @@ function fleeTile(b: Battle, u: Unit, src: Unit | undefined): P | undefined {
 export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bias): Promise<void> {
   if (u.dead || u.down) return;
   if (u.traits.includes('inert')) return;
+  if (b.has(u, 'grappled')) { if (b.tryEscape(u)) { /* libre: sigue el turno */ } else { u.moveLeft = 0; } }
   if (u.traits.includes('dormant') && !b.flags['w' + u.uid]) return;
   if (u.side === 'foe' && b.cube && b.cube.alert < 1 && (u.traits.includes('guard') || u.traits.includes('zombieFort')) && !candidateTargets(b, u).some(t => cheb(u, t) <= 6 && b.canSee(u, t).visible)) return;
   if (u.side === 'foe' && b.cube && (b.cube.alert < 2) && u.actions.some(a => a.note === 'alarma') && candidateTargets(b, u).some(t => b.canSee(u, t).visible)) { const a = u.actions.find(a => a.note === 'alarma')!; if (!u.actionUsed) { b.monsterAct(u, a, u); u.actionUsed = true; return; } }

@@ -101,7 +101,7 @@ function buildPC(def: PCDef, grant?: Grant): Unit {
     x: 0, y: 0, size: 1, mods: { ...m }, saves, prof, level: def.level,
     hp: def.hp, maxHp: def.hp, temp: 0, ac: def.ac, speed: Math.ceil(def.speed / 5), fly: false,
     spellMod: sm, spellDC: 8 + prof + sm, spellAtk: prof + sm,
-    weapons: [...def.weapons.filter(x => !grant?.removeWeapons?.includes(x.id)), ...(grant?.weapons ?? [])].map(x => ({ ...x })), abilities: [...new Set([...def.abilities, ...(grant?.abilities ?? []), 'dash', 'dodge', 'disengage', 'help', 'shove', 'stabilize'])], actions: [], multiattack: [],
+    weapons: [...def.weapons.filter(x => !grant?.removeWeapons?.includes(x.id)), ...(grant?.weapons ?? [])].map(x => ({ ...x })), abilities: [...new Set([...def.abilities, ...(grant?.abilities ?? []), 'dash', 'dodge', 'disengage', 'help', 'shove', 'grapple', 'escape', 'ready', 'stabilize'])], actions: [], multiattack: [],
     res: { ...def.res, ...(grant?.res ?? {}) }, resMax: { ...def.res, ...(grant?.res ?? {}) }, statuses: [], death: { succ: 0, fail: 0 }, down: false, dead: false, stable: false,
     moveLeft: 0, actionUsed: false, bonusUsed: false, extraActions: 0, attacksMade: 0, acted: false, initiative: 0,
     resist: (def.resist ?? []) as any, immune: [], vuln: [], condImmune: [], traits: [...def.traits, ...(grant?.traits ?? [])], xp: 0, undead: false,

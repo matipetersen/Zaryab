@@ -22,6 +22,7 @@ import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from '.
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
+import { chemPoints } from './engine/synergy';
 import { briefing } from './story/briefings';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
@@ -220,7 +221,7 @@ class App {
     const rated = DESIGN_LVL[enc] != null && !NO_CAL.has(enc) && !e.duel && !e.soft;
     const edge = rated ? computeEdge(c, party, allies.length) : { points: 0, lines: [] as string[] };
     const intro = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
-    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points, powerup: enc === 'gusano_caza' ? c.gusano.power : 0 });
+    const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points, chem: c.chem, powerup: enc === 'gusano_caza' ? c.gusano.power : 0 });
     if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, intro);
@@ -238,6 +239,7 @@ class App {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
       for (const id of res.dead) { if (this.settings.permadeath && has(c, 'cap3_done')) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }
+    if (victory && !duel) for (const [k, n] of Object.entries(res.chem ?? {})) c.chem[k] = chemPoints(c.chem, k) + n; // pelear en formación fortalece la relación
     this.renderHud(); saveGame(c); return won;
   }
   resultOverlay(res: BattleResult, loot?: ReturnType<typeof lootFor> | null) {

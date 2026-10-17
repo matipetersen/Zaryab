@@ -1,3 +1,4 @@
+import { chemLevel, chemPoints, BASE_CHEM } from '../engine/synergy';
 import type { Campaign } from '../state';
 import { ITEM } from '../data/items';
 import { BUILDINGS } from './buildings';
@@ -15,6 +16,7 @@ export function computeEdge(c: Campaign, party: string[], allies: number): Edge 
   add(Math.min(6, Math.floor(c.followers.filter(f => !f.sick).length / 2)), 'seguidores'); add(Math.min(6, Math.floor(c.pf / 8)), 'PF en reserva');
   add(Math.min(4, MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).length), 'milagros disponibles');
   add(Math.min(5, Math.floor(Object.values(c.bond).reduce((s, n) => s + n, 0) / 2)), 'vínculos con la ciudad');
+  add(Math.min(6, [...new Set([...Object.keys(BASE_CHEM), ...Object.keys(c.chem ?? {})])].reduce((n, k) => n + chemLevel(chemPoints(c.chem, k)), 0)), 'sinergias de la compañía');
   add(c.alert >= 10 ? -8 : c.alert >= 7 ? -4 : 0, 'Alerta del Conclave');
   return { points: Math.max(-12, Math.min(45, pts)), lines };
 }

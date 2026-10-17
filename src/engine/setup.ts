@@ -10,7 +10,7 @@ import { addFlat } from './dice';
 import { initScript } from './scripts';
 
 import type { Encounter } from '../data/maps';
-export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[]; equip?: Record<string, string[]>; level?: number; flags?: string[]; prog?: Record<string, import('../data/progression').Prog>; inv?: Record<string, number>; edge?: number; powerup?: number }
+export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[]; equip?: Record<string, string[]>; level?: number; flags?: string[]; prog?: Record<string, import('../data/progression').Prog>; inv?: Record<string, number>; edge?: number; powerup?: number; chem?: Record<string, number> }
 export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts = {}): Battle {
   const enc = ENCOUNTERS[encId]; const map = MAPS[enc.map]; const grid = new Grid(map.rows, map.objs);
   const units: Unit[] = [];
@@ -30,7 +30,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
     for (let r = 1; r < 5 && !placed; r++) for (let dy = -r; dy <= r && !placed; dy++) for (let dx = -r; dx <= r && !placed; dx++) { const x = base.x + dx, y = base.y + dy; const t = grid.at(x, y); if (t && !t.blocked && !taken.has(x + ',' + y)) { units.push(makeFoe(id, x, y, '', 'pc')); taken.add(x + ',' + y); placed = true; } }
   }
   if (enc.surprise) for (const u of units) if (u.sprite !== 'wall' && u.side === (enc.surprise === 'party' ? 'pc' : 'foe')) u.surprised = true;
-  const b = new Battle(grid, units); b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
+  const b = new Battle(grid, units); b.chem = opts.chem ?? {}; b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
   b.scaleFoe = scaleFoe; b.goalOnly = !!(enc.goal || enc.objective); if (enc.goal) { b.goal = enc.goal; b.goalMsg = enc.goalMsg ?? ''; }
   if (enc.script) initScript(enc.script, b, opts.flags ?? []);
   if (enc.waves?.length || enc.script) b.onRound = (bb, round) => {
