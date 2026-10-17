@@ -261,3 +261,7 @@ button, .node, .choice, .tk { touch-action: manipulation; user-select: none; -we
 #objective .twist { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--line); color: #ffd98a; }
 #objective .bonus { margin-top: 4px; color: #e8dff5; } #objective .bonus.done { color: #7ee89b; } #objective .bonus.failed { color: #ff9c8f; text-decoration: line-through; opacity: .8; }
 #objective .bonus small { color: #e8c872; }
+
+#menu { position: absolute; }
+#menu > :not(canvas) { position: relative; z-index: 1; }
+#menu h1 { text-shadow: 0 0 40px rgba(255,140,60,.55), 0 2px 0 #3a1a10; }

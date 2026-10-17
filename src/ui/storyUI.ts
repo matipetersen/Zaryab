@@ -1,4 +1,4 @@
-import { portraitUrl } from './portraits';
+import { portraitUrl, slug } from './portraits';
 import { h, sleep, avatar } from './dom';
 import type { Node, Opt } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
@@ -6,6 +6,7 @@ import { applyEffect, has, built, previewEffect, type Campaign, type Effect } fr
 import { MARKS, MARK_ANSWER } from '../story/script';
 import { PARTY_BY_ID } from '../data/party';
 import { StageView, BG_MAP } from './stage';
+import { assetUrl } from './assets';
 
 const BG: Record<string, string> = {
   prison: 'radial-gradient(ellipse at 50% 90%, #3a2a1a 0%, #140e0a 60%, #060404 100%)',
@@ -41,8 +42,8 @@ export class StoryUI {
   /** Quiénes aparecen en escena: la escuadra elegida o toda la compañía viva. */
   cast(): string[] { const c = this.camp; const alive = c.party.filter(id => !c.dead.includes(id)); return c.squad?.length ? c.squad.filter(id => alive.includes(id)) : alive; }
   setBg(id: string) {
-    this.bg.style.background = BG[id] ?? BG.prison;
-    const m = BG_MAP[id]; if (m && this.stage) { this.stage.set(m, this.cast()); setTimeout(() => this.stage?.r.resize(), 30); } else this.stage?.show(false);
+    const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
+    const m = art ? undefined : BG_MAP[id]; if (m && this.stage) { this.stage.set(m, this.cast()); setTimeout(() => this.stage?.r.resize(), 30); } else this.stage?.show(false);
   }
 
   // ---------- esperar avance ----------
@@ -69,7 +70,7 @@ export class StoryUI {
     const txt = h('div', { class: `txt ${who ? '' : 'narr'}` });
     const body = h('div', { style: { flex: '1', minWidth: '0' } }, who ? h('div', { class: 'who' }, who) : null, tone ? h('div', { class: 'tone' }, `(${tone})`) : null, txt);
     const row = h('div', { class: 'row' });
-    if (sp) { const p = h('div', { class: 'portrait', style: { background: sp.img ? `url(${portraitUrl(sp.img)}) center/cover` : sp.color } }, sp.img ? '' : sp.glyph); row.append(p); }
+    if (sp) { const url = portraitUrl(sp.img ?? slug(who!)); const p = h('div', { class: 'portrait', style: { background: url ? `url(${url}) center/cover` : sp.color } }, url ? '' : sp.glyph); row.append(p); }
     row.append(body); this.dlg.append(row); if (extra) this.dlg.append(extra);
     const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'tocá para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
     await this.type(txt, text);

@@ -31,6 +31,7 @@ interface Flash { x: number; y: number; color: string; t: number; r: number }
 interface Proj { x1: number; y1: number; x2: number; y2: number; t: number; kind: string }
 interface Ring { x: number; y: number; t: number; color: string; max: number }
 
+import { assetImg } from './assets';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
@@ -170,11 +171,16 @@ export class Renderer {
     const c = this.ctx; c.beginPath(); c.moveTo(x, y); c.lineTo(x + TW / 2 * s, y + TH / 2 * s); c.lineTo(x, y + TH * s); c.lineTo(x - TW / 2 * s, y + TH / 2 * s); c.closePath();
     c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); }
   }
+  /** Textura externa para las caras del bloque que se está dibujando (si hay arte cargado). */
+  boxTex: HTMLImageElement | null = null;
+  overlay(x: number, y: number, s: number, hh: number, dark: number) {
+    const img = this.boxTex; if (!img) return; const c = this.ctx; c.save(); c.clip(); c.drawImage(img, x - TW / 2 * s, y - hh - TH / 2 * s, TW * s, TH * s * 1.5 + hh); if (dark) { c.fillStyle = `rgba(0,0,0,${dark})`; c.fillRect(x - TW * s, y - hh - TH * s, TW * 2 * s, TH * 3 * s + hh); } c.restore();
+  }
   box(x: number, y: number, s: number, h: number, top: string, left: string, right: string) {
     const c = this.ctx, hh = h * s;
-    c.beginPath(); c.moveTo(x - TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x, y + TH * s); c.lineTo(x - TW / 2 * s, y + TH / 2 * s); c.closePath(); c.fillStyle = left; c.fill();
-    c.beginPath(); c.moveTo(x + TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x, y + TH * s); c.lineTo(x + TW / 2 * s, y + TH / 2 * s); c.closePath(); c.fillStyle = right; c.fill();
-    c.beginPath(); c.moveTo(x, y - hh); c.lineTo(x + TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x - TW / 2 * s, y + TH / 2 * s - hh); c.closePath(); c.fillStyle = top; c.fill();
+    c.beginPath(); c.moveTo(x - TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x, y + TH * s); c.lineTo(x - TW / 2 * s, y + TH / 2 * s); c.closePath(); c.fillStyle = left; c.fill(); this.overlay(x, y, s, hh, .38);
+    c.beginPath(); c.moveTo(x + TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x, y + TH * s); c.lineTo(x + TW / 2 * s, y + TH / 2 * s); c.closePath(); c.fillStyle = right; c.fill(); this.overlay(x, y, s, hh, .22);
+    c.beginPath(); c.moveTo(x, y - hh); c.lineTo(x + TW / 2 * s, y + TH / 2 * s - hh); c.lineTo(x, y + TH * s - hh); c.lineTo(x - TW / 2 * s, y + TH / 2 * s - hh); c.closePath(); c.fillStyle = top; c.fill(); this.overlay(x, y, s, hh, 0);
     c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
   }
   draw() {
@@ -227,11 +233,12 @@ export class Renderer {
   drawFloor(x: number, y: number, kind: string, s: number) {
     const P = this.pal, h = kind === 'high' ? ELEV : 0; const p = this.proj(x, y, h);
     if (kind === 'wall' || kind === 'cover') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
-    if (kind === 'high') { this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); return; }
+    if (kind === 'high') { this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? null; this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); this.boxTex = null; return; }
     let col = (x + y) % 2 ? P.f1 : P.f2;
     if (kind === 'diff') col = P.diff; else if (kind === 'water') col = P.water; else if (kind === 'hazard') col = P.hazard; else if (kind === 'mark') col = (x + y) % 2 ? P.f1 : P.f2;
     this.diamond(p.x, p.y, s, col, P.edge);
-    const c = this.ctx;
+    const c = this.ctx; const th = this.map?.theme ?? ''; const tex = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : '');
+    if (tex) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if ((x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
     if (kind === 'diff') { c.strokeStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(p.x - 10 * s, p.y + 14 * s); c.lineTo(p.x + 6 * s, p.y + 10 * s); c.moveTo(p.x - 4 * s, p.y + 22 * s); c.lineTo(p.x + 12 * s, p.y + 18 * s); c.stroke(); }
     if (kind === 'water') { c.strokeStyle = 'rgba(255,255,255,.28)'; c.beginPath(); const wv = Math.sin(this.time * 2 + x + y) * 2; c.moveTo(p.x - 14 * s, p.y + 16 * s + wv); c.quadraticCurveTo(p.x, p.y + 10 * s + wv, p.x + 14 * s, p.y + 16 * s + wv); c.stroke(); }
     if (kind === 'hazard' && this.b!.grid.at(x, y)?.ch === 'f') { for (let i = 0; i < 3; i++) { const fx = p.x + (i - 1) * 11 * s, ph = this.time * 7 + i * 2 + x; const h = (8 + Math.sin(ph) * 3 + i % 2 * 4) * s; c.fillStyle = i === 1 ? '#ffd23f' : '#ff7a2a'; c.beginPath(); c.moveTo(fx - 5 * s, p.y + 22 * s); c.quadraticCurveTo(fx, p.y + 22 * s - h * 2.4, fx + 5 * s, p.y + 22 * s); c.fill(); } }
@@ -239,6 +246,9 @@ export class Renderer {
     if (kind === 'mark') { const pulse = .5 + .3 * Math.sin(this.time * 3 + x); c.strokeStyle = `rgba(142,68,173,${pulse + .3})`; c.lineWidth = 2; c.beginPath(); c.ellipse(p.x, p.y + 16 * s, 20 * s, 10 * s, 0, 0, 6.28); c.stroke(); c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 10 * s, p.y + 16 * s); c.lineTo(p.x, p.y + 26 * s); c.lineTo(p.x - 10 * s, p.y + 16 * s); c.closePath(); c.stroke(); c.lineWidth = 1; }
   }
   drawBlock(x: number, y: number, kind: string, s: number) {
+    this.boxTex = assetImg('tiles', `${this.map?.theme}_${kind}`)?.img ?? null; try { this.drawBlock0(x, y, kind, s); } finally { this.boxTex = null; }
+  }
+  drawBlock0(x: number, y: number, kind: string, s: number) {
     const P = this.pal; const p = this.proj(x, y, 0);
     if (kind === 'wall') { const g = this.b!.grid; const brittle = g.at(x, y)!.ch === 'x'; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; if (rim) { this.box(p.x, p.y, s, RIM, shade(P.wallT, .9), shade(P.wallL, .8), shade(P.wallR, .8)); return; } this.box(p.x, p.y, s, WALL, brittle ? shade(P.wallT, .85) : P.wallT, brittle ? shade(P.wallL, .9) : P.wallL, brittle ? shade(P.wallR, .9) : P.wallR); const c = this.ctx; if (brittle) { c.strokeStyle = 'rgba(0,0,0,.65)'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 12 * s, p.y + 4 * s); c.lineTo(p.x - 4 * s, p.y + 14 * s); c.lineTo(p.x - 9 * s, p.y + 24 * s); c.lineTo(p.x + 2 * s, p.y + 34 * s); c.moveTo(p.x + 12 * s, p.y + 8 * s); c.lineTo(p.x + 5 * s, p.y + 20 * s); c.stroke(); } c.strokeStyle = 'rgba(0,0,0,.18)'; for (let i = 1; i < 3; i++) { const yy = p.y + TH * s - (WALL / 3) * i * s; c.beginPath(); c.moveTo(p.x - TW / 2 * s, yy - TH / 2 * s); c.lineTo(p.x, yy); c.lineTo(p.x + TW / 2 * s, yy - TH / 2 * s); c.stroke(); } }
     else {
@@ -291,6 +301,7 @@ export class Renderer {
     c.globalAlpha = 1;
   }
   sprite(u: Unit) {
+    const art = assetImg('sprites', u.pcId ?? u.id); if (art) { const c0 = this.ctx; const fw = art.img.naturalWidth / art.frames, fh = art.img.naturalHeight, H = 54, W = H * fw / fh; const f = art.frames > 1 ? Math.floor(this.time * 7 + u.uid) % art.frames : 0; c0.drawImage(art.img, f * fw, 0, fw, fh, -W / 2, -H, W, H); return; }
     const c = this.ctx; const col = u.color; const dark = shade(col, .55), light = shade(col, 1.3);
     const pcId = u.pcId; const skin = pcId === 'zyrthar' ? '#4d4a6a' : pcId === 'romain' ? '#b8453a' : pcId === 'pact' ? '#efe6c8' : '#d2a679';
     switch (u.sprite) {

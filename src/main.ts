@@ -25,6 +25,7 @@ import { NOVEL } from './story/novel';
 import { chemPoints, pairKey } from './engine/synergy';
 import { briefing } from './story/briefings';
 import { playIntro } from './ui/intro';
+import { MenuFx } from './ui/menuFx';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
@@ -35,7 +36,7 @@ import type { Node } from './story/types';
 class App {
   app = document.getElementById('app')!; camp: Campaign = newCampaign(); settings = { permadeath: false };
   top!: HTMLElement; rootEl!: HTMLElement; menuEl!: HTMLElement; storyEl!: HTMLElement; battleEl!: HTMLElement; hubEl!: HTMLElement;
-  story!: StoryUI; hub!: HubUI; hudEl!: HTMLElement; running = false;
+  menuFx?: MenuFx; story!: StoryUI; hub!: HubUI; hudEl!: HTMLElement; running = false;
 
   constructor() {
     try { this.settings = { ...this.settings, ...JSON.parse(localStorage.getItem('zaryab.settings') || '{}') }; } catch { /* */ }
@@ -60,7 +61,7 @@ class App {
       h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
   }
   showMenu() {
-    this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = '';
+    this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = ''; this.menuFx?.destroy(); this.menuFx = new MenuFx(m);
     const perm = h('input', { type: 'checkbox', id: 'perm' }) as HTMLInputElement; perm.checked = this.settings.permadeath;
     perm.addEventListener('change', () => { this.settings.permadeath = perm.checked; localStorage.setItem('zaryab.settings', JSON.stringify(this.settings)); });
     m.append(h('div', { class: 'hero' }, h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA')),
