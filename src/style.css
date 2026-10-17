@@ -8,7 +8,7 @@
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--f-body); overflow: hidden; }
 button { font-family: inherit; cursor: pointer; }
 .hidden { display: none !important; }
-#app { display: flex; flex-direction: column; height: 100vh; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 #topbar { height: 52px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: linear-gradient(180deg, #2a1a3a, #1b1230); border-bottom: 1px solid var(--line); z-index: 20; }
 #topbar .brand { font-family: var(--f-head); font-size: 18px; letter-spacing: .06em; color: var(--secondary); white-space: nowrap; }
 .meters { display: flex; gap: 14px; margin-left: auto; align-items: center; }
@@ -154,3 +154,61 @@ button { font-family: inherit; cursor: pointer; }
 .fe { display: flex; gap: 2px; } .fe i { width: 14px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); } .fe i.on { background: var(--pf); }
 .frow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .frow select { background: #241838; color: var(--text); border: 1px solid var(--line); padding: 4px 6px; border-radius: 6px; font-size: 12px; }
+
+/* ═══════════ Táctil y teléfono ═══════════ */
+html, body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+button, .node, .choice, .tk { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+#board { touch-action: none; }
+#drawers { display: none; }
+.dbtn { background: rgba(12,8,22,.8); border: 1px solid var(--line); color: var(--secondary); border-radius: 10px; width: 40px; height: 40px; font-size: 18px; }
+@media (hover: none) { .hint-kb { display: none; } }
+
+@media (max-width: 820px) {
+  #topbar { height: 44px; gap: 8px; padding: 0 10px; }
+  #topbar .brand { font-size: 14px; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; }
+  .meters { gap: 8px; overflow-x: auto; scrollbar-width: none; font-size: 11px; max-width: 70vw; }
+  .meters::-webkit-scrollbar { display: none; }
+  .meters .meter { white-space: nowrap; }
+  .tb-btn { padding: 4px 7px; font-size: 11px; }
+
+  /* mapa del mundo: arriba el mapa, debajo el panel del distrito */
+  #hub .wmap { right: 0; bottom: auto; height: 38%; }
+  #hub .wpanel { left: 0; right: 0; top: 38%; bottom: 58px; width: auto; border-left: 0; border-top: 1px solid var(--line); padding: 10px 12px; }
+  #hub .wbar { height: 58px; gap: 6px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  #hub .wbar::-webkit-scrollbar { display: none; }
+  #hub .wbar .act { flex: none; padding: 6px 9px; font-size: 12px; white-space: nowrap; }
+  #hub .wbar .pips { flex: none; margin-left: 4px; }
+  #hub .node .ic { width: 34px; height: 34px; font-size: 16px; }
+  #hub .node .nm { font-size: 8px; max-width: 70px; }
+  #hub .wpanel h3 { font-size: 17px; }
+  .overlay .card { padding: 16px; } .overlay h2 { font-size: 24px; }
+  .overlay .card.wide { max-height: 92vh; width: 96vw; }
+  .puzzle .rowp { grid-template-columns: 1fr; }
+
+  /* combate */
+  #battle { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  #stage { grid-column: 1; } #actionbar { grid-column: 1; }
+  #left, #right { display: none; grid-row: auto; position: fixed; top: 44px; bottom: 0; width: min(86vw, 340px); z-index: 40; box-shadow: 0 0 40px #000; }
+  #left { left: 0; border-right: 1px solid var(--secondary); } #right { right: 0; grid-column: auto; border-left: 1px solid var(--secondary); }
+  #left.open, #right.open { display: block; }
+  #drawers { display: flex; flex-direction: column; gap: 8px; position: absolute; right: 8px; top: 62px; z-index: 6; }
+  #tracker { top: 4px; max-width: 96%; overflow-x: auto; padding: 3px 6px; } #tracker .tk { width: 28px; height: 28px; font-size: 12px; flex: none; } #tracker .rd { font-size: 12px; padding: 0 4px; }
+  #objective { top: 48px; left: 6px; max-width: 60%; font-size: 11px; padding: 5px 8px; opacity: .92; }
+  #log { left: 6px; bottom: 6px; width: 70%; max-height: 22%; font-size: 11px; }
+  #actionbar { padding: 6px 8px; gap: 5px; min-height: 0; display: grid; grid-template-columns: repeat(5, 1fr); }
+  .act { padding: 8px 2px; font-size: 11px; justify-content: center; text-align: center; flex-direction: column; gap: 2px; }
+  .act kbd { display: none; }
+  #actionbar .pips { grid-column: 1 / -1; margin: 0; justify-content: center; flex-wrap: wrap; gap: 5px; font-size: 11px; }
+  .menu { left: 4px; right: 4px; min-width: 0; max-height: 52vh; }
+  .mi { padding: 10px 9px; font-size: 14px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #topbar { height: 34px; } #topbar .brand { font-size: 12px; }
+  #hub .wmap { right: 300px; left: 0; top: 0; height: auto; bottom: 50px; }
+  #hub .wpanel { left: auto; right: 0; top: 0; bottom: 50px; width: 300px; border-top: 0; border-left: 1px solid var(--line); }
+  #hub .wbar { height: 50px; }
+  #left, #right { top: 34px; }
+  #actionbar { grid-template-columns: repeat(8, auto); } #actionbar .pips { grid-column: auto; }
+  #log { max-height: 30%; width: 38%; } #objective { display: none; }
+  .act { flex-direction: row; padding: 5px 8px; }
+}

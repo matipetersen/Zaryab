@@ -1,3 +1,4 @@
+import { portraitUrl } from './portraits';
 import { h, sleep, avatar } from './dom';
 import type { Node, Opt } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
@@ -62,9 +63,9 @@ export class StoryUI {
     const txt = h('div', { class: `txt ${who ? '' : 'narr'}` });
     const body = h('div', { style: { flex: '1', minWidth: '0' } }, who ? h('div', { class: 'who' }, who) : null, tone ? h('div', { class: 'tone' }, `(${tone})`) : null, txt);
     const row = h('div', { class: 'row' });
-    if (sp) { const p = h('div', { class: 'portrait', style: { background: sp.img ? `url(/portraits/${sp.img}.jpg) center/cover` : sp.color } }, sp.img ? '' : sp.glyph); row.append(p); }
+    if (sp) { const p = h('div', { class: 'portrait', style: { background: sp.img ? `url(${portraitUrl(sp.img)}) center/cover` : sp.color } }, sp.img ? '' : sp.glyph); row.append(p); }
     row.append(body); this.dlg.append(row); if (extra) this.dlg.append(extra);
-    const hint = h('div', { class: 'hint' }, 'clic · espacio para continuar'); this.dlg.append(hint);
+    const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'toca para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
     await this.type(txt, text);
   }
   async pause() { await this.advance(); }

@@ -32,6 +32,7 @@ interface Ring { x: number; y: number; t: number; color: string; max: number }
 
 export class Renderer {
   ctx: CanvasRenderingContext2D; b?: Battle; map?: MapDef; pal: Pal = PALS.alley;
+  /** Instante del último arrastre táctil: el toque que lo termina no cuenta como clic. */ lastDrag = 0;
   zoom = 1; panX = 0; panY = 0; W = 0; H = 0; dpr = 1;
   vis = new Map<number, Vis>(); overlays: Overlay[] = []; hover: P | null = null; activeUid = -1; selUid = -1;
   floats: Float[] = []; parts: Part[] = []; projs: Proj[] = []; rings: Ring[] = [];
@@ -47,6 +48,15 @@ export class Renderer {
     window.addEventListener('mouseup', () => (drag = null));
     window.addEventListener('mousemove', e => { if (drag) { this.panX += e.clientX - drag.x; this.panY += e.clientY - drag.y; drag = { x: e.clientX, y: e.clientY }; } });
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+    // Táctil: un dedo arrastra el tablero, dos dedos hacen zoom (pellizco). Un toque corto sigue siendo un clic.
+    let t1: { x: number; y: number; moved: boolean } | null = null; let pinch = 0;
+    const dist = (e: TouchEvent) => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    canvas.addEventListener('touchstart', e => { if (e.touches.length === 1) t1 = { x: e.touches[0].clientX, y: e.touches[0].clientY, moved: false }; else if (e.touches.length === 2) { pinch = dist(e); t1 = null; this.lastDrag = performance.now(); } }, { passive: true });
+    canvas.addEventListener('touchmove', e => {
+      if (e.touches.length === 2 && pinch) { e.preventDefault(); const d = dist(e); this.zoom = Math.max(.5, Math.min(2.2, this.zoom * (d / pinch))); pinch = d; this.lastDrag = performance.now(); }
+      else if (e.touches.length === 1 && t1) { const x = e.touches[0].clientX, y = e.touches[0].clientY; if (!t1.moved && Math.hypot(x - t1.x, y - t1.y) < 10) return; t1.moved = true; e.preventDefault(); this.panX += x - t1.x; this.panY += y - t1.y; t1.x = x; t1.y = y; this.lastDrag = performance.now(); }
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => { if (!('ontouchstart' in window)) return; pinch = 0; t1 = null; });
   }
   destroy() { this.running = false; }
   resize() {

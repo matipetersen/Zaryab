@@ -1,3 +1,4 @@
+import { portraitUrl } from './portraits';
 export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, any> = {}, ...kids: (Node | string | null | undefined | false)[]): HTMLElementTagNameMap[K] {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
@@ -11,6 +12,6 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<s
 }
 export const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 export function avatar(glyph: string, color: string, img?: string, size = 30): HTMLElement {
-  const a = h('span', { class: 'avatar', style: { width: size + 'px', height: size + 'px', background: img ? `url(/portraits/${img}.jpg) center/cover` : color, fontSize: size * .5 + 'px' } }, img ? '' : glyph);
+  const a = h('span', { class: 'avatar', style: { width: size + 'px', height: size + 'px', background: img ? `url(${portraitUrl(img)}) center/cover` : color, fontSize: size * .5 + 'px' } }, img ? '' : glyph);
   return a;
 }

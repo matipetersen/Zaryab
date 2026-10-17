@@ -34,6 +34,10 @@ export class BattleUI {
     this.canvas = h('canvas', { id: 'board' }); this.left = h('aside', { id: 'left', class: 'side' }); this.right = h('aside', { id: 'right', class: 'side' });
     this.bar = h('div', { id: 'actionbar' }); this.logEl = h('div', { id: 'log' }); this.tracker = h('div', { id: 'tracker' }); this.tip = h('div', { id: 'tooltip', class: 'hidden' });
     const stage = h('div', { id: 'stage' }, this.canvas, this.tracker, h('div', { id: 'objective' }, h('b', {}, map.name), h('div', {}, map.objective)), this.logEl);
+    // En pantallas pequeñas, las columnas laterales pasan a ser cajones que se abren con estos botones.
+    const drawer = (side: HTMLElement, other: HTMLElement) => () => { const open = !side.classList.contains('open'); other.classList.remove('open'); side.classList.toggle('open', open); };
+    const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
+    stage.append(dBtns);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
     this.root.id = 'battle'; this.root.className = 'screen';
     this.r = new Renderer(this.canvas); this.r.setBattle(b, map);
@@ -82,11 +86,18 @@ export class BattleUI {
 
   // ---------- entrada ----------
   bindInput() {
+    let touch = false; this.canvas.addEventListener('pointerdown', e => { touch = e.pointerType === 'touch'; });
     this.canvas.addEventListener('mousemove', e => {
+      if (touch) return; // el navegador táctil simula un mousemove al tocar: no debe contar como «vista previa»
       const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); this.r.hover = t; this.showHoverTip(e, t);
     });
     this.canvas.addEventListener('mouseleave', () => { this.r.hover = null; this.tip.classList.add('hidden'); });
-    this.canvas.addEventListener('click', e => { if (e.button !== 0) return; const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); if (t) this.clickTile(t); });
+    this.canvas.addEventListener('click', e => {
+      if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); if (!t) return;
+      // En pantalla táctil, el primer toque muestra la casilla (y su previsualización); el segundo, sobre la misma casilla, ejecuta.
+      if (touch && this.mode.k !== 'idle' && this.mode.k !== 'busy' && !(this.r.hover && this.r.hover.x === t.x && this.r.hover.y === t.y)) { this.r.hover = t; this.showHoverTip(e, t); return; }
+      this.clickTile(t);
+    });
     this.keyH = (e: KeyboardEvent) => {
       if (!this.cur || this.mode.k === 'busy') return; if ((e.target as HTMLElement)?.tagName === 'SELECT') return;
       if (e.key === 'Escape') { this.setMode({ k: 'idle' }); }
