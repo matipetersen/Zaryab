@@ -22,6 +22,7 @@ import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from '.
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
+import { reactive } from './story/novelReact';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
 
@@ -115,7 +116,8 @@ class App {
   /** Escena de novela entre capítulos o actos: se reproduce una sola vez. */
   async cutscene(key: string) {
     const c = this.camp; if (!NOVEL[key] || has(c, `nov_${key}`)) return;
-    applyEffect(c, { flags: [`nov_${key}`] }); await this.runScript('cut:' + key); saveGame(c);
+    const r = reactive(c, key); applyEffect(c, { flags: [`nov_${key}`, ...r.used.map(u => `nov_f_${u}`)] });
+    await this.runScript('cut:' + key, 0, [...NOVEL[key], ...r.nodes]); saveGame(c);
   }
   /** Tras un capítulo principal: entreacto propio y, si cierra un acto, la portada del siguiente. */
   async novel(qid: string) {

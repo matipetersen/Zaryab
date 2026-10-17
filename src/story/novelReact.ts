@@ -1,0 +1,107 @@
+import type { Node } from './types';
+import type { Campaign } from '../state';
+import { has } from '../state';
+import { FACTIONS } from '../state';
+
+const N = (text: string): Node => ({ t: 'narr', text });
+const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
+
+/**
+ * Fragmentos de novela que reaccionan a la campaña. Se suman al final de la escena base de cada clave.
+ *  - `must`: refleja la decisión principal del capítulo; se cuenta siempre que se cumpla la condición.
+ *  - los demás son de ambiente (moral, facciones, bajas, vínculos…): se cuentan una sola vez y su número crece
+ *    con la profundidad de la campaña (misiones secundarias y personales completadas).
+ */
+export interface Frag { id: string; at?: string[]; when: (c: Campaign) => boolean; nodes: Node[]; pri?: number; must?: boolean }
+const f = (id: string, at: string[] | undefined, when: Frag['when'], nodes: Node[], o: Partial<Frag> = {}): Frag => ({ id, at, when, nodes, ...o });
+const H = (c: Campaign, ...fl: string[]) => fl.some(x => has(c, x));
+const rep = (c: Campaign, k: string) => c.rep[k] ?? 0;
+
+export const FRAGS: Frag[] = [
+  // ─────────── Decisiones de capítulo (siempre se cuentan) ───────────
+  f('c3_estafa', ['m_cap3'], c => H(c, 'efrit_vivo', 'gema_fuego_sellado'), [N('En una casa del Bajo, un efrit con una cicatriz de contrato en el cuello bebe té con un hombre que cree que lo ha engañado. No lo ha engañado. Shul-Avar hace como que no lo sabe: es la primera vez en siglos que alguien le ofrece una silla.')], { must: true }),
+  f('c3_mata', ['m_cap3'], c => H(c, 'efrit_muerto'), [N('Nadie vino a reclamar el cuerpo del efrit. Los Guanteletes de la Ira Rígida pesan, en una estantería, como una pregunta con forma de objeto. Quien pase cerca de ellos de noche jura haber oído un nombre dicho muy bajito: Shul-Avar.')], { must: true }),
+  f('c3_djinns', ['m_cap3'], c => H(c, 'djinns_libres', 'djinns_liberados', 'djinn_liberado'), [N('Tres lámparas del Capitolio no se encendieron esa madrugada. El Conclave habló de un fallo de suministro. Los criados, que sabían más, dejaron cuencos de leche en los alféizares, por si acaso alguien de allá arriba sabía agradecer.')], { must: true }),
+  f('c4_franca', ['m_cap4'], c => H(c, 'respuesta_franca'), [S('Zahir', 'Me dijisteis la verdad sin que os la pidiera. No sé si eso me hace más seguro o más viejo.', 'en la penumbra de un espejo')], { must: true }),
+  f('c4_desafio', ['m_cap4'], c => H(c, 'respuesta_desafio'), [S('Zahir', 'Me habéis plantado cara. Es lo más honesto que me han hecho en tres siglos y duele como un insulto.', 'sin voz de dios')], { must: true }),
+  f('c4_sumisa', ['m_cap4'], c => H(c, 'respuesta_sumisa'), [S('Zahir', 'Me asusta lo fácil que me habéis dado la razón. Un dios que nadie contradice termina hablando solo.', 'con un temblor en las plumas')], { must: true }),
+  f('c5_orden', ['acto2'], c => H(c, 'postura_orden'), [N('En las calles del Capitolio los Qilaat os saludan con un gesto breve. El Conclave os llama «los que defendieron la plaza». Los Hijos del Simurg guardan una distancia educada. En el Bajo, alguien pinta con tiza una mano abierta y luego la borra.')], { must: true }),
+  f('c5_pueblo', ['acto2'], c => H(c, 'postura_pueblo'), [N('Los túneles que abristeis se han convertido en una calle subterránea con sus panaderos y sus niños. Llaman a la compañía «los de abajo». Es un título que nadie ha pedido y todos han decidido que merecéis. El Conclave os ha puesto precio y todavía nadie ha querido cobrarlo.')], { must: true }),
+  f('c5_sombra', ['acto2'], c => H(c, 'postura_sombra'), [N('Habéis dejado caer el Capitolio y negociado con lo que quedaba. En el Zoco, los mercaderes os hacen una reverencia con las manos pegadas al pecho: no es respeto, es contabilidad. Los demás os miran como se mira a quien ha ganado algo sin explicar qué ha pagado.')], { must: true }),
+  f('c6_perdido', ['m_cap6'], c => H(c, 'torneo_perdido'), [N('En Medinat se habla del combate que Panchi perdió con una admiración inesperada. Los niños imitan el golpe que le dio Sifra. Nadie recuerda quién ganó la ronda anterior.')], { must: true }),
+  f('c6_joren_perdona', ['m_cap6'], c => H(c, 'joren_perdona'), [N('Joren se sentó junto al muerto que respira y no dijo nada. Fue, quizá, la conversación más larga que ambos han tenido. Cuando se levantó, el muerto movió la mano como quien dice «gracias» y no sabe cómo se dice.')], { must: true }),
+  f('c6_joren_mata', ['m_cap6'], c => H(c, 'joren_mata'), [N('Joren cobró lo que se le debía. Después caminó hasta el borde de la ciudad y miró el desierto sin pestañear, como si esperase que le diera permiso para sentir algo. No lo dio.')], { must: true }),
+  f('c7_muerto', ['m_cap7'], c => H(c, 'dahhak_muerto'), [N('En la Iglesia, las serpientes dejaron de moverse al mismo tiempo, como las cuerdas de un laúd cuando se rompe el cordón maestro. Las Si\'lats rezaron una vez más y, por primera vez, no pidieron nada.')], { must: true }),
+  f('c7_vivo', ['m_cap7'], c => H(c, 'dahhak_vivo'), [N('Dahhak sigue vivo. Se pasea por la Iglesia con las manos atrás, hablando consigo mismo, y los seguidores que le quedan le llevan la comida sin mirarle. Es un dios sin altar, y los dioses sin altar son más peligrosos que los que lo tienen.')], { must: true }),
+  f('c7_devorado', ['m_cap7'], c => H(c, 'dahhak_devorado'), [N('La Iglesia ha enmudecido. Hay una huella ennegrecida en el suelo con la forma de un hombre que ya no está. En el cristal de vuestros pechos late algo más, y no sabéis si es vuestro.')], { must: true }),
+  f('c8_pacto', ['m_cap8'], c => H(c, 'razul_pacto'), [N('El Vizir se llevó el cristal en una caja de ébano. Dicen que no la abrió. Dicen también que la guarda bajo la cama, como un niño guarda un secreto del que no se atreve a hablar. Los Milagros del culto se han apagado como velas en una casa vacía.')], { must: true }),
+  f('c8_tregua', ['m_cap8'], c => H(c, 'razul_tregua'), [N('Doce días. Razul los cuenta también, en su despacho, con un lápiz sobre el borde del escritorio. Cada día hace una muesca. Es un hombre que aprendió hace mucho que las treguas son relojes con otro nombre.')], { must: true }),
+  f('c8_rechazo', ['m_cap8'], c => H(c, 'razul_rechazo'), [N('En la mesa de la biblioteca sigue el reloj de arena de bronce. Nadie se atreve a moverlo. Los granos caen con un ruido mínimo, y el culto ha aprendido a rezar a ese ritmo.')], { must: true }),
+  f('c8_agua', ['m_cap8'], c => H(c, 'razul_vaso'), [N('Razul bebió el vaso de agua que le dieron. Fue un gesto tan pequeño que nadie lo anotó. Él sí: en su cuaderno, esa noche, junto a «Merab», «Hadir» y «el Profeta», escribió una cuarta línea. Estaba en blanco, pero la había escrito.')], { must: true }),
+  f('c9_libre', ['m_cap9'], c => H(c, 'marid_libre'), [N('El Marid regresó al agua, y el agua del Jardín se volvió, por una noche, del color del cielo antes de la tormenta. Los jardineros dicen que las rosas han empezado a florecer de noche. Nadie les ha pedido que lo hagan.')], { must: true }),
+  f('c9_atado', ['m_cap9'], c => H(c, 'marid_atado'), [N('El Marid obedece. En el estanque del Jardín se ve su reflejo, quieto, como una estatua mirando el fondo de sí misma. Lady Nafisa evita pasar por allí. Cuando pasa, baja los ojos.')], { must: true }),
+  f('c9_enemigo', ['m_cap9'], c => H(c, 'marid_enemigo'), [N('El Marid no olvida. En cada charco de Zaryab, durante semanas, se oye una risa mojada. Los niños saltan sobre los charcos con los dos pies, para asustarla.')], { must: true }),
+  f('c9_dialogo', ['m_cap9'], c => H(c, 'marid_dialogo'), [N('Se habló con el Marid, y por una vez un djinn fue tratado como algo más que un recurso. Quienes presenciaron la conversación dicen que no hubo gritos. Que el Marid, al final, sonrió como se sonríe cuando un deseo muy viejo se cumple en forma de pregunta.')], { must: true }),
+  f('c11_sacrificio', ['m_cap11'], c => H(c, 'sacrificio_elegido'), [N('Una puerta de piedra se cerró en el cuarto nivel de la mina. Desde dentro. Quien la cerró no volvió a subir. Su nombre, grabado en la biblioteca con mano temblorosa, es el único monumento que tendrá.')], { must: true }),
+  f('c11_gusano_muerto', ['m_cap11'], c => H(c, 'gusano_muerto'), [N('Gul-Amarat cayó. Los brazos humanos se deshicieron como cera al sol y, durante un instante, cada uno tuvo una mano completa y una sola palabra. Ninguna de esas palabras se repitió.')], { must: true }),
+  f('c11_gusano_dormido', ['m_cap11'], c => H(c, 'gusano_dormido'), [N('Gul-Amarat duerme. Si algún minero osa descender, oye en la oscuridad un compás: inspirar, esperar, espirar. Es una canción de cuna sin letra, entonada por un millar de gargantas que nunca llegaron a despertar.')], { must: true }),
+  f('c12_muerto', ['m_cap12'], c => H(c, 'razul_muerto'), [N('Los escribas del Conclave han tardado dos días en encontrar el cuerpo del Vizir. Lo hallaron sentado en su sillón, con un vaso vacío a su lado. Lo enterraron en una tumba anónima. Es la primera vez en tres milenios que alguien en Zaryab llega a casa y no hay nadie esperándole con una cuenta pendiente.')], { must: true }),
+  f('c12_silencio', ['m_cap12'], c => H(c, 'razul_silencio'), [N('Razul ha dejado de hablar. Sigue en la Ciudadela, sentado junto a la ventana, mirando cómo cae la arena sobre la plaza. Quienes le llevan la comida dicen que ha empezado a sonreír, pequeña y raramente, como un hombre que por fin ha encontrado la palabra que buscaba y descubre que no hace falta decirla.')], { must: true }),
+  f('c12_aliado', ['m_cap12'], c => H(c, 'razul_aliado'), [N('El Vizir ha escrito una sola carta, a mano, sin sello. La ha dejado sobre el escritorio abierta. Dice: «Si yo no vuelvo, no me busquéis. Id con ellos». El escriba que la leyó la ha quemado. Esa noche, por primera vez, no durmió en su casa.')], { must: true }),
+
+  // ─────────── Ambiente según el camino moral (una vez, según profundidad) ───────────
+  f('alma_oscura', undefined, c => c.c >= 7 && c.c > c.d + 2, [N('El cristal de vuestro pecho proyecta una sombra más larga que vosotros. Los niños del Bajo han empezado a cruzar la calle cuando os ven llegar. No por miedo exactamente. Por respeto, que es peor.')], { pri: 6 }),
+  f('alma_clara', undefined, c => c.d >= 7 && c.d > c.c + 2, [N('Por donde pasáis, las lámparas arden con un poco más de paciencia. Las madres del barrio han dejado de bajar la voz cuando mencionan a la compañía. En una ventana alguien ha pintado, con torpeza, un pájaro de alas abiertas.')], { pri: 6 }),
+  f('alma_dividida', undefined, c => Math.abs(c.d - c.c) <= 1 && c.d >= 4 && c.c >= 4, [N('Hay noches en que el cristal late al compás de dos corazones distintos. La compañía ha aprendido a no preguntarse cuál de los dos es el suyo. Los demás aún lo preguntan, y lo preguntan en voz alta.')], { pri: 5 }),
+  f('alerta_alta', undefined, c => c.alert >= 7, [N('Los pasquines con vuestras caras han vuelto a las esquinas, cada vez más fieles. Alguien les ha añadido bigotes. Otros, con más cuidado, les han dibujado una aureola. En Zaryab, hasta la persecución tiene su propio folklore.')], { pri: 5 }),
+  f('alerta_baja', undefined, c => c.alert <= 1 && has(c, 'cap5_done'), [N('El Conclave parece haberse olvidado de vosotros. Es una calma que no tranquiliza. Los escribas pasan por delante de la biblioteca sin mirarla, con la prisa de quien evita mirar un perro dormido.')], { pri: 4 }),
+  f('seguidores', undefined, c => c.followers.length >= 8, [N('Ya no cabe todo el culto en la sala de los estantes. Hay quien reza en el patio, bajo el sol; quien lo hace en la calle, de rodillas; quien lo hace, sencillamente, mirando la biblioteca desde lejos. Aisha cuenta las bocas que alimentar y, tras contarlas, vuelve a contarlas.')], { pri: 4 }),
+  f('seguidores_pocos', undefined, c => c.followers.length <= 2 && has(c, 'cap4_done'), [N('La biblioteca es grande para tan pocos. A veces los pasos de vuestros seguidores suenan solos en los pasillos, como si el edificio los repitiera para sentirse acompañado.')], { pri: 3 }),
+  f('enfermos', undefined, c => c.followers.some(x => x.sick), [N('Hay enfermos en la sala del fondo. Aisha les lleva sopa y no habla; los demás acuden a oír su silencio. Se cuenta que, cuando ella calla, hasta los febriles entienden lo que quería decir.')], { pri: 4 }),
+  f('bajas', undefined, c => c.dead.length > 0, [N('Hay un hueco en la mesa. Nadie se sienta en él, nadie lo menciona. A la hora de la cena se pone un plato de más y se retira en silencio. Con el tiempo, el plato pasa a ser un rito y, con el tiempo, el rito pasa a ser una fe.')], { pri: 9 }),
+  f('seal_alto', undefined, c => c.seal >= 60, [N('El Sello del Simurg se ha llenado más de lo que debería. En las noches más silenciosas, el cristal canta por su cuenta: una melodía de cuatro notas, tres conocidas, una pidiendo permiso para existir.')], { pri: 7 }),
+  f('pf_rico', undefined, c => c.pf >= 40, [N('El altar rebosa de ofrendas. Alguien ha dejado un cuenco de agua, otro un puñado de arena violeta, otro un dibujo infantil. El cristal se enciende un poco cada vez que la gente reza por ellos: una fe que no han pedido y que ya no pueden devolver.')], { pri: 3 }),
+  f('conclave_amigos', undefined, c => rep(c, 'conclave') >= 3, [N('Un funcionario del Conclave ha empezado a saludar a la compañía con la cabeza al cruzarse en la plaza. Es un gesto que, hace unos meses, habría sido una condena. Ahora es casi un mensaje. Nadie sabe aún qué dice.')], { pri: 4 }),
+  f('conclave_enemigos', undefined, c => rep(c, 'conclave') <= -3, [N('Hay una pared en el cuartel de la Guardia con una lista de nombres. Los vuestros están arriba, subrayados dos veces. Alguien ha añadido, a lápiz, una nota: «No hay prisa».')], { pri: 4 }),
+  f('hijos_amigos', undefined, c => rep(c, 'hijos') >= 3, [N('Los Hijos del Simurg han empezado a dejar plumas de ibis negro en el umbral de la biblioteca. Es un honor, o una advertencia, según la luz. En los túneles se habla de «los que fueron al otro lado y volvieron con las manos limpias».')], { pri: 4 }),
+  f('mercaderes_amigos', undefined, c => rep(c, 'mercaderes') >= 3, [N('En el Zoco ya no regatean tanto con vosotros. Un tendero os guarda siempre el mejor pan, sin cobrar de más. Otro os pregunta por vuestra salud como si fuerais familia. Los precios, claro, han subido para todos los demás.')], { pri: 3 }),
+  f('vinculo_aisha', undefined, c => (c.bond.aisha ?? 0) >= 3, [N('Aisha ha dejado de llamaros «los forasteros». Ahora os llama por vuestros nombres, uno a uno, como quien contase cuentas de un collar que ya no teme perder.')], { pri: 3 }),
+  f('vinculo_farid', undefined, c => (c.bond.farid ?? 0) >= 3, [N('Farid ha empezado a tocar para vosotros. Las tres primeras notas ya son vuestras; la cuarta, todavía, es del niño. Hay una luz especial en el barrio cuando la tocan los dos.')], { pri: 3 }),
+  f('vinculo_samira', undefined, c => (c.bond.samira ?? 0) >= 3, [N('La Capitana Samira firma sus informes con una letra más pequeña. Dicen que esconde algo en los márgenes. Quien lo ha visto jura que son nombres: los de los guardias a quienes no ha querido denunciar.')], { pri: 3 }),
+  f('farid_voces', undefined, c => H(c, 'farid_voces'), [N('Farid oye voces en el agua. No se asusta. Cuando se lo preguntan, responde que son «las otras canciones», y que algunas son tristes pero que todas tienen derecho a existir.')], { pri: 5 }),
+  f('ruta_sombra', undefined, c => H(c, 'ruta_sombra'), [N('Cuentan en el Zoco que los Sombríos ya no necesitan antorcha para cruzar el Bajo. Que las paredes se apartan. Que ciertos callejones han aprendido a quedarse quietos cuando pasan.')], { pri: 6 }),
+  f('ruta_fe', undefined, c => H(c, 'ruta_fe'), [N('En el Bajo se construyen altares con piedras de cualquier tamaño. Nadie los dirige. Cada mañana aparece uno nuevo; cada noche, uno viejo se deshace. Los ancianos dicen que es como debió ser siempre: un dios que se levanta de nuevo cada día.')], { pri: 6 }),
+  f('ruta_balanza', undefined, c => H(c, 'ruta_balanza'), [N('Hay un equilibrio incómodo en el aire de la ciudad. Los tribunales se llenan de casos que antes se resolvían a puñaladas. Un escribano ha empezado a llamar a la compañía «los fiscales de los dioses», y nadie le ha corregido.')], { pri: 6 }),
+  f('morales_nino', undefined, c => H(c, 'nino_salvado'), [N('El niño que picó el escorpión vive y corretea por el barrio con un cuaderno. Dice que cuando sea mayor quiere ser médico, o ladrón, o las dos cosas. La madre lo mira, y el miedo de aquella noche se le va desdibujando de la cara.')], { pri: 4 }),
+  f('morales_nino_muerto', undefined, c => H(c, 'nino_muerto'), [N('La madre del niño se sienta cada tarde a la puerta de la biblioteca, sin pedir nada. Todos la han visto, nadie le habla. Cuando cae la noche se levanta y se va, sin haber dicho una palabra, y siempre deja la puerta un poco más abierta de lo que estaba.')], { pri: 7 }),
+  f('morales_juicio', undefined, c => H(c, 'q_m_juicio'), [N('El barrio sigue hablando de aquel juicio. Los que votaron a favor dicen que fue justicia. Los que votaron en contra dicen lo mismo. Nadie quiere sentarse junto a quien no estuvo de acuerdo.')], { pri: 3 }),
+  f('pact_corona', undefined, c => H(c, 'pact_corona'), [N('A Pact le crecen las alas negras por la espalda cuando duerme. Por la mañana se las ata con tela, avergonzado. Los niños las ven y creen que es un disfraz. Él no las corrige.')], { pri: 4 }),
+  f('rabb_recuerda', undefined, c => H(c, 'rabb_recuerda'), [N('Rabb ha empezado a recordar cosas pequeñas: el olor de una cocina, el nombre de un gato, una canción de cuna. Las anota en un cuaderno, como quien guarda monedas en un bolsillo roto.')], { pri: 4 }),
+  f('zyr_sombra', undefined, c => H(c, 'zyr_sombra_acepta'), [N('La sombra de Zyr\'thar camina medio paso por delante de ella. A veces se detiene a mirar escaparates. A veces espera en una esquina. Zyr\'thar finge que no se da cuenta, pero ha empezado a hablarle por las noches.')], { pri: 4 }),
+  f('panchi_golem', undefined, c => H(c, 'golem_aliado', 'golem_prestado'), [N('El golem «Defectuoso» sigue a Panchi por la biblioteca con un cubo de agua en cada mano. Nadie le ha dicho que no lo haga. Los seguidores ya lo saludan por su nombre, y él ha aprendido a asentir sin que se le caiga nada.')], { pri: 3 }),
+  f('zahir_sospecha', undefined, c => H(c, 'desconfia_zahir', 'desconfianza_zahir'), [S('Zahir', 'Sé que dudáis de mí. Es razonable. Pero no dejéis que la duda sea lo único que construís.', 'desde alguna sombra del cristal')], { pri: 5 }),
+  f('zahir_cercano', undefined, c => H(c, 'zahir_jura', 'zahir_promesa'), [S('Zahir', 'Habéis creído en mí. Que alguien lo haga es peor que cualquier traición: me obliga a ser digno.', 'en voz baja, casi para sí')], { pri: 5 }),
+];
+
+/** Cuántos fragmentos de ambiente se suman: crece con la implicación (misiones secundarias, personales y morales hechas). */
+export const depth = (c: Campaign) => { const n = Object.entries(c.quests).filter(([k, s]) => s === 'done' && !k.startsWith('m_')).length; return n >= 10 ? 3 : n >= 5 ? 2 : 1; };
+
+/** Lo que se dice por la ciudad de la compañía: resumen vivo para las portadas de acto. */
+export function recap(c: Campaign): Node[] {
+  const out: Node[] = []; const top = Object.entries(c.rep).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).filter(([, v]) => Math.abs(v) >= 2).slice(0, 2);
+  const tone = c.c > c.d + 2 ? 'con la inquietud con que se habla de lo que se teme' : c.d > c.c + 2 ? 'con una esperanza que todavía no sabe si merecerse' : 'con un asombro que oscila entre el miedo y la gratitud';
+  out.push(N(`En el Zoco, en las cocinas, en las colas del agua, se habla de la compañía ${tone}.`));
+  for (const [k, v] of top) out.push(N(v > 0 ? `Del lado de ${FACTIONS[k] ?? k} se os recuerda con simpatía. No es fe; es memoria con intereses a favor.` : `Del lado de ${FACTIONS[k] ?? k} no hay perdón. Hay paciencia, que es la forma más lenta de la venganza.`));
+  for (const h of c.huellas.slice(-3)) out.push(N(`Se cuenta, aún, que un día: ${h.charAt(0).toLowerCase()}${h.slice(1)}`));
+  return out;
+}
+
+/** Fragmentos que tocan a esta clave: los `must` siempre; los de ambiente, de uno a tres, de mayor a menor prioridad y sólo una vez. */
+export function reactive(c: Campaign, key: string): { nodes: Node[]; used: string[] } {
+  const ok = (x: Frag) => (!x.at || x.at.includes(key)) && !has(c, `nov_f_${x.id}`) && x.when(c);
+  const must = FRAGS.filter(x => x.must && ok(x)); const amb = FRAGS.filter(x => !x.must && ok(x)).sort((a, b) => (b.pri ?? 0) - (a.pri ?? 0)).slice(0, depth(c));
+  const pick = [...must, ...amb]; const nodes: Node[] = [];
+  if (key === 'acto2' || key === 'acto3') nodes.push(...recap(c));
+  pick.forEach((x, i) => { nodes.push(...x.nodes); if (i < pick.length - 1) nodes.push(N('·')); });
+  return { nodes, used: pick.map(x => x.id) };
+}
