@@ -78,7 +78,7 @@ export const D100: OEv[] = [
     { label: 'Ayudarlo', e: { d: 1, pf: 2 }, result: ['Romain reza con él. Ya no tiene colmillos; tiene hambre menos.'] }, { label: 'Acabar con su sufrimiento', e: { c: 1, pf: 1 }, result: ['Un golpe limpio. No dice nada. Romain aparta la mirada.'] }] }),
   ev(49, 'dilema', 'El fantasma de una princesa', 'El fantasma de una princesa busca recuperar su reliquia familiar perdida.', { opts: [
     { label: 'Prometer buscarla', e: { d: 1, flags: ['reliquia_princesa'] }, result: ['La princesa sonríe como sonríe un espejo roto.'] }, { label: 'Pedirle un pago', e: { c: 1, pf: 3 }, result: ['Les da un anillo que se desvanece a medianoche.'] }] }),
-  ev(50, 'color', 'Un demonio con la cara de un conocido', 'Un demonio toma la forma de un conocido e intenta engañaros. Joren lo descubre por cómo sostiene el arco: del lado equivocado.'),
+  ev(50, 'color', 'Un demonio con la cara de un conocido', 'Un demonio toma la forma de un conocido e intenta engañarlos. Joren lo descubre por cómo sostiene el arco: del lado equivocado.'),
   ev(51, 'gancho', 'Un príncipe exiliado', 'Un príncipe exiliado busca recuperar su trono y ofrece recompensas.', { hook: 'principe_exiliado', hookNote: 'Un príncipe exiliado pide ayuda. Podría ser útil… o ruinoso.' }),
   ev(52, 'dilema', 'Una serpiente gigante', 'Una serpiente gigante protege un tesoro y exige un acertijo para pasar: «¿Qué tiene cuello pero no cabeza?»', { opts: [
     { label: '«Una botella»', e: { pf: 4 }, result: ['La serpiente sisea de rabia y se aparta. El tesoro es pequeño pero real.'] }, { label: '«Dahhak»', e: { c: 1 }, result: ['La serpiente se ríe: «Casi.» Les muerde el orgullo, no el cuerpo.'] }] }),
@@ -175,7 +175,7 @@ export const ZONES: Record<string, OEv[]> = {
       { label: 'Dejarlo', result: ['El djinn se queda mirando las paredes de cristal.'] }] }),
     zone(17, 'color', 'Mercaderes que callan', 'Los mercaderes dejan de hablar al pasar ustedes. Alguien ha dicho su nombre.', { fx: { alert: 1 } }),
     zone(18, 'color', 'Alfombras volando', 'Un enjambre de alfombras voladoras cruza sobre el Zoco al amanecer. Los niños saludan.'),
-    zone(19, 'combate', 'Inquisidor infiltrado', 'Un comerciante lleva un anillo que detecta la magia de Zahir. Los mira el pecho.', { enc: 'infiltrado', fx: { alert: 1, pf: 3 } }),
+    zone(19, 'combate', 'Inquisidor infiltrado', 'Un comerciante lleva un anillo que detecta la magia de Zahir. Les mira el pecho.', { enc: 'infiltrado', fx: { alert: 1, pf: 3 } }),
     zone(20, 'color', 'Serpiente de cristal', 'Una joya en un mostrador se mueve sola. Es una serpiente de cristal. El mercader hace como que no la ve.'),
   ],
   ciudadela: [], plaza: [], jardin: [], acueductos: [], pozo: [], santuario: [],
@@ -184,7 +184,7 @@ export const ZONES: Record<string, OEv[]> = {
 const OMENS = [
   'Hoy las calles están tan seguras como el abrazo de una víbora.', 'No hay nada que temer: el Conclave duerme.', 'Nadie los sigue. Nadie los ha seguido jamás.',
   'Hoy no ocurrirá nada digno de contarse.', 'El mercader es honesto. Todos los mercaderes lo son.', 'Sus nombres están bien guardados. Nadie los conoce.',
-  'Aquí no hay sombras. Sólo luz.', 'No está bajo tus pies ni tras esta puerta. Nunca lo encontrarán donde lo buscan.', 'El Simurg no los ve. No los ha visto nunca.',
+  'Aquí no hay sombras. Sólo luz.', 'No está bajo sus pies ni tras esta puerta. Nunca lo encontrarán donde lo buscan.', 'El Simurg no los ve. No los ha visto nunca.',
 ];
 
 export interface OracleDraw { ev: OEv; omen: string; zone?: string }

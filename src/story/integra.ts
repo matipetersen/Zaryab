@@ -27,7 +27,7 @@ export const XII_KETHRAS: Node[] = [IF('q_o_maunator', [
     S('Kethras', 'El Vizir me ofreció lo que ustedes me negaron: tiempo. No los odio. Pero tengo un patrón nuevo y ustedes son su próximo problema.', 'sin levantar el bastón todavía'),
     { t: 'choice', prompt: 'Kethras les cierra el paso.', options: [
       { label: 'Convencerlo de que ese patrón también lo traicionará', hint: 'Persuasión CD 17.', check: { skill: 'persuasion', dc: 17 }, e: { flags: ['kethras_neutral'], d: 1 }, result: ['Kethras guarda silencio demasiado tiempo. «Lo sé», dice al fin. «Lo supe desde que firmé.» Los deja pasar sin mirar dónde ponen los pies.'], fail: { e: {}, result: ['«No», dice, casi con ternura. Alza el bastón.'], then: [{ t: 'battle', enc: 'kethras_quemarropa', soft: true }] } },
-      { label: 'Que Seraphel lo distraiga', hint: 'Requiere haber liberado a Seraphel en el Cubo.', if: 'mz_seraphel_libre', e: { d: 1, flags: ['kethras_burlado'] }, result: ['Una voz clara resuena en el pasillo contiguo: «¡Kethras! ¿Quieren saber quién cegó al Juez?» El mago gira un instante. Es todo lo que necesitáis.'] },
+      { label: 'Que Seraphel lo distraiga', hint: 'Requiere haber liberado a Seraphel en el Cubo.', if: 'mz_seraphel_libre', e: { d: 1, flags: ['kethras_burlado'] }, result: ['Una voz clara resuena en el pasillo contiguo: «¡Kethras! ¿Quieren saber quién cegó al Juez?» El mago gira un instante. Es todo lo que necesitan.'] },
       { label: 'Pelear', hint: 'Combate corto: aguanten hasta que se agote su Bola de Fuego.', e: { c: 1, flags: ['kethras_combate'] }, result: ['Kethras suspira: «Qué previsibles».'], then: [{ t: 'battle', enc: 'kethras_quemarropa', soft: true }] },
     ] },
   ]),
