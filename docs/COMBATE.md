@@ -15,6 +15,14 @@
 | **Derribar** | Atletismo (FUE) contra FUE o DES del enemigo adyacente (no más de un tamaño mayor): si ganás, cae derribado |
 | **Primeros auxilios** | Aliado caído adyacente: Medicina CD 10 para estabilizarlo |
 
+## Más táctica (despliegue, posición y lectura del campo)
+- **Despliegue previo.** Antes del primer turno se puede reubicar a cada personaje entre las casillas azules de inicio (tocar un personaje y después una casilla; si hay otro, se intercambian). Los frágiles atrás, los resistentes adelante. Botón «¡Comenzar!».
+- **Sorpresa.** Algunos combates son emboscadas (hoy: la noche del desierto y el Linyera): el bando sorprendido **pierde su primer turno** y no puede reaccionar hasta entonces.
+- **Flanqueo.** Un ataque cuerpo a cuerpo contra un enemigo que tiene a un aliado tuyo justo del lado opuesto tiene **ventaja**. Vale también para los enemigos contra ustedes.
+- **Terreno elevado.** Disparar o lanzar desde una casilla más alta que la del objetivo da **+2 al ataque**.
+- **Alcance de amenaza.** Al señalar a un enemigo (ratón o primer toque) se marcan en rojo las casillas que podría atacar en su próximo turno.
+- **Escena previa a cada combate** (`src/story/briefings.ts`): título del lugar, qué está pasando, quiénes son los enemigos, cómo lo ven los personajes (con retrato) y una pista táctica según el terreno. Los combates con más historia (la emboscada de la noche, el Linyera, el Acueducto, el Coloso, Dahhak, el Eclipse…) tienen texto propio.
+
 ## Distancia y melé
 - **Atacar a distancia con un enemigo adyacente que pueda actuar tiene desventaja** (armas y conjuros). La IA lo tiene en cuenta: los arqueros y lanzadores intentan no quedarse pegados.
 - La IA también **penaliza provocar ataques de oportunidad**; solo sale del alcance si compensa.
