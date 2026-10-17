@@ -199,7 +199,8 @@ button, .node, .choice, .tk { touch-action: manipulation; user-select: none; -we
   .act { padding: 8px 2px; font-size: 11px; justify-content: center; text-align: center; flex-direction: column; gap: 2px; }
   .act kbd { display: none; }
   #actionbar .pips { grid-column: 1 / -1; margin: 0; justify-content: center; flex-wrap: wrap; gap: 5px; font-size: 11px; }
-  .menu { left: 4px; right: 4px; min-width: 0; max-height: 52vh; }
+  .menu { left: 4px; right: 4px; min-width: 0; max-height: 40vh; }
+  #battle.late #objective { display: none; }
   .mi { padding: 10px 9px; font-size: 14px; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
@@ -211,4 +212,11 @@ button, .node, .choice, .tk { touch-action: manipulation; user-select: none; -we
   #actionbar { grid-template-columns: repeat(8, auto); } #actionbar .pips { grid-column: auto; }
   #log { max-height: 30%; width: 38%; } #objective { display: none; }
   .act { flex-direction: row; padding: 5px 8px; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .meters { flex-wrap: nowrap; overflow-x: auto; gap: 6px; font-size: 10px; max-width: 62vw; }
+  .meters .meter { white-space: nowrap; } .meter .bar { width: 36px; }
+  .menu { max-height: 70vh; }
+  #topbar .brand { max-width: 22vw; }
 }

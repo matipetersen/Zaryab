@@ -48,7 +48,7 @@ export interface MonsterDef {
 export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental' | 'djinn' | 'mirror' | 'colossus' | 'swarm' | 'wall' | 'pylon' | 'serpent';
 
 export interface Unit {
-  /** Reacción gastada en esta ronda (ataque de oportunidad). Se recupera al empezar su turno. */ reactionUsed?: boolean;
+  /** Reacción gastada en esta ronda (ataque de oportunidad). Se recupera al empezar su turno. */ reactionUsed?: boolean; /** Sorprendido: pierde su primer turno y no puede reaccionar hasta entonces. */ surprised?: boolean; /** Marca interna: el turno perdido por sorpresa se salta solo. */ lostTurn?: boolean;
   uid: number; id: string; name: string; side: Side; ai: boolean; color: string; glyph: string; sprite: Sprite;
   x: number; y: number; size: number;
   mods: Mods; saves: Mods; prof: number; level: number;

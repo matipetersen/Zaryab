@@ -22,6 +22,8 @@ import { VARIANTS, INCIDENTS, POI_BY_ID, ROAMER_ENC, PHASE, PHASE_ICON } from '.
 import { computeEdge } from './world/edge';
 import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
+import { briefing } from './story/briefings';
+import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
 import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
@@ -198,9 +200,17 @@ class App {
   }
 
   // ───────── combate ─────────
+  /** Escena previa al combate: qué está pasando, quiénes son, cómo lo ven los personajes y por dónde empezar. */
+  async briefBattle(enc: string, party: string[], list: { id: string }[]) {
+    const e = ENCOUNTERS[enc], map = MAPS[e.map]; if (!map) return;
+    const BG: Record<string, string> = { dunas: 'dunas', callejon: 'bajo', acueducto: 'acueducto', cubo: 'espejos', plaza: 'plaza', pozo: 'hammam', medinat: 'medinat', arena: 'coliseo', iglesia: 'limbo', cripta: 'limbo', mina: 'prison', ciudadela: 'coliseo', eclipse: 'limbo', nido: 'dunas', cementerio: 'limbo', jardin: 'espejos', zoco: 'zoco', templo: 'prison', santuario: 'choza' };
+    this.show('story'); if (!this.storyEl.querySelector('.bg')) { this.story.camp = this.camp; this.story.mount(); }
+    await this.story.play(briefing(enc, e, map, party, list.map(f => f.id), BG[e.map] ?? 'prison'));
+  }
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
     const e = ENCOUNTERS[enc]; const c = this.camp; const alive = c.party.filter(p => !c.dead.includes(p)); const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : (c.squad?.length ? c.squad.filter(p => alive.includes(p)) : alive);
     let list = foes ?? (enc === 'gusano_caza' ? huntFoes(c.gusano.power) : e.foes); if (foeCount) list = list.slice(0, foeCount);
+    if (!e.soft || e.survive) await this.briefBattle(enc, party, list);
     const miracles = has(c, 'razul_pacto') ? [] : MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
     if (has(c, 'tigre_domado') && !e.duel) allies.push('tigre_companero');

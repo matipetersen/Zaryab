@@ -156,6 +156,7 @@ export class Battle {
   }
   startTurn(u: Unit) {
     u.turnsTaken++; u.reactionUsed = false;
+    if (u.surprised) { u.surprised = false; u.lostTurn = true; u.moveLeft = 0; u.actionUsed = true; u.bonusUsed = true; this.log(`${u.name} está sorprendido y pierde su primer turno.`, 'sys'); this.float(u, 'Sorpresa', 'miss'); return; }
     for (const o of this.units) if (this.has(o, 'helped') && this.status(o, 'helped')!.src === u.uid) this.removeStatus(o, 'helped'); // la ayuda dura hasta el próximo turno de quien ayuda
     u.actionUsed = false; u.bonusUsed = false; u.extraActions = 0; u.attacksMade = 0; u.res['flurry'] = 0;
     u.moveLeft = u.speed + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 2 : 0);
@@ -227,8 +228,14 @@ export class Battle {
     for (const v of out.values()) { const o = this.unitAt(v.x, v.y); if (o && o !== u) v.occ = true; } // se puede cruzar, no terminar
     return out;
   }
+  /** Flanqueo: un aliado que pueda actuar está justo al otro lado del objetivo. */
+  flanked(a: Unit, t: Unit): boolean {
+    if (cheb(a, t) !== 1) return false;
+    const o = this.unitAt(t.x * 2 - a.x, t.y * 2 - a.y);
+    return !!o && o !== a && o.side === a.side && o.sprite !== 'wall' && !o.fled && !this.incapacitated(o);
+  }
   // ───── ataques de oportunidad (reglas 5e) ─────
-  canReact(u: Unit) { return !u.reactionUsed && !this.incapacitated(u) && u.sprite !== 'wall' && !u.fled; }
+  canReact(u: Unit) { return !u.reactionUsed && !u.surprised && !this.incapacitated(u) && u.sprite !== 'wall' && !u.fled; }
   /** Enemigos con reacción que pueden atacar a `u` al pasar de `from` a `to` (salir de su alcance de 5 pies sin Desengancharse). */
   provokers(u: Unit, from: P, to: P): Unit[] {
     if (this.has(u, 'disengaged')) return [];
@@ -297,6 +304,7 @@ export class Battle {
     if (this.has(t, 'blinded') || this.has(t, 'restrained') || this.has(t, 'stunned') || this.has(t, 'paralyzed') || t.down) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) <= 1) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) > 1) dis = true;
+    if (melee && this.flanked(a, t)) adv = true;
     if (this.has(t, 'helped')) { const hs = this.status(t, 'helped')!; const hp = hs.src ? this.byUid(hs.src) : undefined; if (hp && hp.side === a.side && hp !== a) { adv = true; this.removeStatus(t, 'helped'); } }
     // Atacar a distancia con un enemigo adyacente (que pueda actuar) impone desventaja.
     if (o.ranged && this.foesOf(a).some(f => f.sprite !== 'wall' && !f.fled && !this.incapacitated(f) && cheb(f, a) <= 1)) dis = true;
@@ -305,11 +313,11 @@ export class Battle {
     if (this.has(a, 'poisoned') || this.has(a, 'blinded') || this.has(a, 'prone') || this.has(a, 'restrained') || this.has(a, 'disadvNext')) dis = true;
     if (this.has(a, 'frightened')) { const s = this.status(a, 'frightened')!; const src = s.src ? this.byUid(s.src) : undefined; if (!src || this.canSee(a, src).visible) dis = true; }
     if (this.has(t, 'dodging') || this.has(t, 'invisible') && !adv) dis = true;
-    if (o.ranged && this.foesOf(a).some(f => cheb(f, a) <= 1 && !this.incapacitated(f))) dis = true;
     if (this.has(a, 'disadvNext')) this.removeStatus(a, 'disadvNext');
     let nat = d20(); let n2 = nat;
     if (adv && !dis) { n2 = d20(); nat = Math.max(nat, n2); } else if (dis && !adv) { n2 = d20(); nat = Math.min(nat, n2); }
     let bonus = toHit;
+    if (o.ranged && (this.grid.at(a.x, a.y)?.h ?? 0) > (this.grid.at(t.x, t.y)?.h ?? 0)) bonus += 2; // terreno elevado
     if (this.has(a, 'bless')) bonus += Math.floor(rand() * 4) + 1;
     if (this.has(a, 'bane')) bonus -= Math.floor(rand() * 4) + 1;
     const ac = this.ac(t, cover);

@@ -14,7 +14,7 @@ import { MONSTERS } from '../data/monsters';
 import type { Unit, Weapon, BEvent, Ab } from '../engine/types';
 import type { P } from '../engine/grid';
 
-type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' };
+type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' } | { k: 'deploy' };
 export interface BattleResult { result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number> }
 
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
@@ -59,7 +59,42 @@ export class BattleUI {
     return ev;
   }
   addLog(t: string, cls = '') { const d = h('div', { class: cls }, t); this.logEl.append(d); this.logEl.scrollTop = this.logEl.scrollHeight; }
+  // ───── despliegue previo (Tactics Ogre): se elige dónde empieza cada personaje ─────
+  deployDone?: () => void; deploySel = -1;
+  async deployPhase() {
+    const pcs = this.b.units.filter(u => u.pcId); const spawns = this.b.grid.spawns.pc;
+    if (pcs.length < 2 || this.b.cube || this.b.scripts.length || spawns.length < 2 || (window as any).__fast) return;
+    this.mode = { k: 'deploy' }; this.deploySel = -1; this.deployOverlays(); this.renderAll();
+    await new Promise<void>(res => { this.deployDone = res; });
+    this.mode = { k: 'idle' }; this.r.overlays = []; this.deploySel = -1;
+  }
+  deployOverlays() {
+    const ov: any[] = []; const sel = this.deploySel >= 0 ? this.b.byUid(this.deploySel) : undefined;
+    for (const sp of this.b.grid.spawns.pc) ov.push({ x: sp.x, y: sp.y, kind: 'move' });
+    if (sel) ov.push({ x: sel.x, y: sel.y, kind: 'sel' }); this.r.overlays = ov;
+  }
+  deployClick(t: P) {
+    const under = this.b.units.find(u => u.pcId && !u.dead && u.x === t.x && u.y === t.y); const sel = this.deploySel >= 0 ? this.b.byUid(this.deploySel) : undefined;
+    const isSpawn = this.b.grid.spawns.pc.some(p => p.x === t.x && p.y === t.y);
+    if (!sel) { if (under) { this.deploySel = under.uid; this.select(under); } }
+    else if (under && under !== sel) { this.deploySel = under.uid; this.select(under); }
+    else if (isSpawn && !under) { this.placeUnit(sel, t); this.deploySel = -1; }
+    else if (under === sel) this.deploySel = -1;
+    this.deployOverlays(); this.renderAll();
+  }
+  placeUnit(u: Unit, t: P) { u.x = t.x; u.y = t.y; const v = this.r.vis.get(u.uid); if (v) { v.x = t.x; v.y = t.y; v.path = []; } }
+  // ───── alcance de amenaza: al señalar a un enemigo se ven las casillas que podría atacar en su próximo turno ─────
+  threatUid = -1;
+  threat(foe: Unit | null) {
+    const id = foe?.uid ?? -1; if (id === this.threatUid) return; this.threatUid = id; this.updateOverlays();
+    if (!foe || foe.dead || foe.sprite === 'wall') return;
+    const reach = Math.max(1, ...foe.actions.filter(a => a.kind === 'melee' || a.kind === 'ranged').map(a => Math.min(8, a.reach ?? 1)));
+    const tiles = [...this.b.reach(foe, foe.speed).values()]; const seen = new Set<string>();
+    for (let y = 0; y < this.b.grid.h; y++) for (let x = 0; x < this.b.grid.w; x++) { if (this.b.grid.at(x, y)!.kind === 'wall') continue; if (tiles.some(v => cheb(v, { x, y }) <= reach)) seen.add(x + ',' + y); }
+    for (const k of seen) { const [x, y] = k.split(',').map(Number); this.r.overlays.push({ x, y, kind: 'atk' }); }
+  }
   async loop() {
+    await this.deployPhase();
     const b = this.b; b.start(); await this.flush();
     while (!b.over && !this.stopped) {
       const u = b.cur; if (!u) break;
@@ -68,6 +103,8 @@ export class BattleUI {
         await sleep(250);
         await runAI(b, u, async ms => { await this.flush(); await sleep(ms ?? 300); });
         await this.flush(); if (b.over) break; b.endTurn(); await this.flush();
+      } else if (u.lostTurn) {
+        u.lostTurn = false; this.renderAll(); await this.flush(); await sleep(1100); b.endTurn(); await this.flush();
       } else {
         this.mode = { k: 'idle' }; this.renderAll(); this.updateOverlays();
         await new Promise<void>(res => { this.resolveTurn = res; });
@@ -91,7 +128,7 @@ export class BattleUI {
       if (touch) return; // el navegador táctil simula un mousemove al tocar: no debe contar como «vista previa»
       const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); this.r.hover = t; this.showHoverTip(e, t);
     });
-    this.canvas.addEventListener('mouseleave', () => { this.r.hover = null; this.tip.classList.add('hidden'); });
+    this.canvas.addEventListener('mouseleave', () => { this.r.hover = null; this.tip.classList.add('hidden'); this.threat(null); });
     this.canvas.addEventListener('click', e => {
       if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); if (!t) return;
       // En pantalla táctil, el primer toque muestra la casilla (y su previsualización); el segundo, sobre la misma casilla, ejecuta.
@@ -112,6 +149,7 @@ export class BattleUI {
   }
   unitAtTile(t: P) { return this.b.unitAt(t.x, t.y); }
   clickTile(t: P) {
+    if (this.mode.k === 'deploy') { this.deployClick(t); return; }
     const u = this.cur; const under = this.unitAtTile(t);
     if (!u || this.mode.k === 'busy') { if (under) this.select(under); return; }
     const m = this.mode;
@@ -147,6 +185,7 @@ export class BattleUI {
   clearMenu() { this.menuEl?.remove(); this.menuEl = null; }
 
   updateOverlays() {
+    if (this.mode.k === 'deploy') { this.deployOverlays(); return; }
     const u = this.cur, b = this.b; const ov: any[] = []; this.r.overlays = ov; if (!u || this.mode.k === 'busy') return;
     const m = this.mode;
     if (m.k === 'interact') { for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (b.grid.at(x, y)!.obj && cheb(u, { x, y }) <= 1) ov.push({ x, y, kind: 'mark' }); }
@@ -164,7 +203,8 @@ export class BattleUI {
   }
 
   // ---------- paneles ----------
-  renderAll() { this.renderPanels(); this.updateOverlays(); }
+  renderAll() {
+    this.root.classList.toggle('late', this.b.round > 1); this.renderPanels(); this.updateOverlays(); }
   renderPanels() { this.renderLeft(); this.renderRight(); this.renderBar(); this.renderTracker(); }
   card(u: Unit): HTMLElement {
     const b = this.b; const hp = Math.max(0, u.hp / u.maxHp) * 100;
@@ -204,6 +244,7 @@ export class BattleUI {
   }
   renderBar() {
     const u = this.cur, B = this.bar; B.innerHTML = ''; this.menuEl = null;
+    if (this.mode.k === 'deploy') { B.append(h('div', { class: 'small', style: { padding: '6px 4px', flex: '1 1 220px' } }, 'Despliegue: tocá un personaje y después una casilla azul para reubicarlo. Los frágiles, atrás; los resistentes, adelante.'), h('button', { class: 'btn', onClick: () => this.deployDone?.() }, '⚔ ¡Comenzar!')); return; }
     if (!u) { B.append(h('div', { class: 'small', style: { padding: '8px 4px' } }, this.b.over ? 'Combate terminado.' : `Turno de ${this.b.cur?.name ?? '…'}`)); return; }
     const b = this.b; const busy = this.mode.k === 'busy'; const inc = b.incapacitated(u);
     const btn = (label: string, key: string, fn: () => void, on = false, dis = false) => h('button', { class: `act ${on ? 'on' : ''}`, disabled: dis || busy || inc, onClick: fn }, label, h('kbd', {}, key));
@@ -243,7 +284,7 @@ export class BattleUI {
       if (!ids.length) continue; m.append(h('h4', {}, name));
       for (const id of ids) {
         const ab = ABILITIES[id]; const can = b.canUse(u, id); const lv = ab.slot ? b.slotLevels(u, ab.slot) : [];
-        const cost = ab.pf ? `${ab.pf} PF` : ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ab.id === 'dash' || ab.id === 'dodge' ? '' : 'truco';
+        const cost = ab.pf ? `${ab.pf} PF` : ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ['dash', 'dodge', 'disengage', 'help', 'shove', 'stabilize', 'cunning_disengage'].includes(ab.id) ? '' : 'truco';
         const row = h('div', { style: { display: 'flex', alignItems: 'center' } });
         const main = h('button', { class: 'mi', disabled: !can.ok, title: can.msg ?? '', onClick: () => this.pickAbility(id, lv[0] ?? 0), onMouseenter: (e: MouseEvent) => this.tipAt(e, `<b>${ab.name}</b><br>${ab.desc}${ab.conc ? '<br><i>Concentración</i>' : ''}${ab.range > 1 ? `<br>Alcance ${ab.range * 5} ft` : ''}`), onMouseleave: () => this.tip.classList.add('hidden') }, h('span', { class: 'nm' }, ab.name), h('span', { class: 'cost' }, cost));
         row.append(main);
@@ -284,8 +325,9 @@ export class BattleUI {
   }
   tipAt(e: MouseEvent, html: string) { this.tip.innerHTML = html; this.tip.classList.remove('hidden'); this.tip.style.left = Math.min(window.innerWidth - 320, e.clientX + 14) + 'px'; this.tip.style.top = Math.max(8, e.clientY - 90) + 'px'; }
   showHoverTip(e: MouseEvent, t: P | null) {
-    if (!t) { this.tip.classList.add('hidden'); return; }
+    if (!t) { this.tip.classList.add('hidden'); this.threat(null); return; }
     const u = this.cur, under = this.unitAtTile(t); const m = this.mode;
+    this.threat(u && under && under.side !== u.side && (m.k === 'idle' || m.k === 'move') ? under : null);
     if (u && m.k === 'move' && !under) { // aviso de ataques de oportunidad en el camino
       const r = this.b.reach(u); const dst = r.get(key(t.x, t.y));
       if (dst && !dst.occ) { const path: P[] = []; let k: string | undefined = key(t.x, t.y); while (k) { const st: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: st.x, y: st.y }); k = st.prev; } const n = this.b.opportunityCount(u, path);

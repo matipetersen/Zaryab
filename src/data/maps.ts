@@ -256,12 +256,12 @@ Object.assign(MAPS, {
 
 import { MAUNATOR_MAPS, CUBE } from './maunator';
 export interface Wave { round: number; every?: number; until?: number; foes: string[]; note?: string }
-export interface Encounter { objective?: boolean; script?: string; goal?: { x: number; y: number }; goalMsg?: string; soft?: boolean; scaleWaves?: boolean; survive?: number; duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
+export interface Encounter { /** Emboscada: el bando indicado está sorprendido y pierde su primer turno. */ surprise?: 'party' | 'foes'; objective?: boolean; script?: string; goal?: { x: number; y: number }; goalMsg?: string; soft?: boolean; scaleWaves?: boolean; survive?: number; duel?: { rounds: number; party: string[] }; defense?: boolean; scale?: { hp?: number; atk?: number }; waves?: Wave[]; map: string; foes: { id: string; slot: number; suffix?: string }[]; ally?: { id: string; slot: number }[]; intro: string }
 /** Los slots son índices en el orden de lectura de los marcadores 'e' / 'a' del mapa. */
 export const ENCOUNTERS: Record<string, Encounter> = {
-  noche: { scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele la comida de ustedes desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
+  noche: { surprise: 'party', scale: { hp: 1.0, atk: 0 }, map: 'dunas', intro: 'Cinco días de marcha. A la sexta noche, algo huele la comida de ustedes desde las dunas: chasquidos, patas, ojos que reflejan la fogata.',
     foes: [{ id: 'escorpion_obsidiana', slot: 0 }, { id: 'escorpion_obsidiana', slot: 2 }, { id: 'escorpion_obsidiana', slot: 4 }, { id: 'perro_arena', slot: 3 }] },
-  linyera: { scale: { hp: 0.75, atk: -1 },
+  linyera: { surprise: 'party', scale: { hp: 0.75, atk: -1 },
     map: 'callejon', intro: 'El viejo linyera se arranca la máscara de mendigo. Sus dientes son demasiado blancos. Silba, y el callejón se llena de armaduras de bronce.',
     foes: [{ id: 'linyera', slot: 2 }, { id: 'guardia_arena', slot: 0, suffix: ' I' }, { id: 'guardia_arena', slot: 1, suffix: ' II' }, { id: 'escorpion_obsidiana', slot: 4 }, { id: 'escorpion_obsidiana', slot: 5 }],
   },
