@@ -2,7 +2,7 @@
 import { ENCOUNTERS } from '../src/data/maps';
 import { MONSTERS } from '../src/data/monsters';
 import { DESIGN_LVL, winChance } from '../src/data/difficulty';
-import { levelForXp, levelCap } from '../src/data/progression';
+import { levelForXp, levelCap, MILESTONE_XP } from '../src/data/progression';
 
 const xp = (enc: string) => (ENCOUNTERS[enc]?.foes ?? []).reduce((s, f) => s + (MONSTERS[f.id]?.xp ?? 0), 0);
 /** Camino principal en orden: [capítulo, combates obligatorios, combates esquivables (con hablar/sigilo/sacrificio)]. */
@@ -21,7 +21,7 @@ for (const mode of ['pelea todo', 'esquiva todo']) {
     const boss = [...must, ...skip].filter(e => DESIGN_LVL[e] != null).sort((a, b) => DESIGN_LVL[b] - DESIGN_LVL[a])[0];
     const lvl = Math.min(levelForXp(total + 0), levelCap(flagsAfter(i)));
     if (boss) { const d = DESIGN_LVL[boss]; console.log(boss.padEnd(16), String(total).padStart(5), String(lvl).padStart(4), String(d).padStart(5), String(lvl - d).padStart(3), winChance(0, lvl - d) + ' %'); }
-    total += gained + sideXp;
+    total += gained + sideXp; const fl = MILESTONE_XP.find(([f]) => f === cap + '_done'); if (fl && total < fl[1]) total = fl[1]; // XP de hito: capítulo cerrado = mínimo garantizado
   });
   console.log('XP total al final:', total, '→ nivel', levelForXp(total));
 }

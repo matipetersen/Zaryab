@@ -46,3 +46,8 @@ Las escalas de `maps.ts` están calibradas para nivel 3; en niveles 1 y 2 los en
 - Armadura de Maleficios (Rabb) se reduce a +1 CA; Mente de Hierro y Alma de Diamante dan competencia de salvación, no repetición.
 - El bot de balance no usa todas las habilidades nuevas, así que subestima el poder de un jugador humano.
 - Las puntuaciones de característica no existen en las fichas (sólo modificadores): +2 a una puntuación = +1 al modificador.
+
+## XP de hito y esquivar combates (v0.5)
+Resolver un jefe hablando, con sigilo o con un sacrificio no daba XP, así que quien esquivaba llegaba muy por debajo del nivel de diseño. Ahora, al cerrar ciertos capítulos, la XP sube al mínimo garantizado (`MILESTONE_XP` en `progression.ts`): Cap. IV 1.100 · V 2.500 · VI 8.000 · VII 16.000 · IX 20.500 · X 25.000 · XI 33.000 · XII 37.500. Es el nivel de diseño del próximo jefe menos uno.
+
+`npx tsx scripts/campaign-xp.ts` compara el nivel de llegada a cada jefe contra su nivel de diseño. Modelo burdo (XP base de los monstruos, sin escalado ni misiones fuera de la lista): quien **pelea todo** llega 1–2 niveles por encima del diseño en el medio del juego; quien **esquiva todo** llega **−1 nivel** a cada jefe (≈ 43 % para el bot, antes llegaba a −7 en la Ciudadela, ≈ 12 %).

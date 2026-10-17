@@ -25,3 +25,8 @@ La pestaña **Personajes** del inventario muestra cada arco con sus hitos y lo q
 
 ## Hilos de Zahir
 Promesa amable → primer regalo (Mirabel) → «los elegí por sus heridas» → «gracias» → ruego → mejor oferta → revelación → máscara caída.
+
+## Cambios de v0.5
+- **Fragmentos:** ya no se juntan «porque sí». Cada uno es una herida en alguien (Dahhak–Farid, Marid–Zyr'thar, Al-Mazhar–Aisha, Gul-Amarat–Samira/Abril) y se decide: ceder a Zahir, guardar o romper. Romper debilita a Zahir en el final.
+- **Caps. VII–XII** reescritos con escenas de la compañía entre sí y villanos atados a personajes.
+- **Misiones personales** (apertura de cada arco) y 4 secundarias profundas.
