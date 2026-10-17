@@ -7,6 +7,7 @@ import { MARKS, MARK_ANSWER } from '../story/script';
 import { PARTY_BY_ID } from '../data/party';
 import { StageView, BG_MAP } from './stage';
 import { assetUrl } from './assets';
+import { audio, type Mood } from './audio';
 
 const BG: Record<string, string> = {
   prison: 'radial-gradient(ellipse at 50% 90%, #3a2a1a 0%, #140e0a 60%, #060404 100%)',
@@ -42,6 +43,7 @@ export class StoryUI {
   /** Quiénes aparecen en escena: la escuadra elegida o toda la compañía viva. */
   cast(): string[] { const c = this.camp; const alive = c.party.filter(id => !c.dead.includes(id)); return c.squad?.length ? c.squad.filter(id => alive.includes(id)) : alive; }
   setBg(id: string) {
+    const MOOD: Record<string, Mood> = { dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
     const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
     const m = art ? undefined : BG_MAP[id]; if (m && this.stage) { this.stage.set(m, this.cast()); setTimeout(() => this.stage?.r.resize(), 30); } else this.stage?.show(false);
   }

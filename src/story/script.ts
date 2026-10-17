@@ -15,9 +15,9 @@ export const CAP0: Node[] = [
   { t: 'chapter', title: 'La Tormenta', sub: 'Tres días sin referencias', bg: 'tormenta' },
   { t: 'narr', text: 'Todo cambia cuando empieza a soplar viento. Una leve brisa, una ventisca, luego ráfagas que levantan la arena hasta borrar el cielo. El grupo se junta para no perderse. Pasan tres días de tormenta sin una sola referencia: están perdidos.' },
   { t: 'choice', prompt: 'Nadir ya no pretende saber dónde están.', options: [
-    { label: 'Atarse con una cuerda y avanzar en línea', hint: 'Lo más lento, lo más seguro.', e: { d: 1 }, result: ['Pasa un día más sin saber dónde. Nadie se pierde.'] },
-    { label: 'Dejar que Pact decida el rumbo', hint: 'Los aasimar ven donde otros no.', e: { flags: ['pact_guio'] }, result: ['Pact entrecierra los ojos y señala con un dedo. «Allí.» No explica por qué.'] },
-    { label: 'Racionar el agua y esperar a que amaine', hint: 'Cuesta víveres, no sangre.', e: { food: -1 }, result: ['La tormenta no cede, pero tampoco los rinde.'] },
+    { label: 'Atarse con una cuerda y avanzar en línea', hint: 'Lo más lento, lo más seguro.', e: { d: 1, flags: ['tormenta_cuerda'] }, result: ['Pasa un día más sin saber dónde. Nadie se pierde. Alguien, atado a la cuerda, cuenta pasos en voz baja: es lo único que se oye entre el viento.'] },
+    { label: 'Dejar que Pact decida el rumbo', hint: 'Los aasimar ven donde otros no.', e: { flags: ['pact_guio'] }, result: ['Pact entrecierra los ojos y señala con un dedo. «Allí.» No explica por qué, y nadie le pregunta: hace tres días que algo en el viento le suena a una voz que conoce.'] },
+    { label: 'Racionar el agua y esperar a que amaine', hint: 'Cuesta víveres, no sangre.', e: { food: -1, flags: ['tormenta_racion'] }, result: ['La tormenta no cede, pero tampoco los rinde. Pasan hambre y sed, y aprenden algo sobre los otros: quién comparte el odre sin que se lo pidan, y quién no.'] },
   ] },
   { t: 'bg', id: 'dunas' },
   { t: 'narr', text: 'De casualidad o por experiencia, Pact percibe a lo lejos lo que parecen cuatro pilares torcidos, rotos, azotados por la arena. Cuando el viento cae, el escenario se ve entero: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.' },
@@ -36,6 +36,9 @@ export const CAP0: Node[] = [
 export const CAP1: Node[] = [
   { t: 'chapter', title: 'Capítulo I — El Juicio', sub: 'Plaza Central de Zaryab · Patio de las Verdades Retorcidas', bg: 'prison' },
   { t: 'narr', text: 'Los arrastran por pasillos de piedra derretida. Un ruido de cadenas. Los colosos de bronce marcan el paso. Al final, una celda con barrotes, y una sombra que los mira desde fuera.' },
+  { t: 'if', flag: 'tormenta_cuerda', then: [{ t: 'narr', text: 'Todavía tienen la marca de la cuerda en la cintura: la tormenta los ató unos a otros antes de que lo hiciera el Vizir.' }] },
+  { t: 'if', flag: 'tormenta_racion', then: [{ t: 'narr', text: 'Llegan secos y flacos, con la boca llena de arena. Dos días de sed les enseñaron a no pedir nada: por eso callan cuando los ven.' }] },
+  { t: 'if', flag: 'pact_guio', then: [{ t: 'narr', text: 'Pact camina sin mirar el suelo. Lo guió hasta aquí, y ahora le sobra la certeza de haber elegido el camino correcto hacia lo peor.' }] },
   { t: 'bg', id: 'prison' },
   { t: 'say', who: 'Anciano Encapuchado', text: 'Luchen ahora y ardan… ríndanse y… (Extiende una mano llena de cicatrices de arena.) La muerte no es el final aquí… sólo el primer paso.', tone: 'voz cascada, entre dientes' },
   { t: 'choice', prompt: 'El anciano se asoma entre los barrotes.', options: [
@@ -186,7 +189,8 @@ export const CAP3: Node[] = [
 export const CAP4: Node[] = [
   { t: 'chapter', title: 'Capítulo IV — El Reflejo se Rompe', sub: 'Plaza Central · El Cubo de los Mil Reflejos', bg: 'limbo' },
   { t: 'narr', text: 'Una grieta negra se abre en el suelo. De ella brota Zahir, ya sin forma humana: piel de papel calcinado flotando en humo, ojos de estrellas muertas. Cada palabra suya deja un eco de fiebre en la lengua.' },
-  { t: 'say', who: 'Zahir (Caído)', text: 'He visto reinos colapsar por menos que una duda. Ustedes… hablaron con Razul. Ustedes… consideraron a Dahhak como aliado. ¡Ya han traicionado el fuego!', tone: 'las marcas del Simurg queman en su piel' },
+  { t: 'narr', text: 'Los seguidores lo llaman «el Caído», y no es por una caída. Desde la noche del acueducto, cada vez que el cristal duda, la figura amable de Zahir se quema un poco más. Sostener la cara de plumas doradas le cuesta, y esta noche ya no puede pagarla: lo que queda debajo no tiene nada de amable.' },
+  { t: 'say', who: 'Zahir (Caído)', text: 'He visto reinos colapsar por menos que una duda. Ustedes… hablaron con Razul. Ustedes… oyeron a las Si\'lats nombrar a Dahhak y no escupieron al suelo. ¡Ya han traicionado el fuego!', tone: 'las marcas del Simurg queman en su piel' },
   { t: 'say', who: 'Zahir (Caído)', text: '¿Creen que el Simurg es una idea? ¿Un símbolo? El Simurg es la última palabra antes de que el mundo se calle para siempre. Y ustedes… ¡hablan con la serpiente que devora nombres!' },
   { t: 'say', who: 'Zahir (Caído)', text: 'Sombra que corta sin pensar. ¿Vas a seguir órdenes de quien cambia de piel como de máscara? ¿O vas a recordar por qué naciste entre cuchillos?', tone: "a Zyr'thar" },
   { t: 'say', who: 'Zahir (Caído)', text: 'Mirás al cielo por respuestas… y aun así dudaste ante un mentiroso con corona. ¿Tu dios pesa el alma, o la acomoda en el oro?', tone: 'a Romain' },

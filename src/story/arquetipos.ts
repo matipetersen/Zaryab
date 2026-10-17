@@ -154,24 +154,24 @@ export const ARQ: Record<string, Node[]> = {
 };
 
 /** Rito de resurrección del Cap. XIII: cada personaje deja atrás su arquetipo viejo o lo acepta. */
-const rite = (pc: string, name: string, askA: string, askB: string): Node[] => [
+const rite = (pc: string, name: string, askA: string, askB: string, resA: string, resB: string): Node[] => [
   IF(`arq_${pc}_a`, [N(`${name}: ha caminado hacia ${POLOS[pc][0]}. La pregunta ya no es qué será, sino si puede dejar de temer serlo.`)], [
     IF(`arq_${pc}_b`, [N(`${name}: ha caminado hacia ${POLOS[pc][1]}. La pregunta ya no es qué será, sino si puede dejar de justificarlo.`)], [N(`${name}: sigue en el cruce. Aún no ha elegido.`)]),
   ]),
   { t: 'choice', prompt: `La resurrección de ${name}.`, options: [
-    { label: askA, e: { d: 1, arq: { [pc]: 2 }, flags: [`res_${pc}_a`] }, result: ['Lo dice despacio. No es una victoria; es una puerta que se abre.'] },
-    { label: askB, e: { c: 1, arq: { [pc]: -2 }, flags: [`res_${pc}_b`] }, result: ['Lo acepta sin teatro. Es más fácil de lo que pensaba, y por eso asusta.'] },
+    { label: askA, e: { d: 1, arq: { [pc]: 2 }, flags: [`res_${pc}_a`] }, result: [resA] },
+    { label: askB, e: { c: 1, arq: { [pc]: -2 }, flags: [`res_${pc}_b`] }, result: [resB] },
   ] },
 ];
 export const RESURRECCION: Node[] = [
   T('La Resurrección', 'Antes del Eclipse', 'limbo'),
   N('Antes del Eclipse, en el círculo de piedra, cada uno de ustedes siente la misma cosa: que lo que ha sido hasta ahora ya no alcanza. Es el momento de decidir en quién se convierten al salir de aquí.'),
-  ...rite('romain', 'Romain', 'Pesar con compasión', 'Pesar con justicia'),
-  ...rite('pact', 'Pact', 'Rendir la corona', 'Aceptar la corona'),
-  ...rite('rabb', 'Rabb', 'Escribir su propio nombre', 'Dejar que otro lo escriba'),
-  ...rite('joren', 'Joren', 'Proteger sin cobrar', 'Seguir cazando'),
-  ...rite('zyrthar', 'Zyr\'thar', 'Caminar junto a su sombra', 'Vivir en su sombra'),
-  ...rite('panchi', 'Panchi', 'Abrir la mano', 'Cerrar el puño'),
+  ...rite('romain', 'Romain', 'Pesar con compasión', 'Pesar con justicia', 'Romain vuelca la balanza vacía y, por primera vez desde el templo quemado, no cuenta los platillos. Pesa a los tres mil años de Razul, a Farid, a sí mismo, con la misma mano. «Kelemvor no pide que esté seguro», dice. «Pide que mire.» La balanza no se mueve y a él no le importa.', 'Romain pesa sin temblar: lo que hizo, lo que dejó hacer, lo que calló. La balanza cae del lado que él ya sabía. «Es más fácil con los ojos cerrados», murmura. Es verdad, y esa verdad le pesa más que cualquier alma que haya medido.'),
+  ...rite('pact', 'Pact', 'Rendir la corona', 'Aceptar la corona', 'Pact sostiene la corona de fuego invertido entre las dos manos y la deja en el suelo, como quien devuelve una herramienta prestada. Las alas no se apagan: se pliegan. «Fui Azuran un rato. Quiero ser Pact mucho tiempo», dice, y se ríe de lo poco heroico que suena.', 'Pact se pone la corona. Le arde, y deja que arda. Escucha a Azuran por dentro, ya sin pelear contra su voz, y le contesta en voz alta: «Hacemos esto juntos o no lo hacemos.» Algo en la sala se endereza, y él no sabe si es la sala o si es él.'),
+  ...rite('rabb', 'Rabb', 'Escribir su propio nombre', 'Dejar que otro lo escriba', 'Rabb arranca un trozo de venda, moja la punta en la sangre de su mano y escribe un nombre en la hoja. No sabe si es el verdadero. La espada vibra, ofendida, y después se queda quieta, como quien lee algo que no esperaba. «Si me equivoqué, lo corrijo mañana», dice.', 'Rabb extiende la espada y deja que el pacto vuelva a escribirlo. Los huecos se llenan de golpe y duele menos de lo que temía. Lo que lo asusta es lo cómodo que se siente. «Qué descanso», dice, y no suena a victoria.'),
+  ...rite('joren', 'Joren', 'Proteger sin cobrar', 'Seguir cazando', 'Joren desarma el arco, algo que no hacía ni para dormir, y lo apoya contra el pilar. «No me debés nada», le dice a nadie, a los muertos, a todos. Es la primera noche en años en que no cuenta cuántos le faltan.', 'Joren ajusta la cuerda del arco y apunta a una sombra que ya no está. «Alguien tiene que hacerlo», dice. Nadie le discute. Todos notan que ya no sabe hacer otra cosa.'),
+  ...rite('zyrthar', 'Zyr\'thar', 'Caminar junto a su sombra', 'Vivir en su sombra', 'Zyr\'thar se queda quieta y la sombra la alcanza, despacio, hasta ponerse a su lado. Caminan juntas hasta el borde del círculo. «No sos yo y no sos otra», le dice. La sombra, por una vez, no la imita.', 'Zyr\'thar entra en su propia sombra como en una habitación conocida. Se apaga el ruido y se apaga también lo que dolía. «Qué silencio», dice, y los demás entienden, con un escalofrío, que no hablaba del lugar.'),
+  ...rite('panchi', 'Panchi', 'Abrir la mano', 'Cerrar el puño', 'Panchi abre la mano y se queda mirándola, como si fuera la primera vez que la ve vacía. Después, torpe, la apoya en el hombro de Pact. «Perdoná la mano», gruñe. «Está aprendiendo.»', 'Panchi cierra el puño con tanta fuerza que le crujen los nudillos. No es rabia: es costumbre. «Es lo que sé hacer», dice, y suena a disculpa, y suena a promesa, y ninguno de los dos le contesta.'),
 ];
 
 /** Líneas de epílogo por arquetipo final: manda el rito del Cap. XIII y, si no se hizo, el camino recorrido. */

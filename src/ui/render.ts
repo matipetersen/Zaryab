@@ -32,6 +32,7 @@ interface Proj { x1: number; y1: number; x2: number; y2: number; t: number; kind
 interface Ring { x: number; y: number; t: number; color: string; max: number }
 
 import { assetImg } from './assets';
+import { audio } from './audio';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
@@ -95,11 +96,11 @@ export class Renderer {
   // ---------- eventos ----------
   play(events: BEvent[]) {
     for (const e of events) {
-      if (e.t === 'move') { const v = this.vis.get(e.uid); if (v) v.path.push(...e.path.slice(1)); }
-      else if (e.t === 'float') { const u = this.b!.byUid(e.uid); if (u) { const v = this.vis.get(e.uid)!; this.floats.push({ x: v.x, y: v.y, text: e.text, cls: e.cls, t: 0, dx: (Math.random() - .5) * 18 }); } }
-      else if (e.t === 'hit') { const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = 1; this.sparks(v.x, v.y, 12, '#fff2c0'); this.flashes.push({ x: v.x, y: v.y, color: 'rgba(255,200,120,A)', t: 0, r: 1.6 }); } this.shake = Math.max(this.shake, .5); this.freeze = .06; }
+      if (e.t === 'move') { const v = this.vis.get(e.uid); if (v) v.path.push(...e.path.slice(1)); audio.sfx('step'); }
+      else if (e.t === 'float') { if (e.cls === 'miss') audio.sfx('miss'); else if (e.cls === 'crit') audio.sfx('crit'); const u = this.b!.byUid(e.uid); if (u) { const v = this.vis.get(e.uid)!; this.floats.push({ x: v.x, y: v.y, text: e.text, cls: e.cls, t: 0, dx: (Math.random() - .5) * 18 }); } }
+      else if (e.t === 'hit') { audio.sfx('hit'); const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = 1; this.sparks(v.x, v.y, 12, '#fff2c0'); this.flashes.push({ x: v.x, y: v.y, color: 'rgba(255,200,120,A)', t: 0, r: 1.6 }); } this.shake = Math.max(this.shake, .5); this.freeze = .06; }
       else if (e.t === 'snap') { const v = this.vis.get(e.uid); if (v) { v.x = e.x; v.y = e.y; v.path = []; } this.shake = Math.max(this.shake, .8); }
-      else if (e.t === 'death') { const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) { this.burst(u.x, u.y, '#d8b27a', 18); this.wisps(u.x, u.y); } }
+      else if (e.t === 'death') { audio.sfx('death'); const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) { this.burst(u.x, u.y, '#d8b27a', 18); this.wisps(u.x, u.y); } }
       else if (e.t === 'spawn') { const u = this.b!.byUid(e.uid); if (u) this.vis.set(e.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 1, dead: 0, wobble: 0 }); }
       else if (e.t === 'fx') this.fx(e);
       else if (e.t === 'tile') this.tileFx(e);
@@ -110,6 +111,7 @@ export class Renderer {
     this.burst(e.x, e.y, col, e.kind === 'boom' ? 30 : 14); if (e.kind === 'boom') { this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 1.6 }); this.shake = 1; } else if (e.kind === 'break') this.shake = Math.max(this.shake, .4);
   }
   fx(e: Extract<BEvent, { t: 'fx' }>) {
+    audio.sfx(e.kind === 'heal' ? 'heal' : e.kind === 'boom' ? 'boom' : e.kind === 'slash' ? 'slash' : e.kind === 'arrow' ? 'arrow' : e.kind === 'debris' ? 'step' : 'spell');
     if (e.kind === 'debris') { this.burst(e.x, e.y, '#b89a6a', 6); return; }
     if (e.kind === 'heal') { const c = this.center(e.x, e.y, 20); for (let i = 0; i < 14; i++) this.parts.push({ x: c.x + (Math.random() - .5) * 20, y: c.y, vx: (Math.random() - .5) * 20, vy: -30 - Math.random() * 30, life: 0, max: .9, color: '#f1c40f', size: 2.5, grav: 0 }); }
     else if (e.kind === 'boom') { this.flashes.push({ x: e.x, y: e.y, color: 'rgba(255,150,60,A)', t: 0, r: 4 }); this.sparks(e.x, e.y, 28, '#ffb347'); this.burst(e.x, e.y, '#ff8a3d', 26); this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 2 }); this.shake = 1; }

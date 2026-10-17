@@ -26,6 +26,7 @@ import { chemPoints, pairKey } from './engine/synergy';
 import { briefing } from './story/briefings';
 import { playIntro } from './ui/intro';
 import { MenuFx } from './ui/menuFx';
+import { audio } from './ui/audio';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
@@ -49,16 +50,17 @@ class App {
     this.story.battle = (enc, n, foes) => this.runBattle(enc, n, foes); this.story.hud = () => this.renderHud();
     this.hub.onChange = () => { this.renderHud(); saveGame(this.camp); }; this.hub.api = { advance: n => this.advance(n) };
     this.renderHud(); this.showMenu();
+    document.addEventListener('click', e => { const t = e.target as HTMLElement; if (t.closest?.('.btn, .choice, .tb-btn, .tabbtn, button')) audio.sfx(t.closest('.choice') ? 'choice' : 'click'); }, true);
     const q = new URLSearchParams(location.search);
     if (q.get('battle')) this.devBattle(q.get('battle')!);
     (window as any).__app = this;
   }
-  show(which: 'menu' | 'story' | 'hub' | 'battle') { this.menuEl.classList.toggle('hidden', which !== 'menu'); this.storyEl.classList.toggle('hidden', which !== 'story'); this.hubEl.classList.toggle('hidden', which !== 'hub'); this.battleEl.classList.toggle('hidden', which !== 'battle'); }
+  show(which: 'menu' | 'story' | 'hub' | 'battle') { if (which === 'menu') audio.setMood('menu'); else if (which === 'hub') audio.setMood('city'); else if (which === 'story') audio.setMood(audio.mood === 'menu' || audio.mood === 'city' || audio.mood === 'battle' || audio.mood === 'boss' ? 'tense' : audio.mood); this.menuEl.classList.toggle('hidden', which !== 'menu'); this.storyEl.classList.toggle('hidden', which !== 'story'); this.hubEl.classList.toggle('hidden', which !== 'hub'); this.battleEl.classList.toggle('hidden', which !== 'battle'); }
   renderHud() {
     const c = this.camp; this.hudEl.innerHTML = ''; const left = c.eclipseDay && !has(c, 'cap13_done') ? Math.max(0, c.eclipseDay - c.day) : -1;
     const m = (cls: string, label: string, v: number, max: number) => h('div', { class: `meter ${cls}` }, label, h('div', { class: 'bar' }, h('i', { style: { width: (v / max) * 100 + '%' } })), h('span', {}, `${v}/${max}`));
     this.hudEl.append(h('div', { class: 'meter' }, `Día ${c.day} · ${PHASE_ICON[c.phase]} ${PHASE[c.phase]}`), ...(hunting(c) ? [h('div', { class: 'meter', title: 'Potencia ' + c.gusano.power, style: { color: c.gusano.next - c.day <= 3 ? '#ff9c8f' : '' } }, `🪱 ${STAGES[stage(c)]}${c.gusano.next - c.day <= 3 ? ' · cerca' : ''}`)] : []), ...(left >= 0 ? [h('div', { class: 'meter', style: { color: left <= 10 ? '#ff9c8f' : left <= 30 ? '#e8c872' : '' } }, `🌑 Eclipse en ${left} d`)] : []), m('corr', 'Corrupción', c.c, 10), m('dev', 'Devoción', c.d, 10), h('div', { class: 'meter pf' }, 'PF ', h('b', {}, String(c.pf))),
-      h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
+      h('button', { class: 'tb-btn', title: 'Sonido', onClick: (e: Event) => { const m = audio.toggleMute(); (e.currentTarget as HTMLElement).textContent = m ? '🔇' : '🔊'; } }, audio.muted ? '🔇' : '🔊'), h('button', { class: 'tb-btn', onClick: () => saveGame(this.camp) }, 'Guardar'), h('button', { class: 'tb-btn', onClick: () => { saveGame(this.camp); location.reload(); } }, 'Menú'));
   }
   showMenu() {
     this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = ''; this.menuFx?.destroy(); this.menuFx = new MenuFx(m);
@@ -234,6 +236,7 @@ class App {
     const edge = rated ? computeEdge(c, party, allies.length) : { points: 0, lines: [] as string[] };
     const intro = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points, chem: c.chem, powerup: enc === 'gusano_caza' ? c.gusano.power : 0 });
+    if (enc === 'eclipse') { const rotos = ['dahhak', 'marid', 'mazhar', 'gusano', 'razul'].filter(f => has(c, `frag_${f}_roto`)).length; if (rotos) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * Math.max(.6, 1 - .08 * rotos)); u.hp = u.maxHp; } }
     if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
     const res = await ui.run(b, e.map, intro);
