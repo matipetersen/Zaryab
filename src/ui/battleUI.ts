@@ -3,7 +3,7 @@ import { runAI } from '../engine/ai';
 import { ABILITIES } from '../engine/abilities';
 import { Renderer } from './render';
 import { h, sleep, avatar } from './dom';
-import { cheb } from '../engine/grid';
+import { cheb, key } from '../engine/grid';
 import { avg } from '../engine/dice';
 import { MAPS } from '../data/maps';
 import { PARTY_BY_ID } from '../data/party';
@@ -219,6 +219,7 @@ export class BattleUI {
       h('span', { class: `pip ${left > 0 ? 'free' : 'used'}` }, `Mov ${left * 5}ft`),
       h('span', { class: `pip ${b.hasAction(u) ? 'free' : 'used'}` }, `Acción${u.extraActions ? ' +' + u.extraActions : ''}${u.attacksMade > 0 && u.attacksMade < b.maxAttacks(u) ? ' (ataque ' + (u.attacksMade + 1) + ')' : ''}`),
       h('span', { class: `pip ${!u.bonusUsed || u.res['flurry'] > 0 ? 'free' : 'used'}` }, 'Adicional'),
+      h('span', { class: `pip ${u.reactionUsed ? 'used' : 'free'}`, title: 'Reacción: ataque de oportunidad cuando un enemigo sale de tu alcance' }, 'Reacción'),
       this.b.pfPool > 0 ? h('span', { class: 'pip free', title: 'Puntos de Fe disponibles para Milagros' }, `PF ${this.b.pfPool}`) : null));
   }
   openAttackMenu() {
@@ -285,6 +286,11 @@ export class BattleUI {
   showHoverTip(e: MouseEvent, t: P | null) {
     if (!t) { this.tip.classList.add('hidden'); return; }
     const u = this.cur, under = this.unitAtTile(t); const m = this.mode;
+    if (u && m.k === 'move' && !under) { // aviso de ataques de oportunidad en el camino
+      const r = this.b.reach(u); const dst = r.get(key(t.x, t.y));
+      if (dst && !dst.occ) { const path: P[] = []; let k: string | undefined = key(t.x, t.y); while (k) { const st: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: st.x, y: st.y }); k = st.prev; } const n = this.b.opportunityCount(u, path);
+        this.tipAt(e, `Coste: ${dst.cost * 5} pies${n ? `<br><b style="color:#ff9c8f">⚠ Provoca ${n} ataque${n > 1 ? 's' : ''} de oportunidad</b><br><small>«Desengancharse» lo evita</small>` : ''}`); return; }
+    }
     if (u && under && m.k === 'weapon' && this.validTarget(u, under, m)) {
       const vis = this.b.canSee(u, under); const need = this.b.ac(under, vis.cover) - m.w.toHit; const p = Math.round(Math.min(95, Math.max(5, (21 - need) * 5)));
       this.tipAt(e, `<b>${under.name}</b><br>Impacto ≈ <b>${p}%</b> (CA ${this.b.ac(under, vis.cover)}${vis.cover ? ', cobertura +' + vis.cover : ''})<br>Daño medio ≈ ${Math.round(m.w.dmg.reduce((s, d) => s + avg(d.dice), 0))}`); return;

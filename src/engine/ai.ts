@@ -22,6 +22,7 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
     if (dist > actionRange(a) && !(a.aoeSelf)) return -1;
     if (a.kind !== 'save' || !a.aoeSelf) { if (dist > 1 && !b.canSee(u, t).visible) return -1; }
     let s = 0;
+    const engaged = a.kind === 'ranged' && b.foesOf(u).some(f => f.sprite !== 'wall' && !b.incapacitated(f) && cheb(f, from) <= 1); // desventaja a distancia en melé
     if (a.aoe) {
       const c: P = a.aoeSelf ? from : t;
       for (const v of fs) if (cheb(v, c) <= a.aoe) s += b.expectedDamage(u, a, v) * (v.down ? 0.3 : 1);
@@ -34,6 +35,7 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
       if (a.save?.cond && a.dmg) s += 2;
       if (a.save?.cond === 'disadvNext') s += 1;
     }
+    if (engaged) s *= 0.6;
     if (b.grid.at(from.x, from.y)?.kind === 'hazard' && !u.fly) s -= 4;
     if (a.recharge) s *= 1.15;
     const dmgEst = b.expectedDamage(u, a, t); if (!t.down && dmgEst >= t.hp) s += 12;
@@ -45,14 +47,16 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
 }
 
 function bestOption(b: Battle, u: Unit, acts: MAction[], tiles: P[], bias?: Bias): Option | undefined {
-  const fs = candidateTargets(b, u); let best: Option | undefined;
+  const fs = candidateTargets(b, u); let best: Option | undefined; const rm = b.reach(u);
   for (const tile of tiles) for (const a of acts) {
     if (a.kind === 'heal' || a.kind === 'buff' || a.kind === 'summon') continue;
     if (a.recharge && !u.rechargeReady[a.id]) continue;
     for (const t of fs) {
       const sc = scoreAction(b, u, a, tile, t, fs, bias); if (sc < 0) continue;
       const trav = cheb(tile, u) * 0.01; const here = tile.x === u.x && tile.y === u.y ? 0.05 : 0;
-      const total = sc - trav + here;
+      // Salir del alcance de enemigos con reacción provoca ataques de oportunidad: cuesta PG, así que se evita si no compensa.
+      const opp = here ? 0 : b.opportunityCount(u, b.pathTo(rm, tile.x, tile.y));
+      const total = sc - trav + here - opp * 3;
       if (!best || total > best.score) best = { score: total, tile, action: a, target: a.aoe && !a.aoeSelf ? { x: t.x, y: t.y } : t, why: a.name };
     }
   }

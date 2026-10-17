@@ -8,7 +8,7 @@ export type CondId =
   | 'prone' | 'blinded' | 'poisoned' | 'frightened' | 'charmed' | 'paralyzed' | 'stunned' | 'restrained' | 'invisible'
   | 'burning' | 'dodging' | 'bless' | 'bane' | 'shieldFaith' | 'hex' | 'hunterMark' | 'hexCurse' | 'enfeebled'
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
-  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged';
+  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped';
 
 export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string }
 
@@ -48,6 +48,7 @@ export interface MonsterDef {
 export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental' | 'djinn' | 'mirror' | 'colossus' | 'swarm' | 'wall' | 'pylon' | 'serpent';
 
 export interface Unit {
+  /** Reacción gastada en esta ronda (ataque de oportunidad). Se recupera al empezar su turno. */ reactionUsed?: boolean;
   uid: number; id: string; name: string; side: Side; ai: boolean; color: string; glyph: string; sprite: Sprite;
   x: number; y: number; size: number;
   mods: Mods; saves: Mods; prof: number; level: number;

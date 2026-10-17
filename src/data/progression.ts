@@ -289,8 +289,8 @@ const LOW: Record<string, Record<1 | 2, { res: Record<string, number>; drop: str
   pact: { 1: { res: { sw: 1, hh: 1 }, drop: ['action_surge', 'rally', 'radiant_soul'] }, 2: { res: { sw: 1, surge: 1, hh: 1 }, drop: ['rally', 'radiant_soul'] } },
   rabb: { 1: { res: { slot1: 1, curse: 1 }, drop: [] }, 2: { res: { slot1: 2, curse: 1 }, drop: [] } },
   joren: { 1: { res: {}, drop: ['hunters_mark', 'cure_wounds'], dropTraits: ['dreadInit'] }, 2: { res: { slot1: 2 }, drop: [], dropTraits: ['dreadInit'] } },
-  zyrthar: { 1: { res: {}, drop: ['cunning_dash', 'faerie_fire'], dropTraits: ['assassinate'] }, 2: { res: {}, drop: ['faerie_fire'], dropTraits: ['assassinate'] } },
-  panchi: { 1: { res: { ki: 0 }, drop: ['flurry', 'patient_defense', 'step_of_wind'], speed: 5 }, 2: { res: { ki: 2 }, drop: [], speed: 7 } },
+  zyrthar: { 1: { res: {}, drop: ['cunning_dash', 'cunning_disengage', 'faerie_fire'], dropTraits: ['assassinate'] }, 2: { res: {}, drop: ['faerie_fire'], dropTraits: ['assassinate'] } },
+  panchi: { 1: { res: { ki: 0 }, drop: ['flurry', 'patient_defense', 'step_of_wind', 'step_disengage'], speed: 5 }, 2: { res: { ki: 2 }, drop: [], speed: 7 } },
 };
 function applyLow(u: Unit, def: PCDef, L: 1 | 2) {
   const t = TRACKS[def.id]; const lo = LOW[def.id][L];

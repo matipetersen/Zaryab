@@ -113,7 +113,7 @@ class App {
   }
   /** En el prólogo (aún sin mapa) los niveles 2 y 3 se ganan solos: no hay elecciones que tomar. */
   async prologueLevels() {
-    const c = this.camp; let n = pendingLevel(c), last = 0;
+    const c = this.camp; this.graceRevive(); let n = pendingLevel(c), last = 0;
     for (; n && n <= 3; n = pendingLevel(c)) { c.lvl = n; last = n; }
     if (last) { c.journal.push(`Día ${c.day}: la compañía alcanza el nivel ${last}.`); saveGame(c); await this.runScript('lvl', 0, [{ t: 'fx', e: {}, note: `¡Suben al nivel ${last}! ${last === 2 ? 'Ganan Canalizar Divinidad, Oleada de Acción, Ki y Acción Astuta.' : 'Cada personaje recibe su arquetipo.'}` }]); }
   }
@@ -133,7 +133,13 @@ class App {
     if (qid === 'm_cap5') await this.cutscene('acto2');
     if (qid === 'm_cap10') await this.cutscene('acto3');
   }
+  /** Antes del Cap. III la muerte no es definitiva: el cristal de Zahir devuelve a los caídos (también en partidas guardadas viejas). */
+  graceRevive() {
+    const c = this.camp; if (has(c, 'cap3_done') || !c.dead.length) return;
+    c.journal.push(`Día ${c.day}: el cristal de Zahir devuelve a ${c.dead.length === 1 ? 'un caído' : `${c.dead.length} caídos`}. «Aún no.»`); c.dead = []; saveGame(c);
+  }
   async hubLoop() {
+    this.graceRevive();
     if (!has(this.camp, 'cap0_done') && !has(this.camp, 'cap1_done')) { await this.cutscene('acto1'); await this.runScript('cap0'); await this.prologueLevels(); await this.cutscene('cap0'); }
     if (!has(this.camp, 'cap1_done')) { await this.runScript('cap1'); await this.prologueLevels(); await this.cutscene('cap1'); }
     if (!has(this.camp, 'cap2_done')) { await this.runScript('cap2'); await this.cutscene('cap2'); await this.arq('cap2'); }
@@ -220,7 +226,7 @@ class App {
     c.pf = Math.max(0, c.pf - res.pfSpent);
     if (victory && !duel) {
       c.battlesWon++; c.xp += res.xp; if (has(c, 'golem_prestado')) c.flags = c.flags.filter(f => f !== 'golem_prestado');
-      for (const id of res.dead) { if (this.settings.permadeath) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
+      for (const id of res.dead) { if (this.settings.permadeath && has(c, 'cap3_done')) { if (!c.dead.includes(id)) c.dead.push(id); } else applyEffect(c, { c: 1, pf: count(c, 'curandero') ? -2 : -3 }); }
     }
     this.renderHud(); saveGame(c); return won;
   }

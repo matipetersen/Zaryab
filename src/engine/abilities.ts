@@ -45,6 +45,22 @@ export const nearestFoes = (b: Battle, u: Unit, radius: number, n: number) =>
 // ---------- generales ----------
 def({ id: 'dash', name: 'Correr', desc: 'Duplicás tu movimiento este turno.', cost: 'action', range: 0, target: 'self', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; b.log(`${u.name} corre.`, 'sys'); } });
+def({ id: 'stabilize', name: 'Primeros auxilios', desc: 'Un aliado caído adyacente: prueba de Medicina (CD 10). Si sale bien, se estabiliza y deja de hacer salvaciones de muerte.', cost: 'action', range: 1, target: 'downedAlly', tag: 'heal',
+  run: (b, u, t: Unit) => { const r = roll('1d20').total + (u.mods.wis ?? 0) + (u.traits.includes('medic') ? (u.prof ?? 0) : 0); if (r >= 10) { t.stable = true; b.log(`${u.name} estabiliza a ${t.name} (${r} vs CD 10).`, 'heal'); } else b.log(`${u.name} no logra estabilizar a ${t.name} (${r} vs CD 10).`, 'sys'); } });
+def({ id: 'disengage', name: 'Desengancharse', desc: 'Tu movimiento de este turno no provoca ataques de oportunidad.', cost: 'action', range: 0, target: 'self', tag: 'move',
+  run: (b, u) => { b.addStatus(u, { id: 'disengaged', turns: 1, src: u.uid }, true); b.log(`${u.name} se desengancha con cuidado.`, 'sys'); } });
+def({ id: 'cunning_disengage', name: 'Acción Astuta: Desengancharse', desc: 'Acción adicional. Tu movimiento de este turno no provoca ataques de oportunidad.', cost: 'bonus', range: 0, target: 'self', tag: 'move',
+  run: (b, u) => { b.addStatus(u, { id: 'disengaged', turns: 1, src: u.uid }, true); b.log(`${u.name} se escabulle.`, 'sys'); } });
+def({ id: 'step_disengage', name: 'Paso del Viento: Desengancharse', desc: 'Gastás 1 ki: Desengancharte como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'move',
+  run: (b, u) => { b.addStatus(u, { id: 'disengaged', turns: 1, src: u.uid }, true); b.log(`${u.name} se desliza entre sus rivales.`, 'sys'); } });
+def({ id: 'help', name: 'Ayudar', desc: 'Un enemigo adyacente a ti: el siguiente ataque de un aliado contra él tiene ventaja (hasta tu próximo turno).', cost: 'action', range: 1, target: 'enemy', tag: 'control',
+  run: (b, u, t: Unit) => { b.addStatus(t, { id: 'helped', turns: -1, src: u.uid }, true); b.log(`${u.name} distrae a ${t.name}: el próximo ataque aliado tendrá ventaja.`, 'buff'); } });
+def({ id: 'shove', name: 'Derribar', desc: 'Prueba de Atletismo (FUE) contra FUE o DES del enemigo adyacente, de tamaño no mayor que uno más que el tuyo. Si ganás, cae derribado.', cost: 'action', range: 1, target: 'enemy', tag: 'control',
+  run: (b, u, t: Unit) => {
+    if (t.size > u.size + 1) { b.log(`${t.name} es demasiado grande para derribarlo.`, 'sys'); return; }
+    const a = roll('1d20').total + u.mods.str + (u.prof ?? 0), d = roll('1d20').total + Math.max(t.mods.str, t.mods.dex);
+    if (a >= d) { b.addStatus(t, { id: 'prone', turns: -1, src: u.uid }); b.log(`${u.name} derriba a ${t.name} (${a} vs ${d}).`, 'buff'); } else b.log(`${t.name} resiste el empujón de ${u.name} (${a} vs ${d}).`, 'sys');
+  } });
 def({ id: 'dodge', name: 'Esquivar', desc: 'Los ataques contra ti tienen desventaja hasta tu próximo turno.', cost: 'action', range: 0, target: 'self', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); b.log(`${u.name} se pone a la defensiva.`, 'sys'); } });
 

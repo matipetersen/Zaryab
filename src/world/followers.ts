@@ -140,6 +140,7 @@ export const RITUALS = [
   { id: 'banquete', name: 'Banquete de pan de arena', cost: '6 víveres · 1 día', desc: 'Una comida común. +2 fe a todos y se curan los enfermos.' },
   { id: 'boda', name: 'Casamiento de telas blancas', cost: '2 víveres · 2 días', desc: 'Dos seguidores se casan con telas blancas en la mano, gritando. +3 fe a la pareja, +1 al resto, +4 PF.' },
   { id: 'ofrenda', name: 'Ofrenda de Huesos', cost: 'Un seguidor · 1 día', desc: 'Sacrificar al seguidor con menos fe en el altar: +10 PF y +3 Corrupción, el resto pierde 2 de fe.' },
+  { id: 'resurreccion', name: 'Resurrección del cristal', cost: '12 PF y +1 Corrupción por personaje · 1 día', desc: 'El cristal de Zahir late en el pecho de cada caído. Con fe suficiente, vuelve a abrir los ojos.' },
   { id: 'ascension', name: 'Ascensión', cost: 'Un seguidor con fe 10 · 1 día', desc: 'Un devoto alcanza la plenitud. Eligen: ascender (+1 Devoción, +5 PF) o convertirlo en reliquia (+1 Corrupción, +8 PF).' },
 ] as const;
 export function ritual(c: Campaign, id: string, opt?: string): ActResult {
@@ -149,6 +150,13 @@ export function ritual(c: Campaign, id: string, opt?: string): ActResult {
   if (id === 'banquete') { if (c.food < 6) return { ok: false, days: 0, text: 'Faltan víveres (6).' }; c.food -= 6; for (const f of F) { f.fe = Math.min(10, f.fe + 2); f.sick = false; } return { ok: true, days: 1, text: 'Pan de arena para todos. Alguien llora de alegría. Los enfermos se levantan.' }; }
   if (id === 'boda') { if (F.length < 2) return { ok: false, days: 0, text: 'Hacen falta dos seguidores.' }; if (c.food < 2) return { ok: false, days: 0, text: 'Faltan víveres (2).' }; c.food -= 2; const s = [...F].sort((a, b) => b.fe - a.fe); const [a, b] = [s[0], s[1]]; a.fe = Math.min(10, a.fe + 3); b.fe = Math.min(10, b.fe + 3); for (const f of F) if (f !== a && f !== b) f.fe = Math.min(10, f.fe + 1); c.pf += 4; c.seal += 4; return { ok: true, days: 2, text: `${a.name} y ${b.name} se casan con telas blancas en la mano, gritando. El santuario entero grita con ellos. (+4 PF)` }; }
   if (id === 'ofrenda') { if (F.length < 2) return { ok: false, days: 0, text: 'Quedaría un culto sin seguidores.' }; const v = [...F].sort((a, b) => a.fe - b.fe)[0]; c.followers = F.filter(f => f !== v); for (const f of c.followers) f.fe = Math.max(0, f.fe - 2); c.pf += 10; c.seal += 10; c.c = Math.min(10, c.c + 3); return { ok: true, days: 1, text: `${v.name} sube al altar de huesos sin entender. El cristal late con placer. (+10 PF, +3 Corrupción)` }; }
+  if (id === 'resurreccion') {
+    if (!c.dead.length) return { ok: false, days: 0, text: 'Nadie ha caído.' };
+    const pc = opt && c.dead.includes(opt) ? opt : c.dead[0];
+    if (c.pf < 12) return { ok: false, days: 0, text: `Hacen falta 12 PF (tienen ${c.pf}). Prediquen, hagan sermones o dejen ofrendas en el altar.` };
+    c.pf -= 12; c.c = Math.min(10, c.c + 1); c.dead = c.dead.filter(x => x !== pc);
+    return { ok: true, days: 1, text: 'El cristal arde un instante en el pecho del caído. Vuelve, más pálido. −12 PF, +1 Corrupción.' };
+  }
   if (id === 'ascension') { const v = F.find(f => f.fe >= 10); if (!v) return { ok: false, days: 0, text: 'Nadie ha alcanzado la fe 10.' }; c.followers = F.filter(f => f !== v); if (opt === 'reliquia') { c.pf += 8; c.seal += 8; c.c = Math.min(10, c.c + 1); return { ok: true, days: 1, text: `${v.name} se convierte en reliquia: un hueso dorado que murmura. (+8 PF, +1 Corrupción)` }; } c.pf += 5; c.seal += 5; c.d = Math.min(10, c.d + 1); return { ok: true, days: 1, text: `${v.name} asciende en una columna de luz. Nadie vuelve a verlo. (+5 PF, +1 Devoción)` }; }
   return { ok: false, days: 0, text: '…' };
 }

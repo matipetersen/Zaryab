@@ -8,6 +8,7 @@ import type { InvUI } from './invUI';
 import { LevelUI } from './levelUI';
 import { ambient, POIS, POI_BY_ID, PHASE, PHASE_ICON, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
 import { BOND_NAME } from '../world/bonds';
+import { PARTY_BY_ID } from '../data/party';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
 
 export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' } | { t: 'poi'; id: string } | { t: 'roamer'; id: string } | { t: 'reinforce'; district: string } | { t: 'leave' };
@@ -130,6 +131,11 @@ export class HubUI {
       }
     } else if (tab === 'rituales') {
       for (const r of RITUALS) {
+        if (r.id === 'resurreccion') {
+          b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, r.desc), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, r.cost),
+            c.dead.length ? h('div', {}, ...c.dead.map(id => h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, id), tab) }, `Resucitar a ${PARTY_BY_ID[id]?.name ?? id}`))) : h('div', { class: 'small' }, 'Nadie ha caído por ahora.')));
+          continue;
+        }
         const asc = r.id === 'ascension';
         b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, r.desc), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, r.cost),
           asc ? h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'ascender'), tab) }, 'Ascender'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'reliquia'), tab) }, 'Convertir en reliquia')) : h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id), tab) }, 'Celebrar')));

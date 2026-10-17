@@ -19,7 +19,7 @@ export const COND_LABEL: Record<CondId, string> = {
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
-  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche',
+  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado',
 };
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
 const HIDDEN_CONDS: CondId[] = ['surgeUsed', 'sneakUsed'];
@@ -155,7 +155,8 @@ export class Battle {
     return undefined;
   }
   startTurn(u: Unit) {
-    u.turnsTaken++;
+    u.turnsTaken++; u.reactionUsed = false;
+    for (const o of this.units) if (this.has(o, 'helped') && this.status(o, 'helped')!.src === u.uid) this.removeStatus(o, 'helped'); // la ayuda dura hasta el próximo turno de quien ayuda
     u.actionUsed = false; u.bonusUsed = false; u.extraActions = 0; u.attacksMade = 0; u.res['flurry'] = 0;
     u.moveLeft = u.speed + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 2 : 0);
     this.removeStatus(u, 'dodging'); this.removeStatus(u, 'disengaged'); this.removeStatus(u, 'surgeUsed'); this.removeStatus(u, 'sneakUsed');
@@ -226,14 +227,54 @@ export class Battle {
     for (const v of out.values()) { const o = this.unitAt(v.x, v.y); if (o && o !== u) v.occ = true; } // se puede cruzar, no terminar
     return out;
   }
+  // ───── ataques de oportunidad (reglas 5e) ─────
+  canReact(u: Unit) { return !u.reactionUsed && !this.incapacitated(u) && u.sprite !== 'wall' && !u.fled; }
+  /** Enemigos con reacción que pueden atacar a `u` al pasar de `from` a `to` (salir de su alcance de 5 pies sin Desengancharse). */
+  provokers(u: Unit, from: P, to: P): Unit[] {
+    if (this.has(u, 'disengaged')) return [];
+    return this.foesOf(u).filter(h => this.canReact(h) && cheb(from, h) <= 1 && cheb(to, h) > 1);
+  }
+  /** Cuántos ataques de oportunidad provocaría recorrer este camino (para avisar al jugador). */
+  opportunityCount(u: Unit, path: P[]): number {
+    let n = 0; const used = new Set<number>();
+    for (let i = 1; i < path.length; i++) for (const h of this.provokers(u, path[i - 1], path[i])) if (!used.has(h.uid)) { used.add(h.uid); n++; }
+    return n;
+  }
+  opportunity(h: Unit, u: Unit) {
+    let ok = false;
+    if (h.pcId || h.weapons.length) {
+      const w = h.weapons.find(x => !x.ranged && !x.bonusAction);
+      if (w) { h.reactionUsed = true; this.log(`⚔ ${h.name} aprovecha un ataque de oportunidad contra ${u.name}.`, 'sys'); const sv = [h.actionUsed, h.bonusUsed, h.extraActions, h.attacksMade] as const; h.actionUsed = false; h.extraActions = 0; h.attacksMade = 0; this.weaponAttack(h, w, u); [h.actionUsed, h.bonusUsed, h.extraActions, h.attacksMade] = sv as any; ok = true; }
+    }
+    if (!ok) {
+      const a = h.actions.find(x => x.kind === 'melee' && !x.recharge && !x.aoe && !x.aoeSelf);
+      if (a) { h.reactionUsed = true; this.log(`⚔ ${h.name} aprovecha un ataque de oportunidad contra ${u.name}.`, 'sys'); this.monsterAct(h, a, u); }
+    }
+  }
+  /** Camino (con la casilla de salida) hasta (x, y) según el mapa de alcance `r`. */
+  pathTo(r: ReturnType<Battle['reach']>, x: number, y: number): P[] {
+    const path: P[] = []; let k: string | undefined = key(x, y);
+    while (k) { const n: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: n.x, y: n.y }); k = n.prev; }
+    return path;
+  }
   move(u: Unit, x: number, y: number): Res {
     const r = this.reach(u); const dest = r.get(key(x, y));
     if (!dest || dest.occ || (x === u.x && y === u.y)) return { ok: false, msg: 'No podés llegar allí.' };
     const path: P[] = []; let k: string | undefined = key(x, y);
     while (k) { const n: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: n.x, y: n.y }); k = n.prev; }
-    u.moveLeft -= dest.cost; u.x = x; u.y = y;
-    this.emit({ t: 'move', uid: u.uid, path });
-    const tile = this.grid.at(x, y);
+    // Se recorre casilla a casilla: al salir del alcance de un enemigo con reacción, este ataca; si cae, el movimiento se corta ahí.
+    let cur = path[0], spent = 0; const trail: P[] = [path[0]];
+    for (let i = 1; i < path.length; i++) {
+      const nxt = path[i];
+      for (const h of this.provokers(u, cur, nxt)) { u.x = cur.x; u.y = cur.y; this.opportunity(h, u); if (u.dead || u.down || this.over) break; }
+      if (u.dead || u.down || this.over) break;
+      spent += u.fly ? 1 : this.grid.at(nxt.x, nxt.y)!.cost; cur = nxt; trail.push(nxt);
+    }
+    const stopped = cur.x !== x || cur.y !== y;
+    u.moveLeft = stopped ? 0 : u.moveLeft - dest.cost; u.x = cur.x; u.y = cur.y;
+    if (trail.length > 1) this.emit({ t: 'move', uid: u.uid, path: trail });
+    if (u.dead || u.down) return { ok: true };
+    const tile = this.grid.at(u.x, u.y);
     if (tile?.kind === 'hazard' && !u.fly) { const rr = roll('1d6'); this.log(`${u.name} pisa terreno peligroso (${rr.total}).`, 'dmg'); this.damage(u, rr.total, 'fire', undefined); }
     if (this.cube) stepTrap(this, u);
     if (this.goal && u.pcId && !u.dead && u.x === this.goal.x && u.y === this.goal.y) this.win(this.goalMsg || 'Alcanzan la salida.');
@@ -256,6 +297,9 @@ export class Battle {
     if (this.has(t, 'blinded') || this.has(t, 'restrained') || this.has(t, 'stunned') || this.has(t, 'paralyzed') || t.down) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) <= 1) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) > 1) dis = true;
+    if (this.has(t, 'helped')) { const hs = this.status(t, 'helped')!; const hp = hs.src ? this.byUid(hs.src) : undefined; if (hp && hp.side === a.side && hp !== a) { adv = true; this.removeStatus(t, 'helped'); } }
+    // Atacar a distancia con un enemigo adyacente (que pueda actuar) impone desventaja.
+    if (o.ranged && this.foesOf(a).some(f => f.sprite !== 'wall' && !f.fled && !this.incapacitated(f) && cheb(f, a) <= 1)) dis = true;
     if (a.traits.includes('swarm') && this.units.some(u => u !== a && !u.dead && u.side === a.side && u.traits.includes('swarm') && cheb(u, a) <= 2)) adv = true;
     if (a.traits.includes('assassinate') && !t.acted) adv = true;
     if (this.has(a, 'poisoned') || this.has(a, 'blinded') || this.has(a, 'prone') || this.has(a, 'restrained') || this.has(a, 'disadvNext')) dis = true;
