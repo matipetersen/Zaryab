@@ -1,7 +1,7 @@
 // Audio procedural: música generativa por ambiente y efectos, todo sintetizado con WebAudio (sin archivos ni licencias).
 // Escala principal: re frigio dominante (D Eb F# G A Bb C), el «sabor» árabe/desértico. Se activa con el primer gesto del usuario.
 export type Mood = 'off' | 'menu' | 'desert' | 'city' | 'tense' | 'battle' | 'boss' | 'sacred';
-export type Sfx = 'click' | 'hit' | 'crit' | 'miss' | 'death' | 'heal' | 'arrow' | 'slash' | 'spell' | 'boom' | 'step' | 'turn' | 'levelup' | 'coin' | 'choice';
+export type Sfx = 'click' | 'hit' | 'crit' | 'miss' | 'death' | 'heal' | 'arrow' | 'slash' | 'spell' | 'boom' | 'step' | 'turn' | 'levelup' | 'coin' | 'choice' | 'door';
 
 const SCALE = [0, 1, 4, 5, 7, 8, 10]; // frigio dominante sobre la tónica
 const ROOT = 146.83; // D3
@@ -79,6 +79,7 @@ class AudioEngine {
       case 'boom': this.noise(t, .8, .6, 'lowpass', 900, .8, F, 70); this.tone(55, t, .7, .5, 'sine', 300, F); break;
       case 'heal': for (let i = 0; i < 3; i++) this.tone(hz([0, 2, 4][i], 2), t + i * .09, .55, .07, 'sine', 5000, F); break;
       case 'death': this.tone(130, t, .8, .25, 'sawtooth', 500, F); this.noise(t, .5, .2, 'lowpass', 700, .8, F, 90); break;
+      case 'door': this.noise(t, .5, .22, 'lowpass', 700, 1.4, F, 160); this.tone(70, t + .02, .35, .18, 'sawtooth', 300, F); break;
       case 'step': this.noise(t, .05, .08, 'lowpass', 500, 1, F); break;
       case 'turn': this.tone(hz(4, 1), t, .5, .06, 'sine', 3000, F); break;
       case 'coin': this.tone(1320, t, .12, .07, 'square', 3500, F); this.tone(1760, t + .07, .25, .07, 'square', 3500, F); break;

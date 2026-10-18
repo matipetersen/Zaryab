@@ -35,6 +35,8 @@ interface Ring { x: number; y: number; t: number; color: string; max: number }
 
 import { assetImg } from './assets';
 import { audio } from './audio';
+import { drawPC } from './pcSprites';
+import { floorTex, blockTex } from './textures';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
@@ -75,9 +77,17 @@ export class Renderer {
   setBattle(b: Battle, map: MapDef) {
     this.b = b; this.map = map; this.rot = 0; this.rotT = -1; this.rotFade = 0; this.pal = PALS[map.theme] ?? PALS.alley; this.amb = ambienceFor(map.id); this.weather.set(this.amb.weather, this.W, this.H); this.vis.clear(); this.floats = []; this.parts = []; this.overlays = [];
     for (const u of b.units) this.vis.set(u.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 0, dead: 0, wobble: Math.random() * 6 });
-    this.zoom = 1; this.panX = 0; this.panY = 0; this.resize();
+    this.zoom = 1; this.panX = 0; this.panY = 0; this.fogA = new Float32Array(0); this.updateFog(0, true); this.resize();
   }
   // ---------- proyección ----------
+  /** Niebla de guerra: opacidad actual de cada casilla (0 = visible) y si está activa (se apaga en el despliegue). */
+  fogA = new Float32Array(0); fogActive = true;
+  fogTarget(x: number, y: number, vis: Set<string>) { return vis.has(x + ',' + y) ? 0 : this.b!.seen.has(x + ',' + y) ? .55 : .94; }
+  private updateFog(dt: number, snap = false) {
+    const b = this.b; if (!b) return; const g = b.grid; if (this.fogA.length !== g.w * g.h) this.fogA = new Float32Array(g.w * g.h); const on = b.fogOn && this.fogActive; const vis = on ? b.visibleTiles() : new Set<string>(); const k = snap ? 1 : Math.min(1, dt * 7);
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const i = y * g.w + x; const tgt = on ? this.fogTarget(x, y, vis) : 0; this.fogA[i] += (tgt - this.fogA[i]) * k; }
+  }
+  fogAt(x: number, y: number) { const g = this.b?.grid; return g && this.fogA.length === g.w * g.h ? this.fogA[Math.round(y) * g.w + Math.round(x)] : 0; }
   /** Orientación de la cámara en pasos de 90° (como en Tactics Ogre). 0 = norte arriba. */
   rot = 0; private rotTarget = 0; private rotT = -1; rotFade = 0;
   rotate(dir: 1 | -1) { if (this.rotT >= 0) return; this.rotTarget = (this.rot + dir + 4) % 4; this.rotT = 0; }
@@ -118,6 +128,7 @@ export class Renderer {
     }
   }
   tileFx(e: Extract<BEvent, { t: 'tile' }>) {
+    if (e.kind === 'door') { audio.sfx('door'); this.burst(e.x, e.y, '#b89a6a', 10); this.shake = Math.max(this.shake, .15); return; }
     const col = e.kind === 'boom' || e.kind === 'ignite' ? '#ff8a3d' : e.kind === 'build' ? '#b9c4d8' : e.kind === 'burnout' ? '#6a6a6a' : '#b89a6a';
     this.burst(e.x, e.y, col, e.kind === 'boom' ? 30 : 14); if (e.kind === 'boom') { this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 1.6 }); this.shake = 1; } else if (e.kind === 'break') this.shake = Math.max(this.shake, .4);
   }
@@ -163,6 +174,7 @@ export class Renderer {
   update(dt: number) {
     if (!this.b) return;
     if (this.rotT >= 0) { this.rotT += dt / .34; this.rotFade = 1 - Math.abs(2 * Math.min(1, this.rotT) - 1); if (this.rotT >= .5 && this.rot !== this.rotTarget) this.rot = this.rotTarget; if (this.rotT >= 1) { this.rotT = -1; this.rotFade = 0; } }
+    this.updateFog(dt);
     this.weather.update(dt); for (const f of this.flashes) f.t += dt * 2.6; this.flashes = this.flashes.filter(f => f.t < 1);
     if (this.freeze > 0) { this.freeze -= dt; return; } // «hit stop»: un instante de pausa en el impacto
     for (const [uid, v] of this.vis) {
@@ -186,7 +198,7 @@ export class Renderer {
     c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); }
   }
   /** Textura externa para las caras del bloque que se está dibujando (si hay arte cargado). */
-  boxTex: HTMLImageElement | null = null;
+  boxTex: HTMLImageElement | HTMLCanvasElement | null = null;
   overlay(x: number, y: number, s: number, hh: number, dark: number) {
     const img = this.boxTex; if (!img) return; const c = this.ctx; c.save(); c.clip(); c.drawImage(img, x - TW / 2 * s, y - hh - TH / 2 * s, TW * s, TH * s * 1.5 + hh); if (dark) { c.fillStyle = `rgba(0,0,0,${dark})`; c.fillRect(x - TW * s, y - hh - TH * s, TW * 2 * s, TH * 3 * s + hh); } c.restore();
   }
@@ -207,8 +219,8 @@ export class Renderer {
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo
     { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; this.drawFloor(q.x, q.y, t.kind, s); } }
-    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
-    this.drawBlockShadows(s);
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj && this.fogA[y * g.w + x] < .5) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
+    this.drawBlockShadows(s); this.drawFloorFog(s);
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
     this.drawLinks(s); this.drawField(s);
@@ -216,8 +228,8 @@ export class Renderer {
     // objetos y unidades ordenados por profundidad
     type D = { depth: number; fn: () => void };
     const items: D[] = [];
-    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'wall' || t.kind === 'cover') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.1, fn: () => this.drawBlock(x, y, t.kind, s) }); } }
-    for (const u of b.units) { const v = this.vis.get(u.uid); if (!v || v.alpha <= 0.02) continue; { const rq = this.rv(v.x, v.y); items.push({ depth: rq.x + rq.y + 0.5, fn: () => this.drawUnit(u, v, s) }); } }
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.1, fn: () => { this.drawBlock(x, y, t.kind, s); this.fogBlock(x, y, t.kind, s); } }); } }
+    for (const u of b.units) { const v = this.vis.get(u.uid); if (!v || v.alpha <= 0.02) continue; { const rq = this.rv(v.x, v.y); const fa = u.side === 'pc' ? 0 : this.fogAt(v.x, v.y); if (fa > .6) continue; items.push({ depth: rq.x + rq.y + 0.5, fn: () => { if (fa > .02) { const a0 = v.alpha; v.alpha *= 1 - fa / .6; this.drawUnit(u, v, s); v.alpha = a0; } else this.drawUnit(u, v, s); } }); } }
     items.sort((a, b2) => a.depth - b2.depth); for (const it of items) it.fn();
     // proyectiles, anillos, partículas
     for (const p of this.projs) {
@@ -250,13 +262,13 @@ export class Renderer {
   }
   drawFloor(x: number, y: number, kind: string, s: number) {
     const P = this.pal, h = kind === 'high' ? ELEV : 0; const p = this.proj(x, y, h);
-    if (kind === 'wall' || kind === 'cover') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
-    if (kind === 'high') { this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? null; this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); this.boxTex = null; return; }
+    if (kind === 'wall' || kind === 'cover' || kind === 'door') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
+    if (kind === 'high') { this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', 'high'); this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); this.boxTex = null; return; }
     let col = (x + y) % 2 ? P.f1 : P.f2;
     if (kind === 'diff') col = P.diff; else if (kind === 'water') col = P.water; else if (kind === 'hazard') col = P.hazard; else if (kind === 'mark') col = (x + y) % 2 ? P.f1 : P.f2;
     this.diamond(p.x, p.y, s, col, P.edge);
-    const c = this.ctx; const th = this.map?.theme ?? ''; const tex = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : '');
-    if (tex) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if ((x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
+    const c = this.ctx; const th = this.map?.theme ?? ''; const ext = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : ''); const tex = ext ?? (kind === 'floor' || kind === 'mark' ? { img: floorTex(this.pal, th, x, y) } : null);
+    if (tex) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if (ext && (x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
     if (kind === 'diff') { c.strokeStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(p.x - 10 * s, p.y + 14 * s); c.lineTo(p.x + 6 * s, p.y + 10 * s); c.moveTo(p.x - 4 * s, p.y + 22 * s); c.lineTo(p.x + 12 * s, p.y + 18 * s); c.stroke(); }
     if (kind === 'water') { c.strokeStyle = 'rgba(255,255,255,.28)'; c.beginPath(); const wv = Math.sin(this.time * 2 + x + y) * 2; c.moveTo(p.x - 14 * s, p.y + 16 * s + wv); c.quadraticCurveTo(p.x, p.y + 10 * s + wv, p.x + 14 * s, p.y + 16 * s + wv); c.stroke(); }
     if (kind === 'hazard' && this.b!.grid.at(x, y)?.ch === 'f') { for (let i = 0; i < 3; i++) { const fx = p.x + (i - 1) * 11 * s, ph = this.time * 7 + i * 2 + x; const h = (8 + Math.sin(ph) * 3 + i % 2 * 4) * s; c.fillStyle = i === 1 ? '#ffd23f' : '#ff7a2a'; c.beginPath(); c.moveTo(fx - 5 * s, p.y + 22 * s); c.quadraticCurveTo(fx, p.y + 22 * s - h * 2.4, fx + 5 * s, p.y + 22 * s); c.fill(); } }
@@ -264,10 +276,11 @@ export class Renderer {
     if (kind === 'mark') { const pulse = .5 + .3 * Math.sin(this.time * 3 + x); c.strokeStyle = `rgba(142,68,173,${pulse + .3})`; c.lineWidth = 2; c.beginPath(); c.ellipse(p.x, p.y + 16 * s, 20 * s, 10 * s, 0, 0, 6.28); c.stroke(); c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 10 * s, p.y + 16 * s); c.lineTo(p.x, p.y + 26 * s); c.lineTo(p.x - 10 * s, p.y + 16 * s); c.closePath(); c.stroke(); c.lineWidth = 1; }
   }
   drawBlock(x: number, y: number, kind: string, s: number) {
-    this.boxTex = assetImg('tiles', `${this.map?.theme}_${kind}`)?.img ?? null; try { this.drawBlock0(x, y, kind, s); } finally { this.boxTex = null; }
+    this.boxTex = assetImg('tiles', `${this.map?.theme}_${kind}`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', kind as 'wall' | 'cover', this.b!.grid.at(x, y)?.ch ?? ''); try { this.drawBlock0(x, y, kind, s); } finally { this.boxTex = null; }
   }
   drawBlock0(x: number, y: number, kind: string, s: number) {
     const P = this.pal; const p = this.proj(x, y, 0);
+    if (kind === 'door') { this.box(p.x, p.y, s, WALL - 6, '#7a4a2c', '#3a2216', '#4e2f1c'); return; }
     if (kind === 'wall') { const g = this.b!.grid; const brittle = g.at(x, y)!.ch === 'x'; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; if (rim) { this.box(p.x, p.y, s, RIM, shade(P.wallT, .9), shade(P.wallL, .8), shade(P.wallR, .8)); return; } this.box(p.x, p.y, s, WALL, brittle ? shade(P.wallT, .85) : P.wallT, brittle ? shade(P.wallL, .9) : P.wallL, brittle ? shade(P.wallR, .9) : P.wallR); const c = this.ctx; if (brittle) { c.strokeStyle = 'rgba(0,0,0,.65)'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 12 * s, p.y + 4 * s); c.lineTo(p.x - 4 * s, p.y + 14 * s); c.lineTo(p.x - 9 * s, p.y + 24 * s); c.lineTo(p.x + 2 * s, p.y + 34 * s); c.moveTo(p.x + 12 * s, p.y + 8 * s); c.lineTo(p.x + 5 * s, p.y + 20 * s); c.stroke(); } c.strokeStyle = 'rgba(0,0,0,.18)'; for (let i = 1; i < 3; i++) { const yy = p.y + TH * s - (WALL / 3) * i * s; c.beginPath(); c.moveTo(p.x - TW / 2 * s, yy - TH / 2 * s); c.lineTo(p.x, yy); c.lineTo(p.x + TW / 2 * s, yy - TH / 2 * s); c.stroke(); } }
     else {
       const t = this.b!.grid.at(x, y)!; const c = this.ctx;
@@ -276,6 +289,20 @@ export class Renderer {
       else this.box(p.x, p.y, s, COVER, shade(P.cov, 1.25), shade(P.cov, .75), P.cov);
       if (t.hp != null && t.maxHp && t.hp < t.maxHp) { c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p.x - 6 * s, p.y + 4 * s); c.lineTo(p.x + 2 * s, p.y + 14 * s); c.lineTo(p.x - 3 * s, p.y + 22 * s); c.stroke(); }
     }
+  }
+  /** Oscurece las casillas fuera de la vista (y dibuja los marcos de las puertas abiertas). */
+  drawFloorFog(s: number) {
+    const g = this.b!.grid, c = this.ctx;
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
+      const t = g.tiles[y][x];
+      if (t.ch === 'd') { const p = this.proj(x, y, 0); const q = this.center(x, y); c.save(); for (const sx of [-1, 1]) { const px = p.x + sx * TW / 2 * s * .78, py = p.y + TH / 2 * s; c.fillStyle = '#3a2216'; c.fillRect(px - 3 * s, py - 20 * s, 6 * s, 22 * s); c.fillStyle = '#c9a458'; c.fillRect(px - 3 * s, py - 21 * s, 6 * s, 3 * s); } void q; c.restore(); }
+      const a = this.fogA[y * g.w + x]; if (a < .02 || t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door') continue; const p = this.proj(x, y, t.kind === 'high' ? ELEV : 0); this.diamond(p.x, p.y, s, `rgba(6,2,16,${a})`);
+    }
+  }
+  /** Silueta del bloque para cubrirlo con niebla. */
+  fogBlock(x: number, y: number, kind: string, s: number) {
+    const a = this.fogA[Math.round(y) * this.b!.grid.w + Math.round(x)]; if (a < .02) return; const g = this.b!.grid, c = this.ctx, p = this.proj(x, y, 0); const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1;
+    const hh = (kind === 'wall' ? (rim ? RIM : WALL) : kind === 'door' ? WALL - 6 : COVER + 4) * s; c.fillStyle = `rgba(6,2,16,${a})`; c.beginPath(); c.moveTo(p.x, p.y - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s - hh); c.closePath(); c.fill();
   }
   /** Sombras que muros y cajas proyectan sobre el suelo, siempre hacia el mismo lado de la pantalla. */
   drawBlockShadows(s: number) {
@@ -335,6 +362,7 @@ export class Renderer {
   }
   sprite(u: Unit) {
     const art = assetImg('sprites', u.pcId ?? u.id); if (art) { const c0 = this.ctx; const fw = art.img.naturalWidth / art.frames, fh = art.img.naturalHeight, H = 54, W = H * fw / fh; const f = art.frames > 1 ? Math.floor(this.time * 7 + u.uid) % art.frames : 0; c0.drawImage(art.img, f * fw, 0, fw, fh, -W / 2, -H, W, H); return; }
+    if (u.pcId && drawPC(this.ctx, u.pcId, this.time + u.uid)) return;
     const c = this.ctx; const col = u.color; const dark = shade(col, .55), light = shade(col, 1.3);
     const pcId = u.pcId; const skin = pcId === 'zyrthar' ? '#4d4a6a' : pcId === 'romain' ? '#b8453a' : pcId === 'pact' ? '#efe6c8' : '#d2a679';
     switch (u.sprite) {

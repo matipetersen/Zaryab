@@ -13,11 +13,13 @@ export const LEGEND: Record<string, Omit<Tile, 'ch'>> = {
   '~': { kind: 'water', h: 0, cost: 2, blocked: false },
   '=': { kind: 'high', h: 1, cost: 2, blocked: false },
   '*': { kind: 'mark', h: 0, cost: 1, blocked: false },
+  'D': { kind: 'door', h: 2, cost: 1, blocked: false },   // puerta cerrada: tapa la vista y se abre al cruzarla
+  'd': { kind: 'floor', h: 0, cost: 1, blocked: false },  // puerta abierta
 };
 export interface P { x: number; y: number }
 
 export class Grid {
-  w: number; h: number; tiles: Tile[][] = [];
+  w: number; h: number; tiles: Tile[][] = []; /** Cambia con cada modificación del terreno (invalida la visión en caché). */ ver = 0;
   spawns: { pc: P[]; foe: P[]; ally: P[]; wave: P[] } = { pc: [], foe: [], ally: [], wave: [] };
   marks: P[] = [];
   constructor(rows: string[], objs: { x: number; y: number; id: string }[] = []) {
@@ -43,7 +45,7 @@ export class Grid {
   }
   /** Sustituye una casilla (terreno modificable). */
   setTile(x: number, y: number, ch: string, turns?: number) {
-    const t = LEGEND[ch]; if (!this.inb(x, y) || !t) return; this.tiles[y][x] = { ch, ...t, ...(turns != null ? { turns } : {}) };
+    const t = LEGEND[ch]; if (!this.inb(x, y) || !t) return; this.ver++; this.tiles[y][x] = { ch, ...t, ...(turns != null ? { turns } : {}) };
   }
   inb(x: number, y: number) { return x >= 0 && y >= 0 && x < this.w && y < this.h; }
   at(x: number, y: number): Tile | undefined { return this.inb(x, y) ? this.tiles[y][x] : undefined; }
@@ -59,7 +61,7 @@ export class Grid {
       if (e2 < dx) { err += dx; y0 += sy; }
       if (x0 === x1 && y0 === y1) break;
       const t = this.at(x0, y0)!;
-      if (t.kind === 'wall') return { visible: false, cover: 5 };
+      if (t.kind === 'wall' || t.kind === 'door') return { visible: false, cover: 5 };
       if (t.kind === 'cover') cover = 2;
       if (blockers && blockers(x0, y0)) return { visible: false, cover: 5 };
     }

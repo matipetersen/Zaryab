@@ -40,7 +40,9 @@ export class BattleUI {
     // En pantallas pequeñas, las columnas laterales pasan a ser cajones que se abren con estos botones.
     const drawer = (side: HTMLElement, other: HTMLElement) => () => { const open = !side.classList.contains('open'); other.classList.remove('open'); side.classList.toggle('open', open); };
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
-    stage.append(h('div', { id: 'rotbtns' }, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
+    let fogPref = true; try { fogPref = localStorage.getItem('zaryab.fog') !== '0'; } catch { /* */ } b.fogOn = fogPref;
+    const fogBtn = h('button', { class: `dbtn ${b.fogOn ? '' : 'off'}`, title: 'Niebla de guerra: solo se ve lo que la compañía alcanza a ver', onClick: () => { b.fogOn = !b.fogOn; try { localStorage.setItem('zaryab.fog', b.fogOn ? '1' : '0'); } catch { /* */ } fogBtn.classList.toggle('off', !b.fogOn); this.renderPanels(); } }, '👁');
+    stage.append(h('div', { id: 'rotbtns' }, fogBtn, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
     stage.append(dBtns); this.coach = new Coach(stage); const help = h('button', { class: 'dbtn', title: 'Guía rápida', onClick: () => this.coach?.open() }, '?'); dBtns.append(help);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
     this.root.id = 'battle'; this.root.className = 'screen';
@@ -67,9 +69,9 @@ export class BattleUI {
   coach?: Coach; deployDone?: () => void; deploySel = -1;
   async deployPhase() {
     const pcs = this.b.units.filter(u => u.pcId); const spawns = this.b.grid.spawns.pc;
-    if (pcs.length < 2 || this.b.cube || this.b.scripts.length || spawns.length < 2 || (window as any).__fast) return;
-    this.mode = { k: 'deploy' }; this.deploySel = -1; this.deployOverlays(); this.renderAll();
-    await new Promise<void>(res => { this.deployDone = res; });
+    if (pcs.length < 2 || this.b.cube || this.b.scripted || spawns.length < 2 || (window as any).__fast) return;
+    this.mode = { k: 'deploy' }; this.deploySel = -1; this.r.fogActive = false; this.deployOverlays(); this.renderAll();
+    await new Promise<void>(res => { this.deployDone = res; }); this.r.fogActive = true; this.renderPanels();
     this.mode = { k: 'idle' }; this.r.overlays = []; this.deploySel = -1;
   }
   deployOverlays() {
@@ -142,6 +144,7 @@ export class BattleUI {
       this.clickTile(t);
     });
     this.keyH = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.tagName !== 'SELECT') { if (e.key === 'q' || e.key === 'Q' || e.key === 'ArrowLeft') { this.r.rotate(-1); return; } if (e.key === 'r' || e.key === 'R' || e.key === 'ArrowRight') { this.r.rotate(1); return; } } // la cámara se puede girar siempre, incluso en turnos ajenos
       if (!this.cur || this.mode.k === 'busy') return; if ((e.target as HTMLElement)?.tagName === 'SELECT') return;
       if (e.key === 'Escape') { this.setMode({ k: 'idle' }); }
       else if (e.key === 'm' || e.key === 'M') this.setMode({ k: 'move' });
@@ -149,13 +152,13 @@ export class BattleUI {
       else if (e.key === 'h' || e.key === 'H') this.openAbilityMenu();
       else if (e.key === 'i' || e.key === 'I') this.openItemMenu();
       else if (e.key === 'f' || e.key === 'F') this.setMode({ k: 'interact' });
-      else if (e.key === 'q' || e.key === 'Q' || e.key === 'ArrowLeft') this.r.rotate(-1);
-      else if (e.key === 'r' || e.key === 'R' || e.key === 'ArrowRight') this.r.rotate(1);
       else if (e.key === ' ' || e.key === 'e' || e.key === 'E') { e.preventDefault(); this.endTurn(); }
     };
     window.addEventListener('keydown', this.keyH);
   }
-  unitAtTile(t: P) { return this.b.unitAt(t.x, t.y); }
+  unitAtTile(t: P) { const u = this.b.unitAt(t.x, t.y); return u && (!this.r.fogActive || this.b.isSeen(u)) ? u : undefined; }
+  /** ¿Se ve a esta unidad (o la niebla está apagada)? */
+  seen(u: Unit) { return !this.r.fogActive || this.b.isSeen(u); }
   clickTile(t: P) {
     if (this.mode.k === 'deploy') { this.deployClick(t); return; }
     const u = this.cur; const under = this.unitAtTile(t);
@@ -224,7 +227,7 @@ export class BattleUI {
     this.root.classList.toggle('late', this.b.round > 1); this.renderObjective(); this.renderPanels(); this.updateOverlays(); }
   renderPanels() { this.renderLeft(); this.renderRight(); this.renderBar(); this.renderTracker(); }
   card(u: Unit): HTMLElement {
-    const b = this.b; const hp = Math.max(0, u.hp / u.maxHp) * 100;
+    const b = this.b; if (u.side === 'foe' && !u.dead && !this.seen(u)) return h('div', { class: 'unitcard unseen', title: 'Fuera de la vista' }, h('span', { class: 'avatar', style: { width: '38px', height: '38px', background: '#2a2236' } }, '?'), h('div', { class: 'info' }, h('div', { class: 'nm' }, h('span', {}, 'Sin ver')), h('div', { class: 'small' }, 'Fuera de la línea de visión'))); const hp = Math.max(0, u.hp / u.maxHp) * 100;
     const slots = Object.keys(u.resMax).filter(k => k.startsWith('slot')).map(k => `${k.replace('slot', 'N')}:${u.res[k]}/${u.resMax[k]}`).join(' ');
     const el = h('div', { class: `unitcard ${b.cur === u ? 'cur' : ''} ${this.selUid === u.uid ? 'sel' : ''} ${u.dead ? 'dead' : ''}`, onClick: () => this.select(u) },
       avatar(u.glyph, u.color, undefined, 38),
@@ -241,7 +244,7 @@ export class BattleUI {
   }
   renderTracker() {
     const b = this.b; this.tracker.innerHTML = ''; this.tracker.append(h('span', { class: 'rd' }, `Ronda ${b.round}`));
-    b.order.forEach(u => { const el = h('div', { class: `tk ${b.cur === u ? 'cur' : ''} ${u.dead ? 'dead' : ''}`, title: `${u.name} (${u.initiative})`, style: { background: u.color, borderColor: u.side === 'pc' ? '#5be37d' : '#e5584b' }, onClick: () => this.select(u) }, u.glyph); this.tracker.append(el); });
+    b.order.forEach(u => { const hid = u.side === 'foe' && !u.dead && !this.seen(u); const el = h('div', { class: `tk ${b.cur === u ? 'cur' : ''} ${u.dead ? 'dead' : ''}`, title: hid ? 'Fuera de la vista' : `${u.name} (${u.initiative})`, style: { background: hid ? '#2a2236' : u.color, borderColor: u.side === 'pc' ? '#5be37d' : '#e5584b' }, onClick: () => { if (!hid) this.select(u); } }, hid ? '?' : u.glyph); this.tracker.append(el); });
   }
   renderRight() {
     const b = this.b; const u = b.byUid(this.selUid) ?? b.cur; const R = this.right; R.innerHTML = ''; if (!u) return;

@@ -65,7 +65,7 @@ export interface Unit {
   extraAtk?: number; pcId?: string; summoned?: boolean; turnsTaken: number; portrait?: string; fled?: boolean; initBonus?: number;
 }
 
-export interface Tile { obj?: string; ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark'; h: number; cost: number; blocked: boolean; hp?: number; maxHp?: number; flam?: boolean; boom?: boolean; turns?: number }
+export interface Tile { obj?: string; ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark' | 'door'; h: number; cost: number; blocked: boolean; hp?: number; maxHp?: number; flam?: boolean; boom?: boolean; turns?: number }
 export interface MapDef {
   id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine' | 'garden' | 'crater' | 'market' | 'ruins' | 'sanctum';
   intro?: string; objective: string; marks?: string[]; objs?: { x: number; y: number; id: string }[];
@@ -76,7 +76,7 @@ export type BEvent =
   | { t: 'move'; uid: number; path: { x: number; y: number }[] }
   | { t: 'hit'; uid: number } | { t: 'death'; uid: number } | { t: 'spawn'; uid: number }
   | { t: 'fx'; kind: string; x: number; y: number; x2?: number; y2?: number }
-  | { t: 'tile'; kind: 'break' | 'ignite' | 'build' | 'burnout' | 'boom'; x: number; y: number }
+  | { t: 'tile'; kind: 'break' | 'ignite' | 'build' | 'burnout' | 'boom' | 'door'; x: number; y: number }
   | { t: 'snap'; uid: number; x: number; y: number }
   | { t: 'turn'; uid: number } | { t: 'round'; n: number }
   | { t: 'end'; result: 'victory' | 'defeat' };

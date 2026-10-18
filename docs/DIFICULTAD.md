@@ -34,3 +34,6 @@ Medido con el bot (60 partidas por casilla, media de cinco jefes): 0 pts ≈ 43 
 
 ## Recalibración tras giros y terreno vivo
 Los giros por combate, el terreno vivo (derrumbes, fuego, pinches, inundaciones, tormentas) y los altares bajaron las victorias del bot; los 36 combates se recalibraron (N = 40 por casilla; rango final 30–68 %, la mayoría 45–57 %). Varreth perdió su refuerzo (quedó como furia al 50 % de vida) porque no era ganable ni con potencia ×42. Retratos: emblemas de game-icons.net (CC BY 3.0), ver `CREDITS.md`.
+
+## Recalibración tras las puertas (v0.5)
+Al agregar puertas a la cripta, la iglesia y Medinat se recalibraron `al_mazhar`, `dahhak_final` y las tres revueltas (N = 40 por casilla; con ese tamaño de muestra el error ronda ±8 puntos, así que 50–68 % es el mismo resultado dentro del ruido).

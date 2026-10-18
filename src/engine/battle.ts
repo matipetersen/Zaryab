@@ -112,6 +112,17 @@ export class Battle {
   chem: Record<string, number> = {};
   // ───── giros de objetivo y terreno vivo (ver twists.ts) ─────
   level = 3; twist?: { name: string; text: string }; objectives: (Objective & { def?: BonusDef })[] = []; telegraphs: Tele[] = []; zones: Zone[] = []; revert: { x: number; y: number; ch: string; round: number }[] = [];
+  /** Niebla de guerra: la compañía solo ve lo que alcanza su línea de visión (muros y puertas cerradas la cortan). Solo afecta a lo que se muestra, no a las reglas. */
+  fogOn = true; visionR = 10; scripted = false; seen = new Set<string>(); private _visSig = ''; private _vis = new Set<string>();
+  visibleTiles(): Set<string> {
+    const g = this.grid, R = this.visionR, eyes = this.units.filter(u => u.side === 'pc' && u.sprite !== 'wall' && !u.dead && !u.down);
+    const sig = g.ver + '|' + eyes.map(u => u.x + ',' + u.y).join(';'); if (sig === this._visSig) return this._vis;
+    const vis = new Set<string>(); for (const e of eyes) for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const x = e.x + dx, y = e.y + dy; if (!g.inb(x, y) || dx * dx + dy * dy > R * R + R) continue; if (g.los(e, { x, y }).visible) vis.add(x + ',' + y); }
+    this._visSig = sig; this._vis = vis; for (const k of vis) this.seen.add(k); return vis;
+  }
+  /** ¿La compañía ve a esta unidad? (los aliados siempre se ven). */
+  isSeen(u: Unit) { return !this.fogOn || u.side === 'pc' || this.visibleTiles().has(u.x + ',' + u.y); }
+  openDoor(x: number, y: number, u?: Unit) { const t = this.grid.at(x, y); if (!t || t.ch !== 'D') return; this.grid.setTile(x, y, 'd'); this.emit({ t: 'tile', kind: 'door', x, y }); this.log(`${u ? u.name + ' abre' : 'Se abre'} la puerta.`, 'sys'); }
   mods = { stormFrom: 0, stormUntil: 0 }; hazardKills = 0; hazMode = false; tilesBroken = 0; everDown = new Set<string>(); killRound: Record<string, number> = {}; allyUids: number[] = []; watchers: ((b: Battle) => void)[] = [];
   /** Rondas que cada par pasó a ≤ 2 casillas (para subir su relación al terminar). */
   together: Record<string, number> = {}; roundsSeen = 0;
@@ -353,6 +364,7 @@ export class Battle {
       const nxt = path[i];
       for (const h of this.provokers(u, cur, nxt)) { u.x = cur.x; u.y = cur.y; this.opportunity(h, u); if (u.dead || u.down || this.over) break; }
       if (u.dead || u.down || this.over) break;
+      if (this.grid.at(nxt.x, nxt.y)?.ch === 'D') this.openDoor(nxt.x, nxt.y, u);
       u.x = nxt.x; u.y = nxt.y; this.triggerReady(u, cur, nxt); u.x = cur.x; u.y = cur.y;
       if (u.dead || u.down || this.over) break;
       spent += u.fly ? 1 : this.grid.at(nxt.x, nxt.y)!.cost; cur = nxt; trail.push(nxt);
