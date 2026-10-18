@@ -2,6 +2,8 @@ import type { Battle } from '../engine/battle';
 import type { Unit, BEvent, MapDef } from '../engine/types';
 import type { P } from '../engine/grid';
 
+/** Dirección (en pantalla) hacia donde caen las sombras: la luz viene de arriba a la izquierda. */
+const SHADOW_DIR = { x: .85, y: .35 };
 const TW = 64, TH = 32, ELEV = 14, WALL = 34, COVER = 18, RIM = 12, US = 1.35;
 export interface Overlay { x: number; y: number; kind: 'move' | 'atk' | 'ally' | 'aoe' | 'sel' | 'path' | 'range' | 'mark' }
 
@@ -71,16 +73,25 @@ export class Renderer {
     this.W = r.width; this.H = r.height; this.canvas.width = r.width * this.dpr; this.canvas.height = r.height * this.dpr; this.weather.set(this.amb.weather, this.W, this.H);
   }
   setBattle(b: Battle, map: MapDef) {
-    this.b = b; this.map = map; this.pal = PALS[map.theme] ?? PALS.alley; this.amb = ambienceFor(map.id); this.weather.set(this.amb.weather, this.W, this.H); this.vis.clear(); this.floats = []; this.parts = []; this.overlays = [];
+    this.b = b; this.map = map; this.rot = 0; this.rotT = -1; this.rotFade = 0; this.pal = PALS[map.theme] ?? PALS.alley; this.amb = ambienceFor(map.id); this.weather.set(this.amb.weather, this.W, this.H); this.vis.clear(); this.floats = []; this.parts = []; this.overlays = [];
     for (const u of b.units) this.vis.set(u.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 0, dead: 0, wobble: Math.random() * 6 });
     this.zoom = 1; this.panX = 0; this.panY = 0; this.resize();
   }
   // ---------- proyección ----------
-  scale() { const g = this.b!.grid; const w = (g.w + g.h) * TW / 2, h = (g.w + g.h) * TH / 2 + WALL; return Math.min(this.W / (w + 80), this.H / (h + 80)) * this.zoom; }
+  /** Orientación de la cámara en pasos de 90° (como en Tactics Ogre). 0 = norte arriba. */
+  rot = 0; private rotTarget = 0; private rotT = -1; rotFade = 0;
+  rotate(dir: 1 | -1) { if (this.rotT >= 0) return; this.rotTarget = (this.rot + dir + 4) % 4; this.rotT = 0; }
+  /** Dimensiones de la cuadrícula tal como se ven (se intercambian con 90° y 270°). */
+  vdims() { const g = this.b!.grid; return this.rot % 2 ? { w: g.h, h: g.w } : { w: g.w, h: g.h }; }
+  /** Casilla lógica → casilla vista (acepta fracciones: sirve para unidades en movimiento). */
+  rv(x: number, y: number): P { const g = this.b!.grid; switch (this.rot) { case 1: return { x: g.h - 1 - y, y: x }; case 2: return { x: g.w - 1 - x, y: g.h - 1 - y }; case 3: return { x: y, y: g.w - 1 - x }; default: return { x, y }; } }
+  /** Casilla vista → casilla lógica. */
+  rinv(vx: number, vy: number): P { const g = this.b!.grid; switch (this.rot) { case 1: return { x: vy, y: g.h - 1 - vx }; case 2: return { x: g.w - 1 - vx, y: g.h - 1 - vy }; case 3: return { x: g.w - 1 - vy, y: vx }; default: return { x: vx, y: vy }; } }
+  scale() { const d = this.vdims(); const w = (d.w + d.h) * TW / 2, h = (d.w + d.h) * TH / 2 + WALL; return Math.min(this.W / (w + 80), this.H / (h + 80)) * this.zoom; }
   proj(x: number, y: number, h = 0): P {
-    const g = this.b!.grid, s = this.scale();
-    const ox = this.W / 2 + this.panX, oy = this.H / 2 + this.panY - ((g.w + g.h) * TH / 4) * s + 10;
-    return { x: ox + (x - y) * TW / 2 * s + 0, y: oy + (x + y) * TH / 2 * s - h * s + (g.h - g.w) * 0 };
+    const d = this.vdims(), s = this.scale(), v = this.rv(x, y);
+    const ox = this.W / 2 + this.panX, oy = this.H / 2 + this.panY - ((d.w + d.h) * TH / 4) * s + 10;
+    return { x: ox + (v.x - v.y) * TW / 2 * s, y: oy + (v.x + v.y) * TH / 2 * s - h * s };
   }
   tileFromMouse(mx: number, my: number): P | null {
     const g = this.b?.grid; if (!g) return null; const s = this.scale();
@@ -88,7 +99,7 @@ export class Renderer {
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
       const t = g.tiles[y][x]; const hgt = t.kind === 'high' ? ELEV : 0; const p = this.proj(x, y, hgt);
       const dx = Math.abs(mx - p.x) / (TW / 2 * s), dy = Math.abs(my - (p.y + TH / 2 * s)) / (TH / 2 * s);
-      if (dx + dy <= 1) cand.push({ x, y, d: x + y });
+      if (dx + dy <= 1) { const v = this.rv(x, y); cand.push({ x, y, d: v.x + v.y }); }
     }
     if (!cand.length) return null; cand.sort((a, b) => b.d - a.d); return { x: cand[0].x, y: cand[0].y };
   }
@@ -151,6 +162,7 @@ export class Renderer {
   // ---------- update ----------
   update(dt: number) {
     if (!this.b) return;
+    if (this.rotT >= 0) { this.rotT += dt / .34; this.rotFade = 1 - Math.abs(2 * Math.min(1, this.rotT) - 1); if (this.rotT >= .5 && this.rot !== this.rotTarget) this.rot = this.rotTarget; if (this.rotT >= 1) { this.rotT = -1; this.rotFade = 0; } }
     this.weather.update(dt); for (const f of this.flashes) f.t += dt * 2.6; this.flashes = this.flashes.filter(f => f.t < 1);
     if (this.freeze > 0) { this.freeze -= dt; return; } // «hit stop»: un instante de pausa en el impacto
     for (const [uid, v] of this.vis) {
@@ -194,8 +206,9 @@ export class Renderer {
     if (!this.b) return; const b = this.b, g = b.grid, s = this.scale();
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo
-    for (let d = 0; d < g.w + g.h - 1; d++) for (let y = 0; y < g.h; y++) { const x = d - y; if (x < 0 || x >= g.w) continue; const t = g.tiles[y][x]; this.drawFloor(x, y, t.kind, s); }
+    { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; this.drawFloor(q.x, q.y, t.kind, s); } }
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
+    this.drawBlockShadows(s);
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
     this.drawLinks(s); this.drawField(s);
@@ -203,8 +216,8 @@ export class Renderer {
     // objetos y unidades ordenados por profundidad
     type D = { depth: number; fn: () => void };
     const items: D[] = [];
-    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'wall' || t.kind === 'cover') items.push({ depth: x + y + 0.1, fn: () => this.drawBlock(x, y, t.kind, s) }); }
-    for (const u of b.units) { const v = this.vis.get(u.uid); if (!v || v.alpha <= 0.02) continue; items.push({ depth: v.x + v.y + 0.5, fn: () => this.drawUnit(u, v, s) }); }
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'wall' || t.kind === 'cover') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.1, fn: () => this.drawBlock(x, y, t.kind, s) }); } }
+    for (const u of b.units) { const v = this.vis.get(u.uid); if (!v || v.alpha <= 0.02) continue; { const rq = this.rv(v.x, v.y); items.push({ depth: rq.x + rq.y + 0.5, fn: () => this.drawUnit(u, v, s) }); } }
     items.sort((a, b2) => a.depth - b2.depth); for (const it of items) it.fn();
     // proyectiles, anillos, partículas
     for (const p of this.projs) {
@@ -226,6 +239,8 @@ export class Renderer {
     for (const p of this.parts) { c.globalAlpha = 1 - p.life / p.max; if (p.streak) { c.strokeStyle = p.color; c.lineWidth = 1.8; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x - p.vx * .035, p.y - p.vy * .035); c.stroke(); } else { c.fillStyle = p.color; c.beginPath(); c.arc(p.x, p.y, p.size, 0, 6.28); c.fill(); } } c.globalAlpha = 1;
     // clima y luces
     this.weather.draw(c, this.amb.tint ?? '#fff'); this.lighting.draw(c, this.W, this.H, this.amb, this.lights(), this.time); c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.rotFade > 0) { c.fillStyle = `rgba(8,4,16,${this.rotFade * .9})`; c.fillRect(0, 0, this.W, this.H); }
+    this.drawCompass();
     // textos flotantes
     c.textAlign = 'center'; c.font = `bold ${Math.round(18 * Math.max(.8, s))}px "Roboto Mono", monospace`;
     for (const f of this.floats) { const p = this.center(f.x, f.y, 44); const yy = p.y - f.t * 38 * s; c.globalAlpha = Math.max(0, 1 - Math.max(0, f.t - .8) / .6);
@@ -262,6 +277,21 @@ export class Renderer {
       if (t.hp != null && t.maxHp && t.hp < t.maxHp) { c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p.x - 6 * s, p.y + 4 * s); c.lineTo(p.x + 2 * s, p.y + 14 * s); c.lineTo(p.x - 3 * s, p.y + 22 * s); c.stroke(); }
     }
   }
+  /** Sombras que muros y cajas proyectan sobre el suelo, siempre hacia el mismo lado de la pantalla. */
+  drawBlockShadows(s: number) {
+    const g = this.b!.grid, c = this.ctx; c.save();
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
+      const t = g.tiles[y][x]; if (t.kind !== 'wall' && t.kind !== 'cover') continue; const p = this.proj(x, y, 0); const len = (t.kind === 'wall' ? 1.5 : .8) * TW * .5 * s;
+      for (let i = 1; i <= 3; i++) { const k = i / 3; c.fillStyle = `rgba(6,2,14,${.17 - i * .035})`; this.diamond(p.x + SHADOW_DIR.x * len * k, p.y + SHADOW_DIR.y * len * k, s, c.fillStyle as string); }
+    }
+    c.restore();
+  }
+  /** Brújula: la flecha apunta al «norte» original del mapa (arriba cuando rot = 0). */
+  drawCompass() {
+    if (!this.b || this.cine) return; const c = this.ctx; const a = this.rv(0, 0), n = this.rv(0, -1); const dx = (n.x - n.y) - (a.x - a.y), dy = ((n.x + n.y) - (a.x + a.y)) * .5; const ang = Math.atan2(dy, dx), cx = this.W - 34, cy = this.W < 600 ? 332 : 66;
+    c.save(); c.translate(cx, cy); c.globalAlpha = .85; c.fillStyle = 'rgba(14,8,26,.7)'; c.strokeStyle = 'rgba(232,201,160,.7)'; c.lineWidth = 1.2; c.beginPath(); c.arc(0, 0, 18, 0, 6.28); c.fill(); c.stroke();
+    c.rotate(ang + Math.PI / 2); c.fillStyle = '#e8c9a0'; c.beginPath(); c.moveTo(0, -13); c.lineTo(5, 3); c.lineTo(0, 0); c.lineTo(-5, 3); c.closePath(); c.fill(); c.rotate(-(ang + Math.PI / 2)); c.fillStyle = '#e8c9a0'; c.font = 'bold 9px "Reem Kufi", sans-serif'; c.textAlign = 'center'; c.fillText('N', Math.cos(ang) * 12, Math.sin(ang) * 12 + 3); c.restore();
+  }
   /** Zonas de peligro avisadas (derrumbe, pinches, fuego, inundación) y altares de curación. */
   drawField(s: number) {
     const b = this.b!, c = this.ctx; const pulse = .5 + .5 * Math.sin(this.time * 6);
@@ -282,7 +312,7 @@ export class Renderer {
     const P = this.center(v.x, v.y, el); const sx = P.x + (v.shake ? (Math.random() - .5) * 6 * v.shake : 0), sy = P.y - bob * s;
     const k = s * US * (1 + (u.size - 1) * 0.55); c.globalAlpha = v.alpha * (this.b!.has(u, 'invisible') ? .4 : 1);
     // sombra y anillo de turno
-    c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 17 * k, 7 * k, 0, 0, 6.28); c.fill();
+    { const L = SHADOW_DIR; c.fillStyle = 'rgba(6,2,14,.46)'; c.beginPath(); c.ellipse(P.x + L.x * 11 * k, P.y + 2 * s + L.y * 11 * k, 25 * k, 7.5 * k, Math.atan2(L.y, L.x) * .35, 0, 6.28); c.fill(); c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 15 * k, 6 * k, 0, 0, 6.28); c.fill(); }
     if (u.uid === this.activeUid) { c.strokeStyle = `rgba(255,215,90,${.65 + .3 * Math.sin(this.time * 5)})`; c.lineWidth = 3; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 21 * k, 9.5 * k, 0, 0, 6.28); c.stroke(); }
     if (u.uid === this.selUid) { c.strokeStyle = 'rgba(160,210,255,.9)'; c.lineWidth = 2; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 24 * k, 11 * k, 0, 0, 6.28); c.stroke(); }
     if (!this.cine) if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }

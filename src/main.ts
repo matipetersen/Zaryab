@@ -66,7 +66,7 @@ class App {
     this.show('menu'); const save = loadGame(); const m = this.menuEl; m.innerHTML = ''; this.menuFx?.destroy(); this.menuFx = new MenuFx(m);
     const perm = h('input', { type: 'checkbox', id: 'perm' }) as HTMLInputElement; perm.checked = this.settings.permadeath;
     perm.addEventListener('change', () => { this.settings.permadeath = perm.checked; localStorage.setItem('zaryab.settings', JSON.stringify(this.settings)); });
-    m.append(h('div', { class: 'hero' }, h('h1', {}, 'ZARYAB'), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA')),
+    m.append(h('div', { class: 'hero' }, h('div', { class: 'ar', lang: 'ar', dir: 'rtl' }, 'زرياب'), h('h1', {}, 'ZARYAB'), h('div', { class: 'orn' }), h('h2', {}, 'LAS ENTRAÑAS DE PIEDRA VIVA')),
       h('div', { class: 'cta col' },
         h('button', { class: 'btn', onClick: () => { clearSave(); this.camp = newCampaign(); this.renderHud(); playIntro(this.rootEl, () => this.start()); } }, 'Nueva campaña'),
         h('button', { class: 'btn', disabled: !save, onClick: () => { this.camp = save!; this.start(); } }, save ? `Continuar · día ${save.day}` : 'Continuar'),

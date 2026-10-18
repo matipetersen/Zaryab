@@ -40,6 +40,7 @@ export class BattleUI {
     // En pantallas pequeñas, las columnas laterales pasan a ser cajones que se abren con estos botones.
     const drawer = (side: HTMLElement, other: HTMLElement) => () => { const open = !side.classList.contains('open'); other.classList.remove('open'); side.classList.toggle('open', open); };
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
+    stage.append(h('div', { id: 'rotbtns' }, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
     stage.append(dBtns); this.coach = new Coach(stage); const help = h('button', { class: 'dbtn', title: 'Guía rápida', onClick: () => this.coach?.open() }, '?'); dBtns.append(help);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
     this.root.id = 'battle'; this.root.className = 'screen';
@@ -148,6 +149,8 @@ export class BattleUI {
       else if (e.key === 'h' || e.key === 'H') this.openAbilityMenu();
       else if (e.key === 'i' || e.key === 'I') this.openItemMenu();
       else if (e.key === 'f' || e.key === 'F') this.setMode({ k: 'interact' });
+      else if (e.key === 'q' || e.key === 'Q' || e.key === 'ArrowLeft') this.r.rotate(-1);
+      else if (e.key === 'r' || e.key === 'R' || e.key === 'ArrowRight') this.r.rotate(1);
       else if (e.key === ' ' || e.key === 'e' || e.key === 'E') { e.preventDefault(); this.endTurn(); }
     };
     window.addEventListener('keydown', this.keyH);

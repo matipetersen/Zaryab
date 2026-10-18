@@ -62,3 +62,8 @@ Las reglas nuevas movieron la victoria del bot unos pocos puntos; los 36 combate
 - **Desde el Cap. III**, con *Muerte permanente* activada, los caídos quedan fuera hasta que se los resucite: **Santuario → Rituales → Resurrección del cristal** (12 PF y +1 Corrupción por personaje, 1 día). Los PF se consiguen con seguidores, sermones y ofrendas.
 - **En combate**, Romain (nivel 5) tiene *Revivir*.
 - Con *Muerte permanente* desactivada, los caídos se recuperan solos tras el combate (+1 Corrupción, −3 PF).
+
+## Cámara, luz y tipografía (v0.5)
+- **Rotación del mapa** (estilo Tactics Ogre): pasos de 90° con los botones ⟲ ⟳ (a la derecha del tablero), las teclas **Q / R** o las flechas ← →. `Renderer.rot` (0–3) con transformación lógica↔vista (`rv` / `rinv`); el suelo, los muros y las unidades se ordenan por profundidad vista, y el clic se resuelve con la misma transformación (probado en las 4 orientaciones). Una brújula marca el norte original. Un breve fundido tapa el cambio.
+- **Luz y sombra siempre presentes:** todos los mapas tienen oscuridad ambiente mínima (0,26), la compañía lleva farol, hay luz direccional cálida desde arriba a la izquierda y penumbra del lado opuesto, y tanto unidades como muros/cajas proyectan sombra hacia el mismo lado de la pantalla (`SHADOW_DIR`, `drawBlockShadows`). Los tonos siguen siendo los de cada mapa (violeta, ámbar, turquesa…).
+- **Tipografía:** *Lemonada* (títulos, botones: trazo redondeado y caligráfico), *Cairo* (texto) y *Reem Kufi* (números, brújula y la marca árabe «زرياب» del menú). Van incrustadas (`src/assets/fonts`, licencia SIL OFL) en lugar de cargarse desde Google Fonts, así funcionan sin conexión y en el Artifact.

@@ -24,8 +24,10 @@ export const AMBIENCE: Record<string, Ambience> = {
   callejon: { weather: 'rain', amb: '#0e081a', amount: 0.34, tint: '#9a8cff', lantern: true },
   santuario: { weather: 'motes', amb: '#12061a', amount: 0.3, tint: '#d49aff', lantern: true },
 };
-const NONE: Ambience = { weather: 'dust', amb: '#000', amount: 0 };
-export const ambienceFor = (mapId: string): Ambience => AMBIENCE[mapId] ?? NONE;
+/** Atmósfera por defecto (violeta de crepúsculo) para mapas sin ficha propia. */
+const DEFAULT_AMB: Ambience = { weather: 'motes', amb: '#120a22', amount: 0.28, tint: '#d4a0ff', lantern: true };
+/** Siempre hay luz y sombra en juego: ningún mapa baja de un mínimo de oscuridad y la compañía lleva farol. */
+export const ambienceFor = (mapId: string): Ambience => { const a = AMBIENCE[mapId] ?? DEFAULT_AMB; return { ...a, amount: Math.max(a.amount, 0.26), lantern: true }; };
 
 interface P { x: number; y: number; vx: number; vy: number; s: number; a: number; ph: number; life: number }
 const R = Math.random;
@@ -94,6 +96,9 @@ export class Lighting {
     main.globalCompositeOperation = 'lighter';
     for (const l of lights) { const g = main.createRadialGradient(l.x * (main.canvas.width / W), l.y * (main.canvas.height / H), 0, l.x * (main.canvas.width / W), l.y * (main.canvas.height / H), l.r * .8 * (main.canvas.width / W)); g.addColorStop(0, l.color.replace('A', String(l.a * .22))); g.addColorStop(1, 'rgba(0,0,0,0)'); main.fillStyle = g; main.fillRect(0, 0, main.canvas.width, main.canvas.height); }
     main.globalCompositeOperation = 'source-over';
+    // luz direccional: un lado cálido (arriba a la izquierda) y otro en penumbra, siempre presentes
+    { const cw = main.canvas.width, ch = main.canvas.height; const warm = main.createLinearGradient(0, 0, cw * .7, ch * .8); warm.addColorStop(0, 'rgba(255,196,128,.13)'); warm.addColorStop(.55, 'rgba(255,196,128,0)'); main.globalCompositeOperation = 'lighter'; main.fillStyle = warm; main.fillRect(0, 0, cw, ch); main.globalCompositeOperation = 'source-over';
+      const dark = main.createLinearGradient(cw * .35, ch * .3, cw, ch); dark.addColorStop(0, 'rgba(10,4,24,0)'); dark.addColorStop(1, 'rgba(10,4,24,.30)'); main.fillStyle = dark; main.fillRect(0, 0, cw, ch); }
     const v = main.createRadialGradient(main.canvas.width / 2, main.canvas.height / 2, Math.min(main.canvas.width, main.canvas.height) * .35, main.canvas.width / 2, main.canvas.height / 2, Math.max(main.canvas.width, main.canvas.height) * .75);
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${.35 + amb.amount * .4})`); main.fillStyle = v; main.fillRect(0, 0, main.canvas.width, main.canvas.height);
     main.restore();
