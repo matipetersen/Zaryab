@@ -27,3 +27,25 @@ Notas recibidas: una operación militar (Coalición de la Luz contra el Imperio 
 - **Esprintar:** movimiento ×4, y los ataques contra quien esprinta tienen ventaja hasta su próximo turno.
 - **Glifos del Cubo** ocultos (CD 14) y borrables con Arcanos.
 - **Sin colocar aún en mapas del juego:** los datos y el motor están listos, pero no puse trampas en los combates calibrados (cambiarían el balance). Se pueden sembrar en cualquier mapa nuevo con `traps: [{ x, y, kind }]`.
+
+---
+
+## Fase de inteligencia (implementada)
+
+Código: `src/story/intel.ts` (guion + efectos), enganchada en `Game.runBattle` (`src/main.ts`) antes del briefing. Test: `npx tsx scripts/intel-test.ts`.
+
+**Dónde:** `coloso` (Cap. V), `al_mazhar` (Cap. X), `gusano` (Cap. XI) y `razul_final` (Cap. XII). Se juega una sola vez por encuentro (bandera `i:<enc>:done`); un reintento tras una derrota no la repite.
+
+**Regla central (del «estrés» de Orchouma):** la noche alcanza para **dos de tres** esfuerzos.
+
+| Fuente | Tiradas | Qué da | Riesgo |
+|---|---|---|---|
+| Reconocer el terreno | 4 pruebas de habilidades distintas (CD 13–15) | 1 acierto: ven las trampas · 2: refuerzos se retrasan 1 ronda · 3: los enemigos pierden su primer turno y el jefe −10 % · 4: jefe −20 % | 3 fallos y 0 aciertos: «los vieron», enemigos +15 % de vida |
+| Interrogar al cautivo | Intimidar CD 19 (da todo, +1 Corrupción) o Persuasión CD 16 (da una cosa) | Jefe −12 % y/o cuándo llegan los refuerzos (−2 rondas) | Dos fallos y muere sin hablar |
+| Escuchar al informante | Percepción CD 16, hasta 3 lecturas, para saber si miente | Verdadero: elegir noche (enemigos sorprendidos), ruta (trampas visibles) o punto débil (jefe −12 %) | 30 % trampa (la compañía pierde su primer turno; si lo detectan, se la devuelven) · 30 % dato falso · 40 % cierto, y no se sabe cuál |
+
+**Trampas:** en estos cuatro combates el enemigo siembra 3 trampas (mina, red, foso) en posiciones fijas por encuentro; sin reconocimiento ni ruta están ocultas y hay que usar **Buscar** o la Percepción pasiva.
+
+**Tope:** el jefe nunca pierde más de 30 % de vida por inteligencia.
+
+**Balance:** la calibración (N=40, sin inteligencia) sigue valiendo como línea base; el estimador de victoria del briefing no incluye estos bonus. Quien no hace inteligencia enfrenta las trampas ocultas, una dificultad un poco mayor que la calibrada.

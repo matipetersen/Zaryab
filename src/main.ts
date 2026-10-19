@@ -24,6 +24,7 @@ import { DESIGN_LVL, NO_CAL, winChance } from './data/difficulty';
 import { NOVEL } from './story/novel';
 import { chemPoints, pairKey } from './engine/synergy';
 import { briefing } from './story/briefings';
+import { intelScript, needsIntel, applyIntel } from './story/intel';
 import { playIntro } from './ui/intro';
 import { MenuFx } from './ui/menuFx';
 import { audio } from './ui/audio';
@@ -223,9 +224,15 @@ class App {
     this.show('story'); if (!this.storyEl.querySelector('.bg')) { this.story.camp = this.camp; this.story.mount(); }
     await this.story.play(briefing(enc, e, map, party, list.map(f => f.id), BG[e.map] ?? 'prison'));
   }
+  /** La noche antes de un combate decisivo: reconocimiento, cautivo o informante (ver story/intel.ts). */
+  async intelPhase(enc: string) {
+    this.show('story'); if (!this.storyEl.querySelector('.bg')) { this.story.camp = this.camp; this.story.mount(); }
+    await this.story.play(intelScript(enc)); saveGame(this.camp);
+  }
   async runBattle(enc: string, foeCount?: number, foes?: any[]): Promise<boolean> {
     const e = ENCOUNTERS[enc]; const c = this.camp; const alive = c.party.filter(p => !c.dead.includes(p)); const party = e.duel ? e.duel.party.filter(p => c.party.includes(p)) : (c.squad?.length ? c.squad.filter(p => alive.includes(p)) : alive);
     let list = foes ?? (enc === 'gusano_caza' ? huntFoes(c.gusano.power) : e.foes); if (foeCount) list = list.slice(0, foeCount);
+    if (needsIntel(c, enc) && !e.soft) await this.intelPhase(enc);
     if (!e.soft || e.survive) await this.briefBattle(enc, party, list);
     const miracles = has(c, 'razul_pacto') ? [] : MIRACLES.filter(m => (m.need === 'd' ? c.d : c.c) >= m.min).map(m => m.id);
     const allies: string[] = []; if (has(c, 'golem_aliado') || has(c, 'golem_prestado')) allies.push('golem_arena');
@@ -235,8 +242,9 @@ class App {
     if (e.defense) { const g = guardAllies(c); for (let i = 0; i < g.n; i++) allies.push(i < g.brave ? 'adorador_valiente' : 'adorador'); }
     const rated = DESIGN_LVL[enc] != null && !NO_CAL.has(enc) && !e.duel && !e.soft;
     const edge = rated ? computeEdge(c, party, allies.length) : { points: 0, lines: [] as string[] };
-    const intro = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
+    const intro0 = rated ? `${e.intro}\n\n⚖ Probabilidad estimada de victoria: ${winChance(edge.points, c.lvl - DESIGN_LVL[enc])} %${edge.lines.length ? ' (' + edge.lines.join(' · ') + ')' : ' (sin ventajas de campaña)'}` : e.intro;
     const b = buildBattle(enc, party, { foes: list, grants: c.grants, pf: c.pf, miracles, allies, equip: c.equip, inv: c.inv, level: c.lvl, prog: progMap(c, party), flags: c.flags.filter(f => f.startsWith('mz_')), edge: edge.points, chem: c.chem, powerup: enc === 'gusano_caza' ? c.gusano.power : 0 });
+    const intelLines = applyIntel(b, c, enc); const intro = intelLines.length ? intro0 + '\n\n🕵 Inteligencia:\n' + intelLines.join('\n') : intro0;
     if (enc === 'eclipse') { const rotos = ['dahhak', 'marid', 'mazhar', 'gusano', 'razul'].filter(f => has(c, `frag_${f}_roto`)).length; if (rotos) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * Math.max(.6, 1 - .08 * rotos)); u.hp = u.maxHp; } }
     if (enc === 'eclipse' && has(c, 'pacto_roto')) for (const u of b.units) if (u.side === 'foe' && u.traits.includes('boss')) { u.maxHp = Math.round(u.maxHp * 0.65); u.hp = u.maxHp; }
     this.show('battle'); const ui = new BattleUI(this.battleEl);
