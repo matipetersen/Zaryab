@@ -1,4 +1,5 @@
 import { chemOf, chemLevel, pairKey } from './synergy';
+import { trapAt, triggerTrap, passiveNotice, type Trap } from './traps';
 import { zonesTurn, type Tele, type Zone, type Objective, type BonusDef } from './twists';
 import { Grid, P, cheb, key } from './grid';
 import { d20, roll, avg, rand, pick, addFlat } from './dice';
@@ -21,7 +22,7 @@ export const COND_LABEL: Record<CondId, string> = {
   bane: 'Maldecido', shieldFaith: 'Escudo de Fe', hex: 'Maleficio', hunterMark: 'Marca del Cazador', hexCurse: 'Maldición Hexblade',
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
-  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado', grappled: 'Agarrado', ready: 'Acción preparada',
+  taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado', grappled: 'Agarrado', ready: 'Acción preparada', sprinting: 'Esprintando',
 };
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
 const HIDDEN_CONDS: CondId[] = ['surgeUsed', 'sneakUsed'];
@@ -113,6 +114,7 @@ export class Battle {
   // ───── giros de objetivo y terreno vivo (ver twists.ts) ─────
   level = 3; twist?: { name: string; text: string }; objectives: (Objective & { def?: BonusDef })[] = []; telegraphs: Tele[] = []; zones: Zone[] = []; revert: { x: number; y: number; ch: string; round: number }[] = [];
   /** Niebla de guerra: la compañía solo ve lo que alcanza su línea de visión (muros y puertas cerradas la cortan). Solo afecta a lo que se muestra, no a las reglas. */
+  traps: Trap[] = [];
   fogOn = true; visionR = 10; scripted = false; seen = new Set<string>(); private _visSig = ''; private _vis = new Set<string>();
   visibleTiles(): Set<string> {
     const g = this.grid, R = this.visionR, eyes = this.units.filter(u => u.side === 'pc' && u.sprite !== 'wall' && !u.dead && !u.down);
@@ -224,7 +226,7 @@ export class Battle {
     for (const o of this.units) if (this.has(o, 'helped') && this.status(o, 'helped')!.src === u.uid) this.removeStatus(o, 'helped'); // la ayuda dura hasta el próximo turno de quien ayuda
     u.actionUsed = false; u.bonusUsed = false; u.extraActions = 0; u.attacksMade = 0; u.res['flurry'] = 0;
     u.moveLeft = u.speed + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 2 : 0);
-    this.removeStatus(u, 'dodging'); this.removeStatus(u, 'disengaged'); this.removeStatus(u, 'surgeUsed'); this.removeStatus(u, 'sneakUsed');
+    this.removeStatus(u, 'dodging'); this.removeStatus(u, 'sprinting'); this.removeStatus(u, 'disengaged'); this.removeStatus(u, 'surgeUsed'); this.removeStatus(u, 'sneakUsed');
     for (const k of Object.keys(u.rechargeReady)) if (!u.rechargeReady[k]) {
       const a = u.actions.find(x => x.id === k);
       if (a?.recharge) { const r = Math.floor(rand() * 6) + 1; if (r >= a.recharge) { u.rechargeReady[k] = true; this.log(`${u.name} recupera ${a.name}.`, 'sys'); } }
@@ -368,11 +370,13 @@ export class Battle {
       u.x = nxt.x; u.y = nxt.y; this.triggerReady(u, cur, nxt); u.x = cur.x; u.y = cur.y;
       if (u.dead || u.down || this.over) break;
       spent += u.fly ? 1 : this.grid.at(nxt.x, nxt.y)!.cost; cur = nxt; trail.push(nxt);
+      const trap = u.side === 'pc' && !u.fly ? trapAt(this, nxt.x, nxt.y) : undefined; if (trap) { u.x = nxt.x; u.y = nxt.y; triggerTrap(this, u, trap); break; } // las trampas detienen el avance
     }
     const stopped = cur.x !== x || cur.y !== y;
     u.moveLeft = stopped ? 0 : u.moveLeft - dest.cost; u.x = cur.x; u.y = cur.y; this.releaseGrapples();
     if (trail.length > 1) this.emit({ t: 'move', uid: u.uid, path: trail });
     if (u.dead || u.down) return { ok: true };
+    passiveNotice(this, u);
     const tile = this.grid.at(u.x, u.y);
     if (tile?.kind === 'hazard' && !u.fly) { const rr = roll('1d6'); this.log(`${u.name} pisa terreno peligroso (${rr.total}).`, 'dmg'); this.damage(u, rr.total, 'fire', undefined); }
     if (this.cube) stepTrap(this, u);
@@ -393,7 +397,7 @@ export class Battle {
     if (this.has(a, 'invisible')) adv = true;
     if (this.has(t, 'guided')) { adv = true; this.removeStatus(t, 'guided'); }
     if (this.has(t, 'faerie')) adv = true;
-    if (this.has(t, 'blinded') || this.has(t, 'restrained') || this.has(t, 'stunned') || this.has(t, 'paralyzed') || t.down) adv = true;
+    if (this.has(t, 'sprinting') || this.has(t, 'blinded') || this.has(t, 'restrained') || this.has(t, 'stunned') || this.has(t, 'paralyzed') || t.down) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) <= 1) adv = true;
     if (this.has(t, 'prone') && cheb(a, t) > 1) dis = true;
     if (melee && this.flanked(a, t)) adv = true;
@@ -735,7 +739,7 @@ export class Battle {
   win(msg: string) { if (this.over) return; this.log(msg, 'sys'); this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
   /** Interacción con un objeto del mapa (tomo, calaveras, jaulas…). Cuesta la acción. */
   interact(u: Unit, x: number, y: number, choice?: string): Res {
-    const t = this.grid.at(x, y); if (!t?.obj) return { ok: false, msg: 'No hay nada con lo que interactuar.' };
+    const t = this.grid.at(x, y); if (!t?.obj || t.hid) return { ok: false, msg: 'No hay nada con lo que interactuar.' };
     if (cheb(u, { x, y }) > 1) return { ok: false, msg: 'Acércate.' };
     if (!this.hasAction(u)) return { ok: false, msg: 'No te queda acción.' };
     const o = OBJECTS[t.obj]; if (!o) return { ok: false, msg: 'Nada que hacer.' };

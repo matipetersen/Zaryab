@@ -32,7 +32,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
     for (let r = 1; r < 5 && !placed; r++) for (let dy = -r; dy <= r && !placed; dy++) for (let dx = -r; dx <= r && !placed; dx++) { const x = base.x + dx, y = base.y + dy; const t = grid.at(x, y); if (t && !t.blocked && !taken.has(x + ',' + y)) { units.push(makeFoe(id, x, y, '', 'pc')); taken.add(x + ',' + y); placed = true; } }
   }
   if (enc.surprise) for (const u of units) if (u.sprite !== 'wall' && u.side === (enc.surprise === 'party' ? 'pc' : 'foe')) u.surprised = true;
-  const b = new Battle(grid, units); b.chem = opts.chem ?? {}; b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
+  const b = new Battle(grid, units); for (const t of map.traps ?? []) b.traps.push({ x: t.x, y: t.y, kind: t.kind, dc: t.dc ?? 14, disarm: t.disarm ?? 13, hidden: true, armed: true }); b.chem = opts.chem ?? {}; b.pfPool = opts.pf ?? 0; b.inv = { ...(opts.inv ?? {}) }; b.maxRounds = enc.duel?.rounds ?? 0; b.surviveRounds = enc.survive ?? 0;
   b.scaleFoe = scaleFoe; b.goalOnly = !!(enc.goal || enc.objective); if (enc.goal) { b.goal = enc.goal; b.goalMsg = enc.goalMsg ?? ''; }
   b.scripted = !!enc.script; if (enc.script) initScript(enc.script, b, opts.flags ?? []);
   const twist = enc.script || enc.duel || enc.soft ? undefined : TWISTS[encId]; installTwists(b, encId, enc.map, opts.level ?? 3, twist, !NO_LAND.has(encId) && !enc.script && !enc.duel && !enc.soft);

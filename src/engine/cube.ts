@@ -2,6 +2,7 @@
 import type { Battle } from './battle';
 import type { Unit } from './types';
 import { cheb } from './grid';
+import { disarmTrap } from './traps';
 import { roll, rand } from './dice';
 import { makeFoe } from '../data/monsters';
 import { ROT_SEQ, CUBE_W, A0_TILES, ROOMS } from '../data/maunator';
@@ -23,6 +24,7 @@ export function cubeInit(b: Battle, flags: string[]) {
   const has = (f: string) => flags.includes(f);
   b.cube = { alert: 0, step: 0, lastRot: 1, knowsPattern: false, kethras: false, deadGuards: 0, alarmRots: 0, layout: ROOMS.map((_, i) => i), compuerta: 0, compuertaOpen: false, pudding: false, idle: {}, goal: ['calavera1', 'calavera2', 'calavera3'], log: [] };
   b.storyFlags = new Set(flags);
+  if (!has('mz_anillo')) for (const row of b.grid.tiles) for (const t of row) if (t.obj === 'glifo') t.hid = 14; // los glifos están ocultos: Buscar o la Percepción pasiva los descubren
   if (has('mz_sabe_cubo')) b.cube.knowsPattern = true;
   if (has('mz_llave_maestra')) setTimeout(() => raiseAlert(b, 2, 'La llave maestra dispara la alarma'), 0);
 }
@@ -94,7 +96,9 @@ export const OBJECTS: Record<string, ObjDef> = {
   grethak_hablar: { label: 'Hablar con Grethak', hint: 'Persuasión CD 16: aliarse.', once: true, skill: 'persuasion', dc: 16, run: (b, u) => { const g = unitById(b, 'grethak'); if (!g) return 'Grethak ya no está.'; const r = skillRoll(u, 'persuasion', 16); if (!r.ok) return `✗ Grethak aparta la mirada (${r.d}+${r.mod}). «No sé quiénes son.»`; g.traits = g.traits.filter(t => t !== 'inert'); g.side = 'pc'; g.ai = true; b.storyFlagsOut.add('grethak_aliado'); return 'Grethak se une al grupo: «Yo no sabía lo que había abajo. O me dije que no lo sabía.»'; } },
   registro: { label: 'Registro de guardias', hint: 'Una nota sobre medallones.', once: true, run: b => { b.storyFlagsOut.add('orden_conocido'); b.storyFlags.add('mz_orden_conocido'); return 'Una nota: «el orden de la memoria: altar, carne, mente». Dos entradas tachadas: «compuerta sur» y «retirado del proyecto».'; } },
   tablero: { label: 'Tablero de guardia', hint: 'Mapa del muelle bajo Medinat.', once: true, run: b => { b.storyFlagsOut.add('mapa_muelle'); return 'Un mapa de los Muelles Bajos de Medinat al-Rih con la ruta de la barcaza.'; } },
-  glifo: { label: 'Glifo invisible', hint: 'Se activa al pisarlo.', once: true, run: (b, u) => { raiseAlert(b, 1, `Un glifo invisible se enciende bajo ${u.name}`); for (const z of b.units) if (z.id === 'zombi_elite' && !z.dead) b.flags['w' + z.uid] = 1; const d = b.freeNear(u); if (d) { const z = makeFoe('zombi_elite', d.x, d.y); if (b.scaleFoe) b.scaleFoe(z); b.reinforce(z, d); } return 'Los no-muertos del glifo despiertan.'; } },
+  trampa: { label: 'Trampa descubierta', hint: 'Intentar desarmarla (Destreza).', run: (b, u, t) => disarmTrap(b, u, t.x, t.y) },
+  glifo: { label: 'Glifo invisible', hint: 'Se activa al pisarlo. Se puede borrar con Arcanos (CD 14).', once: true, choices: [{ id: 'borrar', label: 'Borrarlo (Arcanos CD 14)' }], run: (b, u, _t, ch) => { if (ch === 'borrar') { const r = skillRoll(u, 'arcanos', 14); if (r.ok) return `Borra el glifo sin que se encienda (${r.d}+${r.mod}).`; b.log(`✗ El borrado falla (${r.d}+${r.mod}).`, 'sys'); } return OBJECTS.glifo_old.run(b, u, _t); } },
+  glifo_old: { label: '', hint: '', once: true, run: (b, u) => { raiseAlert(b, 1, `Un glifo invisible se enciende bajo ${u.name}`); for (const z of b.units) if (z.id === 'zombi_elite' && !z.dead) b.flags['w' + z.uid] = 1; const d = b.freeNear(u); if (d) { const z = makeFoe('zombi_elite', d.x, d.y); if (b.scaleFoe) b.scaleFoe(z); b.reinforce(z, d); } return 'Los no-muertos del glifo despiertan.'; } },
   calavera1: { label: 'Altar del Silencio', hint: 'Calavera 1 sobre el altar.', once: true, run: b => { carry(b, 'calavera1'); return 'Tomás la primera calavera. Las velas negras se apagan una a una.'; } },
   calavera2: { label: 'Bajo el golem', hint: 'Calavera 2.', once: true, run: b => { carry(b, 'calavera2'); const g = unitById(b, 'golem_carne'); if (g) { b.flags['w' + g.uid] = 1; b.log('El golem de carne vuelve la cabeza hacia ustedes.', 'sys'); } return 'Tomás la segunda calavera de debajo de la bota del golem.'; } },
   calavera3: { label: 'El sujeto', hint: 'Calavera 3 cosida en su torso.', once: true, choices: [{ id: 'extraer', label: 'Extraer la calavera (lo mata)' }, { id: 'vivo', label: 'Llevarlo vivo (se transformará)' }], run: (b, u, _t, ch) => {

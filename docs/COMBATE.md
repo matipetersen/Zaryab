@@ -73,3 +73,6 @@ Las reglas nuevas movieron la victoria del bot unos pocos puntos; los 36 combate
 - **Puertas** (`D` cerrada / `d` abierta): tapan la línea de visión (de ambos bandos, también para los ataques a distancia), se pueden cruzar con costo normal y **se abren al pasar** (la IA también las abre). Hoy hay puertas en la **cripta** (Al-Mazhar), la **iglesia** (Dahhak) y **Medinat** (las tres revueltas). Los combates afectados se recalibraron.
 - **Texturas procedurales** (`src/ui/textures.ts`): suelo de losas, adoquines, mampostería, madera con herrajes, portones, con incrustaciones de estrella de ocho puntas en los temas sagrados y comerciales; cada tema usa su paleta. El arte externo (`src/assets/tiles`) las reemplaza.
 - **Sprites de la compañía** (`src/ui/pcSprites.ts`): siluetas propias para los seis (cuernos y balanza de Romain, alas plegadas y halo de Pact, espadón y capucha de Rabb, arco y carcaj de Joren, cabello blanco y dagas enfundadas de Zyr'thar, el enano de barba trenzada y puños vendados de Panchi).
+
+## Explorar dentro del mapa (v0.5)
+Acciones de la compañía: **Buscar** (revela trampas y objetos ocultos), **Esprintar**, **Interactuar (F)** (objetos, desarmar trampas), abrir puertas al cruzarlas y romper terreno. Detalle y origen de las ideas en `docs/ORCHOUMA.md`.

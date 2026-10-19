@@ -35,6 +35,7 @@ interface Ring { x: number; y: number; t: number; color: string; max: number }
 
 import { assetImg } from './assets';
 import { audio } from './audio';
+import { TRAP_ICON } from '../engine/traps';
 import { drawPC } from './pcSprites';
 import { floorTex, blockTex } from './textures';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
@@ -219,7 +220,7 @@ export class Renderer {
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo
     { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; this.drawFloor(q.x, q.y, t.kind, s); } }
-    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj && this.fogA[y * g.w + x] < .5) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj && !t.hid && t.obj !== 'trampa' && this.fogA[y * g.w + x] < .5) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
     this.drawBlockShadows(s); this.drawFloorFog(s);
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
@@ -325,6 +326,7 @@ export class Renderer {
     const COL: Record<string, [string, string]> = { collapse: ['rgba(214,160,80,A)', '🪨'], spikes: ['rgba(255,70,70,A)', '▲'], fire: ['rgba(255,130,30,A)', '🔥'], flood: ['rgba(70,150,255,A)', '💧'] };
     for (const t of b.telegraphs) { const [col, ic] = COL[t.kind] ?? COL.fire; const hgt = b.grid.at(t.x, t.y)?.kind === 'high' ? ELEV : 0; const p = this.proj(t.x, t.y, hgt); this.diamond(p.x, p.y, s, col.replace('A', String(.22 + .25 * pulse)), col.replace('A', '.9'));
       const q = this.center(t.x, t.y, hgt); c.font = `${Math.round(13 * s)}px sans-serif`; c.textAlign = 'center'; c.globalAlpha = .85; c.fillText(ic, q.x, q.y + 4 * s); c.globalAlpha = 1; }
+    for (const tr of b.traps) { if (tr.hidden || !tr.armed || this.fogA[tr.y * b.grid.w + tr.x] > .5) continue; const q = this.center(tr.x, tr.y); const p0 = this.proj(tr.x, tr.y, 0); this.diamond(p0.x, p0.y, s, `rgba(255,70,50,${.22 + .2 * pulse})`, 'rgba(255,150,110,1)'); c.font = `${Math.round(24 * s)}px sans-serif`; c.textAlign = 'center'; c.fillStyle = '#fff'; c.fillText(TRAP_ICON[tr.kind], q.x, q.y + 5 * s); }
     for (const z of b.zones) { const p = this.proj(z.x, z.y, 0); this.diamond(p.x, p.y, s, `rgba(255,220,120,${.15 + .15 * pulse})`, 'rgba(255,225,140,.9)'); const q = this.center(z.x, z.y, 0); c.save(); c.shadowColor = '#ffd66b'; c.shadowBlur = 14; c.fillStyle = '#ffe9a8'; c.font = `bold ${Math.round(16 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('✚', q.x, q.y + 5 * s); c.restore(); }
   }
   drawOverlay(o: Overlay, s: number) {

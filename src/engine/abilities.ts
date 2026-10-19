@@ -1,3 +1,4 @@
+import { searchArea } from './traps';
 import type { Battle, Res } from './battle';
 import type { Unit, DmgType, DmgPart } from './types';
 import type { P } from './grid';
@@ -45,6 +46,10 @@ export const nearestFoes = (b: Battle, u: Unit, radius: number, n: number) =>
 // ---------- generales ----------
 def({ id: 'dash', name: 'Correr', desc: 'Duplicás tu movimiento este turno.', cost: 'action', range: 0, target: 'self', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; b.log(`${u.name} corre.`, 'sys'); } });
+def({ id: 'buscar', name: 'Buscar', desc: 'Tirada de Percepción: revelás trampas y objetos ocultos a 4 casillas con línea de visión. Las minas y trampas ya descubiertas se pueden evitar o desarmar con Interactuar.', cost: 'action', range: 0, target: 'self', tag: 'utility',
+  run: (b, u) => { searchArea(b, u); } });
+def({ id: 'sprint', name: 'Esprintar', desc: 'Corrés a cuatro veces tu velocidad. Los ataques contra vos tienen ventaja hasta tu próximo turno. Imprudente: puede llevarte contra una trampa oculta.', cost: 'action', range: 0, target: 'self', tag: 'move',
+  run: (b, u) => { u.moveLeft += u.speed * 3; b.addStatus(u, { id: 'sprinting', turns: 1, src: u.uid }, true); b.log(`${u.name} sale disparado (esprint).`, 'sys'); } });
 def({ id: 'stabilize', name: 'Primeros auxilios', desc: 'Un aliado caído adyacente: prueba de Medicina (CD 10). Si sale bien, se estabiliza y deja de hacer salvaciones de muerte.', cost: 'action', range: 1, target: 'downedAlly', tag: 'heal',
   run: (b, u, t: Unit) => { const r = roll('1d20').total + (u.mods.wis ?? 0) + (u.traits.includes('medic') ? (u.prof ?? 0) : 0); if (r >= 10) { t.stable = true; b.log(`${u.name} estabiliza a ${t.name} (${r} vs CD 10).`, 'heal'); } else b.log(`${u.name} no logra estabilizar a ${t.name} (${r} vs CD 10).`, 'sys'); } });
 def({ id: 'disengage', name: 'Desengancharse', desc: 'Tu movimiento de este turno no provoca ataques de oportunidad.', cost: 'action', range: 0, target: 'self', tag: 'move',

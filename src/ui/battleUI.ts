@@ -164,7 +164,7 @@ export class BattleUI {
     const u = this.cur; const under = this.unitAtTile(t);
     if (!u || this.mode.k === 'busy') { if (under) this.select(under); return; }
     const m = this.mode;
-    if (m.k === 'interact') { const tl = this.b.grid.at(t.x, t.y); if (tl?.obj && cheb(u, t) <= 1) this.doInteract(u, t); else if (under) this.select(under); else this.setMode({ k: 'idle' }); return; }
+    if (m.k === 'interact') { const tl = this.b.grid.at(t.x, t.y); if (tl?.obj && !tl.hid && cheb(u, t) <= 1) this.doInteract(u, t); else if (under) this.select(under); else this.setMode({ k: 'idle' }); return; }
     if (m.k === 'move') { const r = this.b.move(u, t.x, t.y); if (r.ok) { this.afterAction(); } else if (under) this.select(under); return; }
     if (m.k === 'terrain') { const r = this.b.attackTerrain(u, m.w, t.x, t.y); if (!r.ok) this.toast(r.msg!); this.afterAction(true); return; }
     if (m.k === 'weapon') {
@@ -311,7 +311,7 @@ export class BattleUI {
       if (!ids.length) continue; m.append(h('h4', {}, name));
       for (const id of ids) {
         const ab = ABILITIES[id]; const can = b.canUse(u, id); const lv = ab.slot ? b.slotLevels(u, ab.slot) : [];
-        const cost = ab.pf ? `${ab.pf} PF` : ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ['dash', 'dodge', 'disengage', 'help', 'shove', 'stabilize', 'cunning_disengage'].includes(ab.id) ? '' : 'truco';
+        const cost = ab.pf ? `${ab.pf} PF` : ab.slot ? (ab.upcast ? `nv ${ab.slot}+` : `nv ${ab.slot}`) : ab.use ? `${RES[ab.use] ?? ab.use} ${u.res[ab.use] ?? 0}` : ['dash', 'sprint', 'buscar', 'dodge', 'disengage', 'help', 'shove', 'stabilize', 'cunning_disengage'].includes(ab.id) ? '' : 'truco';
         const row = h('div', { style: { display: 'flex', alignItems: 'center' } });
         const main = h('button', { class: 'mi', disabled: !can.ok, title: can.msg ?? '', onClick: () => this.pickAbility(id, lv[0] ?? 0), onMouseenter: (e: MouseEvent) => this.tipAt(e, `<b>${ab.name}</b><br>${ab.desc}${ab.conc ? '<br><i>Concentración</i>' : ''}${ab.range > 1 ? `<br>Alcance ${ab.range * 5} ft` : ''}`), onMouseleave: () => this.tip.classList.add('hidden') }, h('span', { class: 'nm' }, ab.name), h('span', { class: 'cost' }, cost));
         row.append(main);
