@@ -102,7 +102,7 @@ export class BattleUI {
     const under = this.b.units.find(u => u.pcId && !u.dead && u.x === t.x && u.y === t.y); const sel = this.deploySel >= 0 ? this.b.byUid(this.deploySel) : undefined;
     const isSpawn = this.deployTiles.some(p => p.x === t.x && p.y === t.y);
     if (!sel) { if (under) { this.deploySel = under.uid; this.select(under); } }
-    else if (under && under !== sel) { this.deploySel = under.uid; this.select(under); }
+    else if (under && under !== sel) { const a0 = { x: sel.x, y: sel.y }; this.placeUnit(sel, { x: under.x, y: under.y }); this.placeUnit(under, a0); this.deploySel = -1; } // tocar a otro personaje: intercambian lugares
     else if (isSpawn && !under) { this.placeUnit(sel, t); this.deploySel = -1; }
     else if (under === sel) this.deploySel = -1;
     this.deployOverlays(); this.renderAll();
@@ -159,7 +159,7 @@ export class BattleUI {
     this.canvas.addEventListener('click', e => {
       if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); if (!t) return;
       // En pantalla táctil, el primer toque muestra la casilla (y su previsualización); el segundo, sobre la misma casilla, ejecuta.
-      if (touch && this.mode.k !== 'idle' && this.mode.k !== 'busy' && !(this.r.hover && this.r.hover.x === t.x && this.r.hover.y === t.y)) { this.r.hover = t; this.showHoverTip(e, t); return; }
+      if (touch && this.mode.k !== 'idle' && this.mode.k !== 'busy' && this.mode.k !== 'deploy' && !(this.r.hover && this.r.hover.x === t.x && this.r.hover.y === t.y)) { this.r.hover = t; this.showHoverTip(e, t); return; }
       this.clickTile(t);
     });
     this.keyH = (e: KeyboardEvent) => {
@@ -290,7 +290,7 @@ export class BattleUI {
   }
   renderBar() {
     const u = this.cur, B = this.bar; B.innerHTML = ''; this.menuEl = null;
-    if (this.mode.k === 'deploy') { B.append(h('div', { class: 'small', style: { padding: '6px 4px', flex: '1 1 220px' } }, 'Despliegue: tocá un personaje y después una casilla azul para reubicarlo. Los frágiles, atrás; los resistentes, adelante.'), h('button', { class: 'btn', onClick: () => this.deployDone?.() }, '⚔ ¡Comenzar!')); return; }
+    if (this.mode.k === 'deploy') { B.append(h('div', { class: 'small', style: { padding: '6px 4px', flex: '1 1 220px' } }, 'Despliegue: tocá un personaje y después una casilla azul para reubicarlo (o a otro personaje para intercambiarlos). Los frágiles, atrás; los resistentes, adelante.'), h('button', { class: 'btn', onClick: () => this.deployDone?.() }, '⚔ ¡Comenzar!')); return; }
     if (!u) { B.append(h('div', { class: 'small', style: { padding: '8px 4px' } }, this.b.over ? 'Combate terminado.' : `Turno de ${this.b.cur?.name ?? '…'}`)); return; }
     const b = this.b; const busy = this.mode.k === 'busy'; const inc = b.incapacitated(u);
     const btn = (label: string, key: string, fn: () => void, on = false, dis = false) => h('button', { class: `act ${on ? 'on' : ''}`, disabled: dis || busy || inc, onClick: fn }, label, h('kbd', {}, key));
