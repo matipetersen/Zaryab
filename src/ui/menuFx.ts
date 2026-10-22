@@ -12,7 +12,7 @@ export class MenuFx {
     this.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; host.prepend(this.cv); this.c = this.cv.getContext('2d')!;
     this.fit(); window.addEventListener('resize', this.onResize); this.last = performance.now(); this.raf = requestAnimationFrame(n => this.frame(n));
   }
-  fit() { const r = this.host.getBoundingClientRect(); this.dpr = Math.min(2, devicePixelRatio || 1); this.W = r.width; this.H = r.height; this.cv.width = this.W * this.dpr; this.cv.height = this.H * this.dpr; }
+  fit() { const r = this.host.getBoundingClientRect(); this.dpr = Math.min(1.25, devicePixelRatio || 1); this.W = r.width; this.H = r.height; this.cv.width = this.W * this.dpr; this.cv.height = this.H * this.dpr; }
   destroy() { this.alive = false; cancelAnimationFrame(this.raf); window.removeEventListener('resize', this.onResize); this.cv.remove(); }
   dune(base: number, amp: number, ph: number, col: string, scroll = 0) {
     const c = this.c, W = this.W, H = this.H; c.fillStyle = col; c.beginPath(); c.moveTo(0, H);

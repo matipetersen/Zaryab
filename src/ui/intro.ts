@@ -6,12 +6,12 @@ export function playIntro(root: HTMLElement, onDone: () => void): void {
   const cap = h('div', { class: 'intro-cap' }); const skip = h('button', { class: 'intro-skip' }, 'Saltar ›');
   const el = h('div', { class: 'intro' }, cv, cap, skip); root.append(el);
   const c = cv.getContext('2d')!; let W = 0, H = 0, dpr = 1;
-  const fit = () => { const r = el.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; };
+  const fit = () => { const r = el.getBoundingClientRect(); dpr = Math.min(1.25, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; };
   fit(); window.addEventListener('resize', fit);
   const stars = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random() * .62, s: Math.random() * 1.6 + .3, p: Math.random() * 6 }));
   const sand: { x: number; y: number; vx: number; vy: number; l: number }[] = [];
   const IMPACT = 6.2, END = 12.5; const impact = () => ({ x: W * .62, y: H * .79 });
-  const lines: [number, string][] = [[.6, 'El desierto de Zaryab. Sin viento. Sin nadie.'], [3.4, 'Y entonces, el cielo se rompe.'], [7.4, 'Lo que cayó no es una piedra.'], [10, 'Es una puerta.']];
+  const lines: [number, string][] = [[.6, 'El desierto de Zaryab. Sin viento. Sin un alma.'], [3.4, 'Y de golpe, el cielo se parte.'], [7.4, 'Lo que cayó no es una piedra.'], [10, 'Es una puerta.']];
   let t = 0, last = performance.now(), done = false, raf = 0;
   const finish = () => { if (done) return; done = true; cancelAnimationFrame(raf); window.removeEventListener('resize', fit); window.removeEventListener('keydown', key); el.classList.add('out'); setTimeout(() => { el.remove(); onDone(); }, 600); };
   const key = (e: KeyboardEvent) => { if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); finish(); } };

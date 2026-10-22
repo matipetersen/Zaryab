@@ -85,6 +85,18 @@ export interface Light { x: number; y: number; r: number; color: string; a: numb
 /** Oscuridad ambiental con «agujeros» de luz (fogatas, linternas, hechizos) y un viñeteado de bordes. */
 export class Lighting {
   off = document.createElement('canvas'); oc = this.off.getContext('2d')!;
+  private st = document.createElement('canvas'); private stKey = '';
+  private statics(cw: number, ch: number, amount: number) {
+    const w = Math.max(2, Math.round(cw / 2)), h = Math.max(2, Math.round(ch / 2)), key = `${w}|${h}|${amount}`;
+    if (key !== this.stKey) {
+      this.st.width = w; this.st.height = h; const m = this.st.getContext('2d')!;
+      const warm = m.createLinearGradient(0, 0, w * .7, h * .8); warm.addColorStop(0, 'rgba(255,196,128,.13)'); warm.addColorStop(.55, 'rgba(255,196,128,0)'); m.fillStyle = warm; m.fillRect(0, 0, w, h);
+      const dark = m.createLinearGradient(w * .35, h * .3, w, h); dark.addColorStop(0, 'rgba(10,4,24,0)'); dark.addColorStop(1, 'rgba(10,4,24,.30)'); m.fillStyle = dark; m.fillRect(0, 0, w, h);
+      const v = m.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .35, w / 2, h / 2, Math.max(w, h) * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${.35 + amount * .4})`); m.fillStyle = v; m.fillRect(0, 0, w, h);
+      this.stKey = key;
+    }
+    return this.st;
+  }
   draw(main: CanvasRenderingContext2D, W: number, H: number, amb: Ambience, lights: Light[], time: number) {
     if (amb.amount <= 0) return;
     const w = Math.max(2, Math.round(W / 2)), h = Math.max(2, Math.round(H / 2)); if (this.off.width !== w || this.off.height !== h) { this.off.width = w; this.off.height = h; }
@@ -92,15 +104,15 @@ export class Lighting {
     o.globalAlpha = amb.amount; o.fillStyle = amb.amb; o.fillRect(0, 0, w, h); o.globalAlpha = 1;
     o.globalCompositeOperation = 'destination-out';
     for (const l of lights) { const x = l.x / 2, y = l.y / 2, r = l.r / 2 * (1 + .04 * Math.sin(time * 9 + l.x)); const g = o.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(0,0,0,${l.a})`); g.addColorStop(1, 'rgba(0,0,0,0)'); o.fillStyle = g; o.beginPath(); o.arc(x, y, r, 0, 6.28); o.fill(); }
+    // luz direccional y viñeteado (no cambian entre cuadros, vienen ya pintados) se funden en la misma capa: un solo pase sobre la pantalla
+    o.globalCompositeOperation = 'source-over'; o.drawImage(this.statics(main.canvas.width, main.canvas.height, amb.amount), 0, 0, w, h);
     main.save(); main.setTransform(1, 0, 0, 1, 0, 0); main.drawImage(this.off, 0, 0, W * (main.canvas.width / W), H * (main.canvas.height / H));
+    const k = main.canvas.width / W, kh = main.canvas.height / H;
     main.globalCompositeOperation = 'lighter';
-    for (const l of lights) { const g = main.createRadialGradient(l.x * (main.canvas.width / W), l.y * (main.canvas.height / H), 0, l.x * (main.canvas.width / W), l.y * (main.canvas.height / H), l.r * .8 * (main.canvas.width / W)); g.addColorStop(0, l.color.replace('A', String(l.a * .22))); g.addColorStop(1, 'rgba(0,0,0,0)'); main.fillStyle = g; main.fillRect(0, 0, main.canvas.width, main.canvas.height); }
+    for (const l of lights) { // el resplandor de cada luz solo cubre su propio recuadro, no toda la pantalla
+      const x = l.x * k, y = l.y * kh, r = l.r * .8 * k; const g = main.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, l.color.replace('A', String(l.a * .22))); g.addColorStop(1, 'rgba(0,0,0,0)'); main.fillStyle = g; main.fillRect(x - r, y - r, r * 2, r * 2);
+    }
     main.globalCompositeOperation = 'source-over';
-    // luz direccional: un lado cálido (arriba a la izquierda) y otro en penumbra, siempre presentes
-    { const cw = main.canvas.width, ch = main.canvas.height; const warm = main.createLinearGradient(0, 0, cw * .7, ch * .8); warm.addColorStop(0, 'rgba(255,196,128,.13)'); warm.addColorStop(.55, 'rgba(255,196,128,0)'); main.globalCompositeOperation = 'lighter'; main.fillStyle = warm; main.fillRect(0, 0, cw, ch); main.globalCompositeOperation = 'source-over';
-      const dark = main.createLinearGradient(cw * .35, ch * .3, cw, ch); dark.addColorStop(0, 'rgba(10,4,24,0)'); dark.addColorStop(1, 'rgba(10,4,24,.30)'); main.fillStyle = dark; main.fillRect(0, 0, cw, ch); }
-    const v = main.createRadialGradient(main.canvas.width / 2, main.canvas.height / 2, Math.min(main.canvas.width, main.canvas.height) * .35, main.canvas.width / 2, main.canvas.height / 2, Math.max(main.canvas.width, main.canvas.height) * .75);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${.35 + amb.amount * .4})`); main.fillStyle = v; main.fillRect(0, 0, main.canvas.width, main.canvas.height);
     main.restore();
   }
 }

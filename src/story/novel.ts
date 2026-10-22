@@ -14,9 +14,9 @@ export const NOVEL: Record<string, Node[]> = {
   // ───────────────────────── ACTO I · MUERTE Y PACTO ─────────────────────────
   acto1: [
     T('ACTO I', 'Muerte y pacto', 'dunas'),
-    N('Antes de la ciudad hubo un pájaro. Los viejos del desierto lo llaman Simurg y dicen que sus alas daban sombra a cuarenta ciudades. Nadie ha visto ya esa sombra. Nadie recuerda quién la apagó.'),
+    N('Antes de la ciudad hubo un pájaro. Los viejos del desierto lo llaman Simurg y dicen que sus alas daban sombra a cuarenta ciudades. Hace siglos que nadie ve esa sombra, y nadie recuerda quién la apagó.'),
     N('Zaryab se levantó sobre la ausencia: un cuenco de adobe y mármol donde el viento llega por turnos y el agua se reparte con ceremonia. Se llama a sí misma eterna. Es una ciudad que repite una frase para no oír el silencio de debajo.'),
-    N('Seis desconocidos caminan hacia ella sin saber que ya los esperan.'),
+    N('Seis forasteros se acercan a la ciudad sin saber que ya los están esperando.'),
   ],
   cap0: [
     T('Entreacto', 'Lo que callan los pilares', 'dunas'),
@@ -35,7 +35,7 @@ export const NOVEL: Record<string, Node[]> = {
   ],
   cap2: [
     T('Entreacto', 'Una ciudad llamada Zaryab', 'bajo'),
-    N('Si se quiere entender Zaryab hay que subir a un tejado al amanecer. Desde allí se ve cómo la ciudad se ordena sola: arriba, las torres de bronce del Conclave de los Siete Vientos, siete campanarios que cada mañana tocan una nota distinta; abajo, el Bajo Zaryab, adobe y tiza violeta, donde la gente reza a un dios que ya no tiene nombre.'),
+    N('Para entender Zaryab hay que subirse a un tejado al amanecer. Desde ahí se ve cómo la ciudad se acomoda sola: arriba, las torres de bronce del Conclave de los Siete Vientos, siete campanarios que cada mañana tocan una nota distinta; abajo, el Bajo Zaryab, adobe y tiza violeta, donde la gente reza a un dios que ya no tiene nombre.'),
     N('Los Siete Vientos gobiernan porque hace trescientos años un hombre ató a un djinn con una promesa y lo obligó a girar. Fue el primer molino. Después vinieron el segundo, el tercero, los cien. La luz de las torres es luz esclava. Todo el mundo lo sabe y se dice, bajito, que es una buena luz.'),
     N('En el Bajo, una mujer llamada Aisha mide el pan con los dedos. Un niño toca el arpa en la esquina, tres notas, y se calla antes de la cuarta. Nadie le ha pedido que recuerde. Todos esperan que lo haga.'),
     N('La biblioteca bajo el barrio sangra aceite violeta por las paredes. Los estantes están vacíos de libros y llenos de otra cosa: de la paciencia de un lugar que solo necesita que alguien vuelva a abrir la puerta.'),

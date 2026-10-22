@@ -33,7 +33,7 @@ interface Flash { x: number; y: number; color: string; t: number; r: number }
 interface Proj { x1: number; y1: number; x2: number; y2: number; t: number; kind: string }
 interface Ring { x: number; y: number; t: number; color: string; max: number }
 
-import { assetImg } from './assets';
+import { assetImg, hasAssets } from './assets';
 import { audio } from './audio';
 import { TRAP_ICON } from '../engine/traps';
 import { drawPC } from './pcSprites';
@@ -218,10 +218,11 @@ export class Renderer {
     c.fillStyle = 'rgba(255,230,180,.25)'; for (const d of this.dust) { c.beginPath(); c.arc(d.x * this.W, (d.y * this.H + this.time * 6 * d.s) % this.H, d.s, 0, 6.28); c.fill(); }
     if (!this.b) return; const b = this.b, g = b.grid, s = this.scale();
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
-    // suelo
-    { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; this.drawFloor(q.x, q.y, t.kind, s); } }
+    // suelo: la capa estática (baldosas + sombras de bloques) se pinta una vez y se reutiliza mientras no cambie la vista ni el terreno
+    this.drawGround(s);
+    { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; if (t.kind === 'water' || t.kind === 'hazard' || t.kind === 'mark') this.drawFloor(q.x, q.y, t.kind, s, 'dyn'); } }
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj && !t.hid && t.obj !== 'trampa' && this.fogA[y * g.w + x] < .5) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
-    this.drawBlockShadows(s); this.drawFloorFog(s);
+    this.drawFloorFog(s);
     // overlays
     for (const o of this.overlays) this.drawOverlay(o, s);
     this.drawLinks(s); this.drawField(s);
@@ -261,20 +262,26 @@ export class Renderer {
       c.lineWidth = 4; c.strokeStyle = 'rgba(0,0,0,.8)'; c.strokeText(f.text, p.x + f.dx, yy); c.fillStyle = col; c.fillText(f.text, p.x + f.dx, yy); } c.globalAlpha = 1;
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
-  drawFloor(x: number, y: number, kind: string, s: number) {
+  drawFloor(x: number, y: number, kind: string, s: number, mode: 'all' | 'base' | 'dyn' = 'all') {
+    if (mode === 'dyn' && kind !== 'water' && kind !== 'hazard' && kind !== 'mark') return;
     const P = this.pal, h = kind === 'high' ? ELEV : 0; const p = this.proj(x, y, h);
     if (kind === 'wall' || kind === 'cover' || kind === 'door') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
     if (kind === 'high') { this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', 'high'); this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); this.boxTex = null; return; }
+    const c = this.ctx;
+    if (mode !== 'dyn') {
     let col = (x + y) % 2 ? P.f1 : P.f2;
     if (kind === 'diff') col = P.diff; else if (kind === 'water') col = P.water; else if (kind === 'hazard') col = P.hazard; else if (kind === 'mark') col = (x + y) % 2 ? P.f1 : P.f2;
     this.diamond(p.x, p.y, s, col, P.edge);
-    const c = this.ctx; const th = this.map?.theme ?? ''; const ext = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : ''); const tex = ext ?? (kind === 'floor' || kind === 'mark' ? { img: floorTex(this.pal, th, x, y) } : null);
+    const th = this.map?.theme ?? ''; const ext = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : ''); const tex = ext ?? (kind === 'floor' || kind === 'mark' ? { img: floorTex(this.pal, th, x, y) } : null);
     if (tex) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if (ext && (x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
     if (kind === 'diff') { c.strokeStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(p.x - 10 * s, p.y + 14 * s); c.lineTo(p.x + 6 * s, p.y + 10 * s); c.moveTo(p.x - 4 * s, p.y + 22 * s); c.lineTo(p.x + 12 * s, p.y + 18 * s); c.stroke(); }
+    }
+    if (mode !== 'base') {
     if (kind === 'water') { c.strokeStyle = 'rgba(255,255,255,.28)'; c.beginPath(); const wv = Math.sin(this.time * 2 + x + y) * 2; c.moveTo(p.x - 14 * s, p.y + 16 * s + wv); c.quadraticCurveTo(p.x, p.y + 10 * s + wv, p.x + 14 * s, p.y + 16 * s + wv); c.stroke(); }
     if (kind === 'hazard' && this.b!.grid.at(x, y)?.ch === 'f') { for (let i = 0; i < 3; i++) { const fx = p.x + (i - 1) * 11 * s, ph = this.time * 7 + i * 2 + x; const h = (8 + Math.sin(ph) * 3 + i % 2 * 4) * s; c.fillStyle = i === 1 ? '#ffd23f' : '#ff7a2a'; c.beginPath(); c.moveTo(fx - 5 * s, p.y + 22 * s); c.quadraticCurveTo(fx, p.y + 22 * s - h * 2.4, fx + 5 * s, p.y + 22 * s); c.fill(); } }
     else if (kind === 'hazard') { c.fillStyle = `rgba(255,200,80,${.35 + .2 * Math.sin(this.time * 6 + x)})`; c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 7 * s, p.y + 22 * s); c.lineTo(p.x - 7 * s, p.y + 22 * s); c.fill(); }
     if (kind === 'mark') { const pulse = .5 + .3 * Math.sin(this.time * 3 + x); c.strokeStyle = `rgba(142,68,173,${pulse + .3})`; c.lineWidth = 2; c.beginPath(); c.ellipse(p.x, p.y + 16 * s, 20 * s, 10 * s, 0, 0, 6.28); c.stroke(); c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 10 * s, p.y + 16 * s); c.lineTo(p.x, p.y + 26 * s); c.lineTo(p.x - 10 * s, p.y + 16 * s); c.closePath(); c.stroke(); c.lineWidth = 1; }
+    }
   }
   drawBlock(x: number, y: number, kind: string, s: number) {
     this.boxTex = assetImg('tiles', `${this.map?.theme}_${kind}`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', kind as 'wall' | 'cover', this.b!.grid.at(x, y)?.ch ?? ''); try { this.drawBlock0(x, y, kind, s); } finally { this.boxTex = null; }
@@ -292,6 +299,26 @@ export class Renderer {
     }
   }
   /** Oscurece las casillas fuera de la vista (y dibuja los marcos de las puertas abiertas). */
+  private gcache?: { cv: HTMLCanvasElement; key: string };
+  /** Baldosas y sombras estáticas en un lienzo aparte: dibujar cientos de baldosas con recorte cada cuadro era lo más caro de la escena. */
+  drawGround(s: number) {
+    const g = this.b!.grid, c = this.ctx, cw = this.canvas.width, ch = this.canvas.height;
+    const key = [g.ver, this.rot, this.zoom, Math.round(this.panX), Math.round(this.panY), this.W, this.H, this.dpr, this.map?.id, hasAssets ? Math.floor(performance.now() / 2000) : 0].join('|');
+    if (this.shake > 0 || this.rotT >= 0) { this.drawGroundLive(s); return; }
+    if (!this.gcache) this.gcache = { cv: document.createElement('canvas'), key: '' };
+    const gc = this.gcache;
+    if (gc.key !== key) {
+      if (gc.cv.width !== cw || gc.cv.height !== ch) { gc.cv.width = cw; gc.cv.height = ch; }
+      const real = this.ctx; this.ctx = gc.cv.getContext('2d')!; this.ctx.setTransform(1, 0, 0, 1, 0, 0); this.ctx.clearRect(0, 0, cw, ch); this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      try { this.drawGroundLive(s); } finally { this.ctx = real; } gc.key = key;
+    }
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(gc.cv, 0, 0); c.restore();
+  }
+  private drawGroundLive(s: number) {
+    const g = this.b!.grid, vd = this.vdims();
+    for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); this.drawFloor(q.x, q.y, g.tiles[q.y][q.x].kind, s, 'base'); }
+    this.drawBlockShadows(s);
+  }
   drawFloorFog(s: number) {
     const g = this.b!.grid, c = this.ctx;
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {

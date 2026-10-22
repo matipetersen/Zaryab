@@ -1,0 +1,18 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+await p.addInitScript(() => { window.__fast = true; });
+const fps = async (label, ms = 2500) => { const r = await p.evaluate(ms => new Promise(res => { let n = 0, t0 = performance.now(); const f = t => { n++; if (t - t0 < ms) requestAnimationFrame(f); else res(+(n * 1000 / (t - t0)).toFixed(1)); }; requestAnimationFrame(f); }), ms); console.log(label.padEnd(22), r, 'fps'); };
+await p.goto('http://127.0.0.1:5173/'); await p.waitForTimeout(1000);
+await p.click('text=Nueva campaña'); await p.waitForTimeout(16000);
+const get = '(window.__app.story.stage.r)';
+await fps('base');
+const tog = async (label, js) => { await p.evaluate(js); await fps(label); };
+await tog('no lighting', `(()=>{const r=${get}; r.__l=r.lighting.draw; r.lighting.draw=()=>{}})()`);
+await tog('+ no weather', `(()=>{const r=${get}; r.__w=r.weather.draw; r.weather.draw=()=>{}})()`);
+await tog('+ no shadows', `(()=>{const r=${get}; r.drawBlockShadows=()=>{}})()`);
+await tog('+ no fog', `(()=>{const r=${get}; r.drawFloorFog=()=>{}})()`);
+await tog('+ no floor', `(()=>{const r=${get}; r.drawFloor=()=>{}})()`);
+await tog('+ no blocks', `(()=>{const r=${get}; r.drawBlock=()=>{}; r.drawBlock0=()=>{}})()`);
+console.log(await p.evaluate(() => { const r = window.__app.story.stage.r; return JSON.stringify({ W: r.W, H: r.H, dpr: r.dpr, zoom: r.zoom, w: r.b.grid.w, h: r.b.grid.h, units: r.b.units.length }); }));
+await b.close();

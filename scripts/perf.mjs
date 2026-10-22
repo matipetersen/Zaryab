@@ -1,0 +1,14 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+const fps = async (label, ms = 3000) => { const r = await p.evaluate(ms => new Promise(res => { let n = 0, t0 = performance.now(), worst = 0, last = t0; const f = t => { n++; worst = Math.max(worst, t - last); last = t; if (t - t0 < ms) requestAnimationFrame(f); else res({ fps: +(n * 1000 / (t - t0)).toFixed(1), worstMs: Math.round(worst) }); }; requestAnimationFrame(f); }), ms); console.log(label, JSON.stringify(r)); };
+await p.goto('http://127.0.0.1:5173/'); await p.waitForTimeout(1500);
+await fps('menu');
+await p.click('text=Nueva campaña'); await p.waitForTimeout(1500); await fps('intro', 3000);
+await p.screenshot({ path: '/tmp/perf_intro.png' });
+await p.waitForTimeout(14000); await fps('after-intro', 3000); await p.screenshot({ path: '/tmp/perf_after.png' });
+const c = await p.context().newCDPSession(p); await c.send('Profiler.enable'); await c.send('Profiler.start'); await p.waitForTimeout(3000); const { profile } = await c.send('Profiler.stop');
+const self = {}; const dt = profile.timeDeltas; const idx = new Map(profile.nodes.map(n => [n.id, n]));
+profile.samples.forEach((id, i) => { const n = idx.get(id); const k = n.callFrame.functionName + ' ' + n.callFrame.url.split('/').pop() + ':' + n.callFrame.lineNumber; self[k] = (self[k] || 0) + dt[i]; });
+console.log(Object.entries(self).sort((a, z) => z[1] - a[1]).slice(0, 12).map(([k, v]) => (v / 1000).toFixed(0) + 'ms ' + k).join('\n'));
+await b.close();

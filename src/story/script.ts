@@ -7,29 +7,29 @@ import type { Node } from './types';
 
 export const CAP0: Node[] = [
   { t: 'chapter', title: 'Prólogo — Cinco Días de Arena', sub: 'El desierto · Camino a Zaryab', bg: 'dunas' },
-  { t: 'narr', text: 'Un grupo formado por tanto viajar. Pact, Romain, Rabb, Joren, Zyr\'thar y Panchi han recorrido el desierto sin demasiados sobresaltos: algún bandido, alguna criatura oportunista que ataca de noche. Un viaje usual.' },
-  { t: 'say', who: 'Nadir', text: 'Cinco días. Cinco días más y llegamos. Lo calculé dos veces… y las dos me salió lo mismo.', tone: 'el gnomo guía, frotándose la nariz' },
-  { t: 'narr', text: 'Acampan al abrigo de unas rocas negras. La arena es blanca, fría. Alguien se queda de guardia. Alguien más no debería haberse dormido.' },
+  { t: 'narr', text: 'Seis viajeros curtidos por el camino: Pact, Romain, Rabb, Joren, Zyr\'thar y Panchi. Llevan semanas cruzando el desierto y hasta ahora no pasó nada grave: algún bandido, alguna bestia que se anima a atacar de noche. Un viaje como cualquier otro.' },
+  { t: 'say', who: 'Nadir', text: 'Cinco días más y llegamos a Zaryab. Lo calculé dos veces… y las dos me dio lo mismo.', tone: 'el gnomo guía, frotándose la nariz' },
+  { t: 'narr', text: 'Acampan al reparo de unas rocas negras. La arena está blanca y fría. Alguien se queda de guardia… y alguien más, que no tendría que haberse dormido, se durmió.' },
   { t: 'battle', enc: 'noche' },
-  { t: 'narr', text: 'Los restos de los bichos humean junto a la fogata. Nadir revisa los camellos. Nadie hace el chiste que todos piensan: «un viaje usual».' },
+  { t: 'narr', text: 'Los restos de las bestias humean junto a la fogata. Nadir revisa los camellos. Nadie se anima a decir lo que todos piensan: «un viaje como cualquier otro».' },
   { t: 'chapter', title: 'La Tormenta', sub: 'Tres días sin referencias', bg: 'tormenta' },
-  { t: 'narr', text: 'Todo cambia cuando empieza a soplar viento. Una leve brisa, una ventisca, luego ráfagas que levantan la arena hasta borrar el cielo. El grupo se junta para no perderse. Pasan tres días de tormenta sin una sola referencia: están perdidos.' },
-  { t: 'choice', prompt: 'Nadir ya no pretende saber dónde están.', options: [
-    { label: 'Atarse con una cuerda y avanzar en línea', hint: 'Lo más lento, lo más seguro.', e: { d: 1, flags: ['tormenta_cuerda'] }, result: ['Pasa un día más sin saber dónde. Nadie se pierde. Alguien, atado a la cuerda, cuenta pasos en voz baja: es lo único que se oye entre el viento.'] },
+  { t: 'narr', text: 'Todo cambia cuando se levanta el viento. Primero es una brisa, después una ventisca, y al final ráfagas que alzan tanta arena que el cielo desaparece. Se pegan unos a otros para no perderse. Pasan tres días de tormenta sin ver un solo punto de referencia: están perdidos.' },
+  { t: 'choice', prompt: 'Nadir ya ni finge saber dónde están.', options: [
+    { label: 'Atarse con una cuerda y avanzar en línea', hint: 'Lo más lento, lo más seguro.', e: { d: 1, flags: ['tormenta_cuerda'] }, result: ['Pasa otro día sin saber dónde están, pero nadie se pierde. Alguien, atado a la cuerda, cuenta pasos en voz baja: es lo único que se oye entre el viento.'] },
     { label: 'Dejar que Pact decida el rumbo', hint: 'Los aasimar ven donde otros no.', e: { flags: ['pact_guio'] }, result: ['Pact entrecierra los ojos y señala con un dedo. «Allí.» No explica por qué, y nadie le pregunta: hace tres días que algo en el viento le suena a una voz que conoce.'] },
-    { label: 'Racionar el agua y esperar a que amaine', hint: 'Cuesta víveres, no sangre.', e: { food: -1, flags: ['tormenta_racion'] }, result: ['La tormenta no cede, pero tampoco los rinde. Pasan hambre y sed, y aprenden algo sobre los otros: quién comparte el odre sin que se lo pidan, y quién no.'] },
+    { label: 'Racionar el agua y esperar a que amaine', hint: 'Cuesta víveres, no sangre.', e: { food: -1, flags: ['tormenta_racion'] }, result: ['La tormenta no afloja, pero ellos tampoco. Pasan hambre y sed, y descubren cosas de los demás: quién pasa el odre sin que se lo pidan y quién se lo guarda.'] },
   ] },
   { t: 'bg', id: 'dunas' },
-  { t: 'narr', text: 'De casualidad o por experiencia, Pact percibe a lo lejos lo que parecen cuatro pilares torcidos, rotos, azotados por la arena. Cuando el viento cae, el escenario se ve entero: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.' },
-  { t: 'narr', text: 'Un cielo gris de eclipse, sin sol ni estrellas, baña todo de una luz cenicienta sin sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas negras brotan líquenes violetas. De los pilares, el más alto se yergue torcido como un hueso mal soldado; otro está roto a media altura, como si algo enorme lo hubiera golpeado.' },
-  { t: 'narr', text: 'El aire huele a hierro oxidado, a ozono y, bajo ellos, a fruta podrida e incienso viejo que sube de las vetas violetas. Hay un zumbido muy bajo que se siente más en el pecho que en los oídos. El viento silba en las grietas de la piedra como un lamento.' },
-  { t: 'choice', prompt: 'No es un lugar donde nadie quiera montar tiendas. Pero es el único lugar.', options: [
+  { t: 'narr', text: 'Por suerte o por oficio, Pact distingue a lo lejos lo que parecen cuatro pilares torcidos, quebrados, golpeados por la arena. Cuando el viento por fin se calma, el lugar se ve completo: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.' },
+  { t: 'narr', text: 'Un cielo gris, de eclipse, sin sol ni estrellas, lo baña todo con una luz de ceniza que no deja sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas negras brotan líquenes violetas. El pilar más alto se alza torcido, como un hueso mal soldado; otro está partido a media altura, como si algo enorme lo hubiera golpeado.' },
+  { t: 'narr', text: 'El aire huele a hierro oxidado y a ozono y, por debajo, a fruta podrida y a incienso viejo que sube de las vetas violetas. Hay un zumbido muy bajo que se siente más en el pecho que en los oídos. El viento silba en las grietas de la piedra como un lamento.' },
+  { t: 'choice', prompt: 'Nadie querría acampar acá. Pero es el único reparo que hay.', options: [
     { label: 'Tocar la arena violeta', hint: 'La estática recorre los dedos.', e: { c: 1, flags: ['toco_veta'] }, result: ['Un cosquilleo frío sube por el brazo. Por un segundo oyen su nombre dicho en una lengua que no conocen.'] },
     { label: 'Estudiar los relieves del suelo', hint: 'Espirales, geometrías, runas borradas.', e: { d: 1, flags: ['estudio_relieves'] }, result: ['Son marcas de un orden anterior al Conclave. Reconocen una: la del Simurg, medio borrada.'] },
-    { label: 'Montar guardia y esperar', hint: 'Lo prudente.', result: ['El zumbido no cede en toda la noche. Tampoco nada se mueve.'] },
+    { label: 'Hacer guardia y esperar', hint: 'Lo prudente.', result: ['El zumbido no cede en toda la noche. Tampoco nada se mueve.'] },
   ] },
-  { t: 'narr', text: 'No terminan de bajar las carpas cuando oyen ruido de cadenas, mecanismos de hierro. Una compuerta se abre en el suelo de piedra y un ascensor de mármol sube con tres figuras de ropas largas y máscaras de pájaro: ibis negros.' },
-  { t: 'narr', text: 'Los llevan abajo. Una cámara de piedra derretida y tallada, con una sola puerta. Intentan escapar: Zyr\'thar la desbloquea… y del otro lado los esperan dos colosos de bronce y un humano que los maniata con sogas impregnadas de sal, que anulan la magia.' },
+  { t: 'narr', text: 'Todavía no terminaron de armar las carpas cuando oyen cadenas y engranajes de hierro. Se abre una compuerta en el suelo de piedra y sube un ascensor de mármol con tres figuras de túnicas largas y máscaras de pájaro: ibis negros.' },
+  { t: 'narr', text: 'Los bajan a la fuerza. Es una cámara de piedra fundida y tallada, con una única puerta. Intentan escapar: Zyr\'thar fuerza la cerradura… y del otro lado los esperan dos colosos de bronce y un hombre que los ata con sogas empapadas en sal, de esas que anulan la magia.' },
   { t: 'fx', e: { flags: ['cap0_done'] } },
 ];
 
