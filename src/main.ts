@@ -289,3 +289,5 @@ class App {
 }
 (window as any).__quests = QUESTS;
 new App();
+// Modo sin conexión: solo en la build publicada (http/https); falla en silencio donde no se puede (archivo local, vista previa embebida).
+if (import.meta.env.PROD && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
