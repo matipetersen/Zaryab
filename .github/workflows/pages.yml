@@ -1,7 +1,7 @@
 name: Publicar en GitHub Pages
 on:
   push:
-    branches: [claude/zaryab-v0.4, main]
+    branches: [main]
   workflow_dispatch:
 permissions: { contents: read, pages: write, id-token: write }
 concurrency: { group: pages, cancel-in-progress: true }
