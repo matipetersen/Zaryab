@@ -66,22 +66,41 @@ export class BattleUI {
   }
   addLog(t: string, cls = '') { const d = h('div', { class: cls }, t); this.logEl.append(d); this.logEl.scrollTop = this.logEl.scrollHeight; }
   // ───── despliegue previo (Tactics Ogre): se elige dónde empieza cada personaje ─────
-  coach?: Coach; deployDone?: () => void; deploySel = -1;
+  coach?: Coach; deployDone?: () => void; deploySel = -1; deployTiles: P[] = [];
+  /** Zona de despliegue: un rectángulo de 2 × 4 casillas pegado a donde arranca la compañía (el lado largo, a lo ancho del frente). */
+  computeDeployZone(): P[] {
+    const g = this.b.grid, sp = g.spawns.pc, pcs = this.b.units.filter(u => u.pcId); if (!sp.length) return [];
+    const xs = sp.map(p => p.x), ys = sp.map(p => p.y); const horiz = Math.max(...xs) - Math.min(...xs) >= Math.max(...ys) - Math.min(...ys);
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length, my = ys.reduce((a, b) => a + b, 0) / ys.length; const ax = Math.round(horiz ? mx - 1.5 : mx), ay = Math.round(horiz ? my : my - 1.5);
+    const okTile = (x: number, y: number) => { const t = g.at(x, y); if (!t || t.blocked || t.obj || !(t.kind === 'floor' || t.kind === 'diff' || t.kind === 'mark')) return false; const o = this.b.unitAt(x, y); return !o || !!o.pcId; };
+    // lado largo (4) a lo largo del eje en que se reparte la compañía; el corto (2) hacia el interior del mapa
+    const cand = (long: number, short: number): P[] => {
+      const out: P[] = []; const inward = horiz ? (ay < g.h / 2 ? 1 : -1) : (ax < g.w / 2 ? 1 : -1);
+      for (let l = 0; l < 4; l++) for (let k = 0; k < 2; k++) { const a = long + l, b2 = short + k * inward; const x = horiz ? a : b2, y = horiz ? b2 : a; if (okTile(x, y)) out.push({ x, y }); }
+      return out;
+    };
+    let best = horiz ? cand(ax, ay) : cand(ay, ax);
+    for (let sh = -6; sh <= 6 && best.length < 8; sh++) for (const c2 of [horiz ? cand(ax + sh, ay) : cand(ay + sh, ax)]) if (c2.length > best.length) best = c2; // corre el rectángulo si había obstáculos
+    if (best.length < pcs.length) for (const p of sp) if (!best.some(q => q.x === p.x && q.y === p.y)) best.push(p); // zona tapada por obstáculos: se completa con los puntos de salida
+    return best;
+  }
   async deployPhase() {
     const pcs = this.b.units.filter(u => u.pcId); const spawns = this.b.grid.spawns.pc;
     if (pcs.length < 2 || this.b.cube || this.b.scripted || spawns.length < 2 || (window as any).__fast) return;
+    this.deployTiles = this.computeDeployZone(); // quien salía fuera del rectángulo pasa a una casilla libre de la zona
+    for (const u of pcs) if (!this.deployTiles.some(t => t.x === u.x && t.y === u.y)) { const f = this.deployTiles.find(t => !pcs.some(o => o !== u && o.x === t.x && o.y === t.y)); if (f) this.placeUnit(u, f); }
     this.mode = { k: 'deploy' }; this.deploySel = -1; this.r.fogActive = false; this.deployOverlays(); this.renderAll();
     await new Promise<void>(res => { this.deployDone = res; }); this.r.fogActive = true; this.renderPanels();
     this.mode = { k: 'idle' }; this.r.overlays = []; this.deploySel = -1;
   }
   deployOverlays() {
     const ov: any[] = []; const sel = this.deploySel >= 0 ? this.b.byUid(this.deploySel) : undefined;
-    for (const sp of this.b.grid.spawns.pc) ov.push({ x: sp.x, y: sp.y, kind: 'move' });
+    for (const sp of this.deployTiles) ov.push({ x: sp.x, y: sp.y, kind: 'move' });
     if (sel) ov.push({ x: sel.x, y: sel.y, kind: 'sel' }); this.r.overlays = ov;
   }
   deployClick(t: P) {
     const under = this.b.units.find(u => u.pcId && !u.dead && u.x === t.x && u.y === t.y); const sel = this.deploySel >= 0 ? this.b.byUid(this.deploySel) : undefined;
-    const isSpawn = this.b.grid.spawns.pc.some(p => p.x === t.x && p.y === t.y);
+    const isSpawn = this.deployTiles.some(p => p.x === t.x && p.y === t.y);
     if (!sel) { if (under) { this.deploySel = under.uid; this.select(under); } }
     else if (under && under !== sel) { this.deploySel = under.uid; this.select(under); }
     else if (isSpawn && !under) { this.placeUnit(sel, t); this.deploySel = -1; }
