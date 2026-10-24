@@ -114,6 +114,16 @@ export class Renderer {
     }
     if (!cand.length) return null; cand.sort((a, b) => b.d - a.d); return { x: cand[0].x, y: cand[0].y };
   }
+  /** Casilla de la unidad cuyo cuerpo está bajo el puntero (los sprites son más altos que su casilla: tocar el cuerpo cuenta). */
+  unitTileFromPoint(mx: number, my: number, ok: (u: Unit) => boolean): P | null {
+    const b = this.b; if (!b) return null; const s = this.scale(); let best: { x: number; y: number; d: number } | null = null;
+    for (const u of b.units) {
+      if (u.dead || u.sprite === 'wall' || !ok(u)) continue; const v = this.vis.get(u.uid); if (!v || v.alpha < .3) continue; const c = this.center(v.x, v.y);
+      if (Math.abs(mx - c.x) > 20 * s || my < c.y - 54 * s || my > c.y + 6 * s) continue; const rq = this.rv(v.x, v.y); const d = rq.x + rq.y;
+      if (!best || d > best.d) best = { x: u.x, y: u.y, d };
+    }
+    return best ? { x: best.x, y: best.y } : null;
+  }
   center(x: number, y: number, h = 0): P { const p = this.proj(x, y, h); return { x: p.x, y: p.y + TH / 2 * this.scale() }; }
   // ---------- eventos ----------
   play(events: BEvent[]) {

@@ -150,16 +150,15 @@ export class BattleUI {
 
   // ---------- entrada ----------
   bindInput() {
-    let touch = false; this.canvas.addEventListener('pointerdown', e => { touch = e.pointerType === 'touch'; });
+    let touch = false; this.canvas.addEventListener('pointerdown', e => { touch = e.pointerType === 'touch'; this.isTouch = touch; });
     this.canvas.addEventListener('mousemove', e => {
       if (touch) return; // el navegador táctil simula un mousemove al tocar: no debe contar como «vista previa»
       const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); this.r.hover = t; this.showHoverTip(e, t);
     });
     this.canvas.addEventListener('mouseleave', () => { this.r.hover = null; this.tip.classList.add('hidden'); this.threat(null); });
     this.canvas.addEventListener('click', e => {
-      if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); if (!t) return;
-      // En pantalla táctil, el primer toque muestra la casilla (y su previsualización); el segundo, sobre la misma casilla, ejecuta.
-      if (touch && this.mode.k !== 'idle' && this.mode.k !== 'busy' && this.mode.k !== 'deploy' && !(this.r.hover && this.r.hover.x === t.x && this.r.hover.y === t.y)) { this.r.hover = t; this.showHoverTip(e, t); return; }
+      if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const mx = e.clientX - rc.left, my = e.clientY - rc.top; const t = this.r.unitTileFromPoint(mx, my, u => u.side === 'pc' || this.seen(u)) ?? this.r.tileFromMouse(mx, my); if (!t) return;
+      if (touch) this.r.hover = t; // en táctil no hay «doble toque»: el toque marca la casilla y abre una hoja con lo que va a pasar
       this.clickTile(t);
     });
     this.keyH = (e: KeyboardEvent) => {
@@ -183,6 +182,8 @@ export class BattleUI {
     const u = this.cur; const under = this.unitAtTile(t);
     if (!u || this.mode.k === 'busy') { if (under) this.select(under); return; }
     const m = this.mode;
+    if (this.isTouch && (m.k === 'idle' || m.k === 'move' || m.k === 'weapon' || m.k === 'ability') && this.touchTap(u, t, under)) return;
+    this.closeSheet();
     if (m.k === 'interact') { const tl = this.b.grid.at(t.x, t.y); if (tl?.obj && !tl.hid && cheb(u, t) <= 1) this.doInteract(u, t); else if (under) this.select(under); else this.setMode({ k: 'idle' }); return; }
     if (m.k === 'move') { const r = this.b.move(u, t.x, t.y); if (r.ok) { this.afterAction(); } else if (under) this.select(under); return; }
     if (m.k === 'terrain') { const r = this.b.attackTerrain(u, m.w, t.x, t.y); if (!r.ok) this.toast(r.msg!); this.afterAction(true); return; }
@@ -219,7 +220,7 @@ export class BattleUI {
     const u = this.cur, b = this.b; const ov: any[] = []; this.r.overlays = ov; if (!u || this.mode.k === 'busy') return;
     const m = this.mode;
     if (m.k === 'interact') { for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (b.grid.at(x, y)!.obj && cheb(u, { x, y }) <= 1) ov.push({ x, y, kind: 'mark' }); }
-    if (m.k === 'move') for (const v of b.reach(u).values()) if (!v.occ && (v.x !== u.x || v.y !== u.y)) ov.push({ x: v.x, y: v.y, kind: 'move' });
+    if ((m.k === 'move' || (this.isTouch && m.k === 'idle' && u.moveLeft > 0)) && !this.b.incapacitated(u)) for (const v of b.reach(u).values()) if (!v.occ && (v.x !== u.x || v.y !== u.y)) ov.push({ x: v.x, y: v.y, kind: 'move' });
     if (m.k === 'terrain') { const rg = m.w.longRange ?? m.w.range; for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (b.destructible(x, y) && cheb(u, { x, y }) <= rg) ov.push({ x, y, kind: 'aoe' }); }
     if (m.k === 'weapon') {
       const rg = m.w.longRange ?? m.w.range; for (let y = 0; y < b.grid.h; y++) for (let x = 0; x < b.grid.w; x++) if (cheb(u, { x, y }) <= Math.min(rg, 14) && (x !== u.x || y !== u.y) && b.grid.at(x, y)!.kind !== 'wall') ov.push({ x, y, kind: 'range' });
@@ -301,6 +302,7 @@ export class BattleUI {
     if (b.cube || b.grid.tiles.some(r => r.some(t => t.obj))) B.append(btn('🔧 Interactuar', 'F', () => this.setMode(this.mode.k === 'interact' ? { k: 'idle' } : { k: 'interact' }), this.mode.k === 'interact', !b.hasAction(u)));
     B.append(btn('🎒 Objeto', 'I', () => this.openItemMenu(), false, !Object.entries(this.b.inv).some(([id, n]) => n > 0 && Object.values(ABILITIES).some(a => a.item === id))));
     B.append(btn('⏳ Terminar turno', 'Espacio', () => this.endTurn()));
+    if (this.isTouch && this.mode.k === 'idle') B.append(h('div', { class: 'small touchhint' }, '👆 Tocá un enemigo para atacarlo · una casilla azul para moverte'));
     const left = u.moveLeft;
     B.append(h('div', { class: 'pips' },
       h('span', { class: `pip ${left > 0 ? 'free' : 'used'}` }, `Mov ${left * 5}ft`),
@@ -308,6 +310,67 @@ export class BattleUI {
       h('span', { class: `pip ${!u.bonusUsed || u.res['flurry'] > 0 ? 'free' : 'used'}` }, 'Adicional'),
       h('span', { class: `pip ${u.reactionUsed ? 'used' : 'free'}`, title: 'Reacción: ataque de oportunidad cuando un enemigo sale de tu alcance' }, 'Reacción'),
       this.b.pfPool > 0 ? h('span', { class: 'pip free', title: 'Puntos de Fe disponibles para Milagros' }, `PF ${this.b.pfPool}`) : null));
+  }
+  // ───── controles táctiles: un toque abre una hoja con lo que va a pasar; el botón grande lo confirma ─────
+  isTouch = false; sheetEl: HTMLElement | null = null;
+  closeSheet() { this.sheetEl?.remove(); this.sheetEl = null; }
+  private sheet(...kids: (HTMLElement | string | null)[]) { this.closeSheet(); const el = h('div', { class: 'sheet' }, ...kids); this.sheetEl = el; this.bar.append(el); return el; }
+  private pathTo(u: Unit, t: P): { path: P[]; cost: number; occ: boolean } | null {
+    const r = this.b.reach(u); const dst = r.get(key(t.x, t.y)); if (!dst) return null; const path: P[] = []; let k: string | undefined = key(t.x, t.y);
+    while (k) { const st: { x: number; y: number; prev?: string } = r.get(k)!; path.unshift({ x: st.x, y: st.y }); k = st.prev; } return { path, cost: dst.cost, occ: !!dst.occ };
+  }
+  /** Devuelve true si el toque se manejó (abrió una hoja); false deja que siga el comportamiento normal (seleccionar). */
+  touchTap(u: Unit | undefined, t: P, under: Unit | undefined): boolean {
+    if (!u || this.b.incapacitated(u)) return false; const m = this.mode; this.closeSheet();
+    if (m.k === 'ability') {
+      const ab = ABILITIES[m.id]; const target: any = ab.target === 'tile' || ab.target === 'point' ? t : under; if (!target || !this.validAbilityTarget(u, m, target)) return false;
+      const name = under ? under.name : `casilla ${t.x},${t.y}`;
+      this.sheet(h('div', { class: 'st' }, `✦ ${ab.name}`, h('small', {}, ` → ${name}`)), h('div', { class: 'small' }, ab.desc), h('div', { class: 'srow' },
+        h('button', { class: 'go', onClick: () => { this.closeSheet(); const r = this.b.useAbility(u, m.id, target, m.lvl); if (!r.ok) this.toast(r.msg!); this.afterAction(true); } }, `Usar ${ab.name}`), h('button', { class: 'no', onClick: () => this.closeSheet() }, '✕')));
+      return true;
+    }
+    if (under && under.side !== u.side && this.seen(under)) { this.openAttackSheet(u, under, m.k === 'weapon' ? m.w : undefined); return true; }
+    if (under) return false;
+    if ((m.k === 'idle' || m.k === 'move') && u.moveLeft > 0) {
+      const pt = this.pathTo(u, t); if (!pt || pt.occ || (t.x === u.x && t.y === u.y)) return false; const n = this.b.opportunityCount(u, pt.path);
+      this.sheet(h('div', { class: 'st' }, '👣 Mover aquí', h('small', {}, ` · ${pt.cost * 5} pies (te quedan ${u.moveLeft * 5})`)), n ? h('div', { class: 'warn' }, `⚠ Provoca ${n} ataque${n > 1 ? 's' : ''} de oportunidad. «Desengancharse» lo evita.`) : null, h('div', { class: 'srow' },
+        h('button', { class: 'go', onClick: () => { this.closeSheet(); const r = this.b.move(u, t.x, t.y); if (r.ok) this.afterAction(); else this.toast(r.msg!); } }, 'Mover'), h('button', { class: 'no', onClick: () => this.closeSheet() }, '✕')));
+      return true;
+    }
+    return false;
+  }
+  /** Mejor arma para atacar a ese objetivo: la que ya llega y más daño promete; si ninguna llega, la de mayor alcance. */
+  private bestWeapon(u: Unit, tgt: Unit): Weapon | undefined {
+    const b = this.b; const usable = u.weapons.filter(w => (w.bonusAction ? !u.bonusUsed || u.res['flurry'] > 0 : b.hasAction(u)));
+    const score = (w: Weapon) => { const vis = b.canSee(u, tgt); const need = b.ac(tgt, vis.cover) - w.toHit; return Math.min(.95, Math.max(.05, (21 - need) / 20)) * w.dmg.reduce((a, d) => a + avg(d.dice), 0); };
+    const inr = usable.filter(w => this.validTarget(u, tgt, { w })).sort((a, z) => score(z) - score(a)); if (inr.length) return inr[0];
+    return [...usable].sort((a, z) => (z.longRange ?? z.range) - (a.longRange ?? a.range) || score(z) - score(a))[0];
+  }
+  /** Casilla alcanzable (la más barata) desde donde el arma llega al objetivo. */
+  private approachTile(u: Unit, tgt: Unit, w: Weapon): { x: number; y: number; cost: number } | null {
+    const rg = w.longRange ?? w.range; let best: { x: number; y: number; cost: number } | null = null;
+    for (const v of this.b.reach(u).values()) { if (v.occ || (v.x === u.x && v.y === u.y) || cheb(v, tgt) > rg) continue; if (!best || v.cost < best.cost) best = { x: v.x, y: v.y, cost: v.cost }; }
+    return best;
+  }
+  openAttackSheet(u: Unit, tgt: Unit, pick?: Weapon) {
+    const b = this.b; const w = pick ?? this.bestWeapon(u, tgt); this.select(tgt);
+    if (!w) { this.sheet(h('div', { class: 'st' }, `⚔ ${tgt.name}`), h('div', { class: 'warn' }, 'No te queda acción para atacar.'), h('div', { class: 'srow' }, h('button', { class: 'no', style: { width: '100%' }, onClick: () => this.closeSheet() }, 'Cerrar'))); return; }
+    const inRange = this.validTarget(u, tgt, { w }); const vis = b.canSee(u, tgt); const need = b.ac(tgt, vis.cover) - w.toHit; const pct = Math.round(Math.min(95, Math.max(5, (21 - need) * 5)));
+    const dmg = Math.round(w.dmg.reduce((a, d) => a + avg(d.dice), 0)); const ap = inRange ? null : this.approachTile(u, tgt, w);
+    const usable = u.weapons.filter(x => (x.bonusAction ? !u.bonusUsed || u.res['flurry'] > 0 : b.hasAction(u)));
+    const chips = usable.length > 1 ? h('div', { class: 'chips' }, ...usable.map(x => h('button', { class: `chip ${x === w ? 'on' : ''}`, onClick: () => this.openAttackSheet(u, tgt, x) }, x.name))) : null;
+    const go = async () => {
+      this.closeSheet();
+      if (inRange) { const r = b.weaponAttack(u, w, tgt); if (!r.ok) this.toast(r.msg!); this.mode = { k: 'weapon', w }; this.afterAction(true); return; }
+      if (!ap) return;
+      this.mode = { k: 'busy' }; this.clearMenu(); const mv = b.move(u, ap.x, ap.y); if (!mv.ok) { this.toast(mv.msg!); this.mode = { k: 'idle' }; this.renderAll(); return; }
+      await this.flush(); if (b.over) { this.resolveTurn?.(); return; }
+      if (!b.incapacitated(u) && !u.dead && this.validTarget(u, tgt, { w })) { const r = b.weaponAttack(u, w, tgt); if (!r.ok) this.toast(r.msg!); this.mode = { k: 'weapon', w }; } else this.mode = { k: 'idle' };
+      this.afterAction(true);
+    };
+    const status = inRange ? h('div', { class: 'small' }, `Impacto ≈ ${pct}% (CA ${b.ac(tgt, vis.cover)}${vis.cover ? ', cobertura +' + vis.cover : ''}) · daño medio ≈ ${dmg}`) : ap ? h('div', { class: 'small' }, `Fuera de alcance: te acercás (${ap.cost * 5} pies) y atacás. Impacto ≈ ${pct}% · daño ≈ ${dmg}`) : h('div', { class: 'warn' }, 'Fuera de alcance y sin casilla desde donde llegar.');
+    this.sheet(h('div', { class: 'st' }, `⚔ ${tgt.name}`, h('small', {}, ` · PG ${tgt.hp}/${tgt.maxHp} · CA ${b.ac(tgt)}`)), chips, status, h('div', { class: 'srow' },
+      h('button', { class: 'go', disabled: !inRange && !ap, onClick: go }, inRange ? `⚔ Atacar con ${w.name}` : `🏃 Acercarse y atacar`), h('button', { class: 'no', onClick: () => this.closeSheet() }, '✕')));
   }
   openAttackMenu() {
     const u = this.cur; if (!u) return; this.clearMenu();
