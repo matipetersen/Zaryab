@@ -91,6 +91,12 @@ export class Renderer {
   fogAt(x: number, y: number) { const g = this.b?.grid; return g && this.fogA.length === g.w * g.h ? this.fogA[Math.round(y) * g.w + Math.round(x)] : 0; }
   /** Orientación de la cámara en pasos de 90° (como en Tactics Ogre). 0 = norte arriba. */
   rot = 0; private rotTarget = 0; private rotT = -1; rotFade = 0;
+  /** Cambia de ángulo manteniendo en el centro de la pantalla el mismo punto del mapa (antes el tablero «saltaba» de lugar). */
+  applyRot(nr: number) {
+    if (!this.b) { this.rot = nr; return; } const s = this.scale(), d = this.vdims(); const ox = this.W / 2 + this.panX, oy = this.H / 2 + this.panY - ((d.w + d.h) * TH / 4) * s + 10;
+    const a = (this.W / 2 - ox) / (TW / 2 * s), bq = (this.H / 2 - oy) / (TH / 2 * s); const vx = (a + bq) / 2, vy = (bq - a) / 2; const L = this.rinv(vx, vy);
+    this.rot = nr; const q = this.proj(L.x, L.y); this.panX += this.W / 2 - q.x; this.panY += this.H / 2 - q.y;
+  }
   rotate(dir: 1 | -1) { if (this.rotT >= 0) return; this.rotTarget = (this.rot + dir + 4) % 4; this.rotT = 0; }
   /** Dimensiones de la cuadrícula tal como se ven (se intercambian con 90° y 270°). */
   vdims() { const g = this.b!.grid; return this.rot % 2 ? { w: g.h, h: g.w } : { w: g.w, h: g.h }; }
@@ -184,7 +190,7 @@ export class Renderer {
   // ---------- update ----------
   update(dt: number) {
     if (!this.b) return;
-    if (this.rotT >= 0) { this.rotT += dt / .34; this.rotFade = 1 - Math.abs(2 * Math.min(1, this.rotT) - 1); if (this.rotT >= .5 && this.rot !== this.rotTarget) this.rot = this.rotTarget; if (this.rotT >= 1) { this.rotT = -1; this.rotFade = 0; } }
+    if (this.rotT >= 0) { this.rotT += dt / .34; this.rotFade = 1 - Math.abs(2 * Math.min(1, this.rotT) - 1); if (this.rotT >= .5 && this.rot !== this.rotTarget) this.applyRot(this.rotTarget); if (this.rotT >= 1) { this.rotT = -1; this.rotFade = 0; } }
     this.updateFog(dt);
     this.weather.update(dt); for (const f of this.flashes) f.t += dt * 2.6; this.flashes = this.flashes.filter(f => f.t < 1);
     if (this.freeze > 0) { this.freeze -= dt; return; } // «hit stop»: un instante de pausa en el impacto
@@ -240,7 +246,7 @@ export class Renderer {
     // objetos y unidades ordenados por profundidad
     type D = { depth: number; fn: () => void };
     const items: D[] = [];
-    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.1, fn: () => { this.drawBlock(x, y, t.kind, s); this.fogBlock(x, y, t.kind, s); } }); } }
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.kind === 'high') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.05, fn: () => this.drawHigh(x, y, s) }); } if (t.ch === 'd' && this.fogA[y * g.w + x] < .6) { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.6, fn: () => this.drawDoorFrame(x, y, s) }); } if (t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door') { const rq = this.rv(x, y); items.push({ depth: rq.x + rq.y + 0.1, fn: () => { this.drawBlock(x, y, t.kind, s); this.fogBlock(x, y, t.kind, s); } }); } }
     for (const u of b.units) { const v = this.vis.get(u.uid); if (!v || v.alpha <= 0.02) continue; { const rq = this.rv(v.x, v.y); const fa = u.side === 'pc' ? 0 : this.fogAt(v.x, v.y); if (fa > .6) continue; items.push({ depth: rq.x + rq.y + 0.5, fn: () => { if (fa > .02) { const a0 = v.alpha; v.alpha *= 1 - fa / .6; this.drawUnit(u, v, s); v.alpha = a0; } else this.drawUnit(u, v, s); } }); } }
     items.sort((a, b2) => a.depth - b2.depth); for (const it of items) it.fn();
     // proyectiles, anillos, partículas
@@ -276,7 +282,7 @@ export class Renderer {
     if (mode === 'dyn' && kind !== 'water' && kind !== 'hazard' && kind !== 'mark') return;
     const P = this.pal, h = kind === 'high' ? ELEV : 0; const p = this.proj(x, y, h);
     if (kind === 'wall' || kind === 'cover' || kind === 'door') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
-    if (kind === 'high') { this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', 'high'); this.box(p.x, p.y + h * s, s, h, P.high, shade(P.high, .6), shade(P.high, .75)); this.boxTex = null; return; }
+    if (kind === 'high') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.high, .6)); return; } // el bloque elevado se dibuja ordenado por profundidad (drawHigh)
     const c = this.ctx;
     if (mode !== 'dyn') {
     let col = (x + y) % 2 ? P.f1 : P.f2;
@@ -292,6 +298,21 @@ export class Renderer {
     else if (kind === 'hazard') { c.fillStyle = `rgba(255,200,80,${.35 + .2 * Math.sin(this.time * 6 + x)})`; c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 7 * s, p.y + 22 * s); c.lineTo(p.x - 7 * s, p.y + 22 * s); c.fill(); }
     if (kind === 'mark') { const pulse = .5 + .3 * Math.sin(this.time * 3 + x); c.strokeStyle = `rgba(142,68,173,${pulse + .3})`; c.lineWidth = 2; c.beginPath(); c.ellipse(p.x, p.y + 16 * s, 20 * s, 10 * s, 0, 0, 6.28); c.stroke(); c.beginPath(); c.moveTo(p.x, p.y + 6 * s); c.lineTo(p.x + 10 * s, p.y + 16 * s); c.lineTo(p.x, p.y + 26 * s); c.lineTo(p.x - 10 * s, p.y + 16 * s); c.closePath(); c.stroke(); c.lineWidth = 1; }
     }
+  }
+  /** Casilla elevada: va en la pasada ordenada por profundidad para que tape (o no) a quien esté detrás según el ángulo de cámara. */
+  drawHigh(x: number, y: number, s: number) {
+    const P = this.pal, p = this.proj(x, y, 0); this.boxTex = assetImg('tiles', `${this.map?.theme}_high`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', 'high');
+    try { this.box(p.x, p.y, s, ELEV, P.high, shade(P.high, .6), shade(P.high, .75)); } finally { this.boxTex = null; }
+    for (const o of this.overlays) if (o.x === x && o.y === y) this.drawOverlay(o, s);
+    if (this.hover && this.hover.x === x && this.hover.y === y) { const q = this.proj(x, y, ELEV); this.diamond(q.x, q.y, s, 'rgba(255,255,255,.10)', 'rgba(255,255,255,.7)'); }
+    this.fogBlock(x, y, 'high', s);
+  }
+  /** Marco de una puerta abierta: dos jambas en los bordes que la unen con el muro, sea cual sea la orientación de la cámara. */
+  drawDoorFrame(x: number, y: number, s: number) {
+    const g = this.b!.grid, c = this.ctx; const solid = (xx: number, yy: number) => { const t = g.at(xx, yy); return !!t && (t.kind === 'wall' || t.kind === 'door' || t.kind === 'cover'); };
+    const alongX = solid(x - 1, y) || solid(x + 1, y) || !(solid(x, y - 1) || solid(x, y + 1)); const n = alongX ? [{ x: x - 1, y }, { x: x + 1, y }] : [{ x, y: y - 1 }, { x, y: y + 1 }];
+    const m = this.center(x, y); const posts = n.map(q => { const e = this.center(q.x, q.y); return { x: (m.x + e.x) / 2, y: (m.y + e.y) / 2 }; }).sort((a, b) => a.y - b.y);
+    for (const pt of posts) { c.fillStyle = '#3a2216'; c.fillRect(pt.x - 3 * s, pt.y - 22 * s, 6 * s, 22 * s); c.fillStyle = '#c9a458'; c.fillRect(pt.x - 3 * s, pt.y - 23 * s, 6 * s, 3 * s); }
   }
   drawBlock(x: number, y: number, kind: string, s: number) {
     this.boxTex = assetImg('tiles', `${this.map?.theme}_${kind}`)?.img ?? blockTex(this.pal, this.map?.theme ?? '', kind as 'wall' | 'cover', this.b!.grid.at(x, y)?.ch ?? ''); try { this.drawBlock0(x, y, kind, s); } finally { this.boxTex = null; }
@@ -333,14 +354,13 @@ export class Renderer {
     const g = this.b!.grid, c = this.ctx;
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
       const t = g.tiles[y][x];
-      if (t.ch === 'd') { const p = this.proj(x, y, 0); const q = this.center(x, y); c.save(); for (const sx of [-1, 1]) { const px = p.x + sx * TW / 2 * s * .78, py = p.y + TH / 2 * s; c.fillStyle = '#3a2216'; c.fillRect(px - 3 * s, py - 20 * s, 6 * s, 22 * s); c.fillStyle = '#c9a458'; c.fillRect(px - 3 * s, py - 21 * s, 6 * s, 3 * s); } void q; c.restore(); }
-      const a = this.fogA[y * g.w + x]; if (a < .02 || t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door') continue; const p = this.proj(x, y, t.kind === 'high' ? ELEV : 0); this.diamond(p.x, p.y, s, `rgba(6,2,16,${a})`);
+      const a = this.fogA[y * g.w + x]; if (a < .02 || t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door' || t.kind === 'high') continue; const p = this.proj(x, y, 0); this.diamond(p.x, p.y, s, `rgba(6,2,16,${a})`);
     }
   }
   /** Silueta del bloque para cubrirlo con niebla. */
   fogBlock(x: number, y: number, kind: string, s: number) {
     const a = this.fogA[Math.round(y) * this.b!.grid.w + Math.round(x)]; if (a < .02) return; const g = this.b!.grid, c = this.ctx, p = this.proj(x, y, 0); const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1;
-    const hh = (kind === 'wall' ? (rim ? RIM : WALL) : kind === 'door' ? WALL - 6 : COVER + 4) * s; c.fillStyle = `rgba(6,2,16,${a})`; c.beginPath(); c.moveTo(p.x, p.y - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s - hh); c.closePath(); c.fill();
+    const hh = (kind === 'wall' ? (rim ? RIM : WALL) : kind === 'door' ? WALL - 6 : kind === 'high' ? ELEV : COVER + 4) * s; c.fillStyle = `rgba(6,2,16,${a})`; c.beginPath(); c.moveTo(p.x, p.y - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s - hh); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s - hh); c.closePath(); c.fill();
   }
   /** Sombras que muros y cajas proyectan sobre el suelo, siempre hacia el mismo lado de la pantalla. */
   drawBlockShadows(s: number) {
