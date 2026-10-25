@@ -49,7 +49,7 @@ def({ id: 'dash', name: 'Correr', desc: 'Duplicás tu movimiento este turno.', c
 def({ id: 'buscar', name: 'Buscar', desc: 'Tirada de Percepción: revelás trampas y objetos ocultos a 4 casillas con línea de visión. Las minas y trampas ya descubiertas se pueden evitar o desarmar con Interactuar.', cost: 'action', range: 0, target: 'self', tag: 'utility',
   run: (b, u) => { searchArea(b, u); } });
 def({ id: 'sprint', name: 'Esprintar', desc: 'Corrés a cuatro veces tu velocidad. Los ataques contra vos tienen ventaja hasta tu próximo turno. Imprudente: puede llevarte contra una trampa oculta.', cost: 'action', range: 0, target: 'self', tag: 'move',
-  run: (b, u) => { u.moveLeft += u.speed * 3; b.addStatus(u, { id: 'sprinting', turns: 1, src: u.uid }, true); b.log(`${u.name} sale disparado (esprint).`, 'sys'); } });
+  run: (b, u) => { u.moveLeft += u.speed * 3; b.addStatus(u, { id: 'sprinting', turns: -1, src: u.uid }, true); b.log(`${u.name} sale disparado (esprint).`, 'sys'); } });
 def({ id: 'stabilize', name: 'Primeros auxilios', desc: 'Un aliado caído adyacente: prueba de Medicina (CD 10). Si sale bien, se estabiliza y deja de hacer salvaciones de muerte.', cost: 'action', range: 1, target: 'downedAlly', tag: 'heal',
   run: (b, u, t: Unit) => { const r = roll('1d20').total + (u.mods.wis ?? 0) + (u.traits.includes('medic') ? (u.prof ?? 0) : 0); if (r >= 10) { t.stable = true; b.log(`${u.name} estabiliza a ${t.name} (${r} vs CD 10).`, 'heal'); } else b.log(`${u.name} no logra estabilizar a ${t.name} (${r} vs CD 10).`, 'sys'); } });
 def({ id: 'disengage', name: 'Desengancharse', desc: 'Tu movimiento de este turno no provoca ataques de oportunidad.', cost: 'action', range: 0, target: 'self', tag: 'move',
@@ -64,7 +64,7 @@ def({ id: 'shove', name: 'Derribar', desc: 'Prueba de Atletismo (FUE) contra FUE
   run: (b, u, t: Unit) => {
     if (t.size > u.size + 1) { b.log(`${t.name} es demasiado grande para derribarlo.`, 'sys'); return; }
     const a = roll('1d20').total + u.mods.str + (u.prof ?? 0), d = roll('1d20').total + Math.max(t.mods.str, t.mods.dex);
-    if (a >= d) { b.addStatus(t, { id: 'prone', turns: -1, src: u.uid }); b.log(`${u.name} derriba a ${t.name} (${a} vs ${d}).`, 'buff'); } else b.log(`${t.name} resiste el empujón de ${u.name} (${a} vs ${d}).`, 'sys');
+    if (a > d) { b.addStatus(t, { id: 'prone', turns: -1, src: u.uid }); b.log(`${u.name} derriba a ${t.name} (${a} vs ${d}).`, 'buff'); } else b.log(`${t.name} resiste el empujón de ${u.name} (${a} vs ${d}).`, 'sys');
   } });
 def({ id: 'ready', name: 'Preparar acción', desc: 'Te quedás en guardia hasta tu próximo turno: el primer enemigo que entre en el alcance de tu arma recibe un ataque como reacción.', cost: 'action', range: 0, target: 'self', tag: 'utility',
   run: (b, u) => { b.addStatus(u, { id: 'ready', turns: -1, src: u.uid }, true); b.log(`${u.name} prepara una acción y espera.`, 'sys'); } });
@@ -72,7 +72,7 @@ def({ id: 'grapple', name: 'Agarrar', desc: 'Atletismo (FUE) contra FUE o DES de
   run: (b, u, t: Unit) => {
     if (t.size > u.size + 1) { b.log(`${t.name} es demasiado grande para agarrarlo.`, 'sys'); return; }
     const a = roll('1d20').total + u.mods.str + (u.prof ?? 0), d = roll('1d20').total + Math.max(t.mods.str, t.mods.dex);
-    if (a >= d) { b.addStatus(t, { id: 'grappled', turns: -1, src: u.uid }); b.log(`${u.name} agarra a ${t.name} (${a} vs ${d}): su velocidad pasa a 0.`, 'buff'); } else b.log(`${t.name} se escurre de ${u.name} (${a} vs ${d}).`, 'sys');
+    if (a > d) { b.addStatus(t, { id: 'grappled', turns: -1, src: u.uid }); b.log(`${u.name} agarra a ${t.name} (${a} vs ${d}): su velocidad pasa a 0.`, 'buff'); } else b.log(`${t.name} se escurre de ${u.name} (${a} vs ${d}).`, 'sys');
   } });
 def({ id: 'escape', name: 'Zafarse', desc: 'Si estás agarrado: prueba de FUE o DES contra el Atletismo de quien te agarra.', cost: 'action', range: 0, target: 'self', tag: 'move',
   validate: (b, u) => b.has(u, 'grappled') ? undefined : { ok: false, msg: 'No estás agarrado.' },

@@ -10,7 +10,7 @@ export type CondId =
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
   | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped' | 'grappled' | 'ready' | 'sprinting';
 
-export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string }
+export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string; /** Puesto durante el turno de quien lo tiene: no se descuenta al terminar ese turno. */ fresh?: boolean; /** Termina si quien lo lanzó pierde la concentración. */ conc?: boolean }
 
 export interface DmgPart { dice: string; type: DmgType }
 

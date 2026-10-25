@@ -24,7 +24,9 @@ export const COND_LABEL: Record<CondId, string> = {
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
   taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado', grappled: 'Agarrado', ready: 'Acción preparada', sprinting: 'Esprintando',
 };
-const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite'];
+const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite', 'spiritGuard', 'ensnare'];
+/** Estados que se guardan uno por cada fuente (dos aliados ayudando, dos agarres…). */
+const SRC_CONDS: CondId[] = ['helped', 'frightened', 'charmed', 'grappled'];
 const HIDDEN_CONDS: CondId[] = ['surgeUsed', 'sneakUsed'];
 export const isHiddenCond = (c: CondId) => HIDDEN_CONDS.includes(c);
 
@@ -176,9 +178,12 @@ export class Battle {
 
   addStatus(t: Unit, s: Status, quiet = false) {
     if (t.dead || t.condImmune.includes(s.id)) { if (!quiet) this.float(t, 'Inmune', 'status'); return false; }
-    const ex = t.statuses.find(x => x.id === s.id && (x.src === s.src || !CONC_CONDS.includes(s.id)));
-    if (ex) { ex.turns = Math.max(ex.turns, s.turns); ex.val = s.val ?? ex.val; ex.dot = s.dot ?? ex.dot; }
+    const perSrc = CONC_CONDS.includes(s.id) || SRC_CONDS.includes(s.id); // ayuda, miedo, encanto o agarre de dos fuentes distintas conviven
+    const ex = t.statuses.find(x => x.id === s.id && (x.src === s.src || !perSrc));
+    if (this.cur === t && s.turns > 0) s.fresh = true; // puesto durante el propio turno: no se descuenta al terminarlo
+    if (ex) { ex.turns = ex.turns < 0 || s.turns < 0 ? -1 : Math.max(ex.turns, s.turns); ex.val = s.val ?? ex.val; ex.dot = s.dot ?? ex.dot; ex.fresh = ex.fresh || s.fresh; if (s.conc) ex.conc = true; }
     else t.statuses.push(s);
+    if ((s.id === 'paralyzed' || s.id === 'stunned') && t.conc) this.breakConc(t, ' (incapacitado)');
     if (!quiet && COND_LABEL[s.id]) this.float(t, COND_LABEL[s.id], 'status');
     if (s.id === 'prone' || s.id === 'paralyzed' || s.id === 'stunned') this.emit({ t: 'hit', uid: t.uid });
     return true;
@@ -188,13 +193,13 @@ export class Battle {
     if (!u.conc) return;
     const ab = ABILITIES[u.conc.id];
     this.log(`${u.name} pierde la concentración${ab ? ' en ' + ab.name : ''}${why}.`, 'sys');
-    for (const t of this.units) t.statuses = t.statuses.filter(s => !(s.src === u.uid && CONC_CONDS.includes(s.id)));
+    for (const t of this.units) t.statuses = t.statuses.filter(s => !(s.src === u.uid && (s.conc || (CONC_CONDS.includes(s.id) && s.conc !== false))));
     u.conc = undefined;
   }
 
   // ---------- flujo de turnos ----------
   start() {
-    for (const u of this.units) u.initiative = d20() + u.mods.dex + (u.traits.includes('dreadInit') ? u.mods.wis - u.mods.dex : 0) + (u.traits.includes('initProf') ? u.prof : 0) + (u.initBonus ?? 0);
+    for (const u of this.units) u.initiative = d20() + u.mods.dex + (u.traits.includes('dreadInit') ? u.mods.wis : 0) + (u.traits.includes('initProf') ? u.prof : 0) + (u.initBonus ?? 0);
     this.order = this.units.filter(u => u.sprite !== 'wall')
       .sort((a, b) => b.initiative - a.initiative || b.mods.dex - a.mods.dex);
     this.round = 1; this.idx = -1;
@@ -222,7 +227,7 @@ export class Battle {
   }
   startTurn(u: Unit) {
     u.turnsTaken++; u.reactionUsed = false;
-    if (u.surprised) { u.surprised = false; u.lostTurn = true; u.moveLeft = 0; u.actionUsed = true; u.bonusUsed = true; this.log(`${u.name} está sorprendido y pierde su primer turno.`, 'sys'); this.float(u, 'Sorpresa', 'miss'); return; }
+    const lost = !!u.surprised;
     for (const o of this.units) if (this.has(o, 'helped') && this.status(o, 'helped')!.src === u.uid) this.removeStatus(o, 'helped'); // la ayuda dura hasta el próximo turno de quien ayuda
     u.actionUsed = false; u.bonusUsed = false; u.extraActions = 0; u.attacksMade = 0; u.res['flurry'] = 0;
     u.moveLeft = u.speed + (this.has(u, 'ambusher') && u.turnsTaken === 1 ? 2 : 0);
@@ -236,6 +241,7 @@ export class Battle {
     if (u.traits.includes('smash') && !u.dead) { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && this.destructible(u.x + dx, u.y + dy)) { this.log(`${u.name} aplasta lo que se interpone.`, 'sys'); this.destroyTile(u.x + dx, u.y + dy, 'bludgeoning', u); } }
     if (u.regen && !u.down && u.hp > 0 && u.hp < u.maxHp) { u.hp = Math.min(u.maxHp, u.hp + u.regen); this.float(u, `+${u.regen}`, 'heal'); }
     // daño por turno
+    const wasDown = u.down;
     for (const s of [...u.statuses]) if (s.dot && !u.dead) {
       const r = roll(s.dot); this.log(`${u.name} sufre ${r.total} por ${COND_LABEL[s.id]}.`, 'dmg');
       this.damage(u, r.total, s.id === 'burning' ? 'fire' : 'poison', undefined);
@@ -243,15 +249,16 @@ export class Battle {
     const tile = this.grid.at(u.x, u.y);
     if (tile?.kind === 'hazard' && !u.dead && !u.down && !u.fly) { const r = roll('1d6'); this.log(`${u.name} arde en terreno peligroso (${r.total}).`, 'dmg'); this.damage(u, r.total, 'fire', undefined); }
     if (u.dead) return;
-    if (u.down && !u.stable) this.deathSave(u);
-    if (this.has(u, 'prone') && !u.down && !this.has(u, 'restrained') && u.moveLeft > 0) { this.removeStatus(u, 'prone'); u.moveLeft = Math.floor(u.moveLeft / 2); this.log(`${u.name} se levanta.`, 'sys'); }
+    if (wasDown && u.down && !u.stable) this.deathSave(u);
     if (this.has(u, 'restrained') || this.has(u, 'grappled')) u.moveLeft = 0;
+    if (this.has(u, 'prone') && !u.down && u.moveLeft > 0) { this.removeStatus(u, 'prone'); u.moveLeft = Math.floor(u.moveLeft / 2); this.log(`${u.name} se levanta.`, 'sys'); }
     this.removeStatus(u, 'ready');
     if (this.has(u, 'paralyzed') || this.has(u, 'stunned')) { u.moveLeft = 0; u.actionUsed = true; u.bonusUsed = true; }
+    if (lost) { u.surprised = false; u.lostTurn = true; u.moveLeft = 0; u.actionUsed = true; u.bonusUsed = true; this.log(`${u.name} está sorprendido y pierde su primer turno.`, 'sys'); this.float(u, 'Sorpresa', 'miss'); }
   }
   endTurn(auto = false) {
     const u = this.cur; if (!u) return;
-    for (const s of [...u.statuses]) if (s.turns > 0) { s.turns--; if (s.turns === 0) { u.statuses = u.statuses.filter(x => x !== s); if (s.id === 'radiantSoul') u.fly = false; } }
+    for (const s of [...u.statuses]) if (s.turns > 0) { if (s.fresh) { s.fresh = false; continue; } s.turns--; if (s.turns === 0) { u.statuses = u.statuses.filter(x => x !== s); if (s.id === 'radiantSoul') u.fly = false; } }
     if (u.conc && (u.down || u.dead)) this.breakConc(u);
     if (!auto && !u.ai) { /* turno del jugador terminado */ }
     if (this.over) return;
@@ -271,7 +278,7 @@ export class Battle {
     if (t.kind === 'cover' && !u.fly) return true;
     return false;
   }
-  reach(u: Unit, budget = this.has(u, 'grappled') ? 0 : u.moveLeft): Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }> {
+  reach(u: Unit, budget = this.has(u, 'grappled') || this.has(u, 'restrained') || this.incapacitated(u) ? 0 : u.moveLeft): Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }> {
     const out = new Map<string, { x: number; y: number; cost: number; prev?: string; occ?: boolean }>();
     const start = key(u.x, u.y); out.set(start, { x: u.x, y: u.y, cost: 0 });
     const open: string[] = [start];
@@ -316,7 +323,7 @@ export class Battle {
   tryEscape(u: Unit): boolean {
     const s = this.status(u, 'grappled'); if (!s) return true; const g = s.src ? this.byUid(s.src) : undefined; if (!g) { this.removeStatus(u, 'grappled'); return true; }
     const a = roll('1d20').total + Math.max(u.mods.str, u.mods.dex) + (u.pcId ? (u.prof ?? 0) : 0), d = roll('1d20').total + g.mods.str + (g.prof ?? 0);
-    if (a >= d) { this.removeStatus(u, 'grappled'); this.log(`${u.name} se zafa del agarre de ${g.name} (${a} vs ${d}).`, 'buff'); return true; }
+    if (a > d) { this.removeStatus(u, 'grappled'); if (this.cur === u && !this.has(u, 'restrained')) u.moveLeft = Math.max(u.moveLeft, u.speed); this.log(`${u.name} se zafa del agarre de ${g.name} (${a} vs ${d}).`, 'buff'); return true; }
     this.log(`${u.name} no logra zafarse de ${g.name} (${a} vs ${d}).`, 'sys'); return false;
   }
   /** Flanqueo: un aliado que pueda actuar está justo al otro lado del objetivo. */
@@ -329,7 +336,7 @@ export class Battle {
   canReact(u: Unit) { return !u.reactionUsed && !u.surprised && !this.incapacitated(u) && u.sprite !== 'wall' && !u.fled; }
   /** Enemigos con reacción que pueden atacar a `u` al pasar de `from` a `to` (salir de su alcance de 5 pies sin Desengancharse). */
   provokers(u: Unit, from: P, to: P): Unit[] {
-    if (this.has(u, 'disengaged')) return [];
+    if (this.has(u, 'disengaged') || this.has(u, 'invisible')) return [];
     return this.foesOf(u).filter(h => this.canReact(h) && cheb(from, h) <= 1 && cheb(to, h) > 1);
   }
   /** Cuántos ataques de oportunidad provocaría recorrer este camino (para avisar al jugador). */
@@ -389,10 +396,10 @@ export class Battle {
     if (cheb(a, b) <= 1) return { visible: true, cover: 0 };
     return this.grid.los(a, b);
   }
-  rollAttack(a: Unit, t: Unit, toHit: number, o: { ranged?: boolean; spell?: boolean; ignoreCover?: boolean; autoCrit?: boolean; forceAdv?: boolean; flat?: boolean } = {}): AtkResult {
+  rollAttack(a: Unit, t: Unit, toHit: number, o: { ranged?: boolean; spell?: boolean; ignoreCover?: boolean; autoCrit?: boolean; forceAdv?: boolean; forceDis?: boolean; flat?: boolean } = {}): AtkResult {
     const vis = this.canSee(a, t);
     const cover = o.ignoreCover ? 0 : vis.cover;
-    let adv = !!o.forceAdv, dis = false;
+    let adv = !!o.forceAdv, dis = !!o.forceDis;
     const melee = cheb(a, t) <= 1 && !o.ranged;
     if (this.has(a, 'invisible')) adv = true;
     if (this.has(t, 'guided')) { adv = true; this.removeStatus(t, 'guided'); }
@@ -405,10 +412,10 @@ export class Battle {
     // Atacar a distancia con un enemigo adyacente (que pueda actuar) impone desventaja.
     if (o.ranged && this.foesOf(a).some(f => f.sprite !== 'wall' && !f.fled && !this.incapacitated(f) && cheb(f, a) <= 1)) dis = true;
     if (a.traits.includes('swarm') && this.units.some(u => u !== a && !u.dead && u.side === a.side && u.traits.includes('swarm') && cheb(u, a) <= 2)) adv = true;
-    if (a.traits.includes('assassinate') && !t.acted) adv = true;
+    if (a.traits.includes('assassinate') && t.turnsTaken === 0) adv = true; // Asesinar: contra quien todavía no jugó
     if (this.has(a, 'poisoned') || this.has(a, 'blinded') || this.has(a, 'prone') || this.has(a, 'restrained') || this.has(a, 'disadvNext')) dis = true;
     if (this.has(a, 'frightened')) { const s = this.status(a, 'frightened')!; const src = s.src ? this.byUid(s.src) : undefined; if (!src || this.canSee(a, src).visible) dis = true; }
-    if (this.has(t, 'dodging') || this.has(t, 'invisible') && !adv) dis = true;
+    if (this.has(t, 'dodging') || this.has(t, 'invisible')) dis = true; // ventajas y desventajas se cancelan entre sí
     if (this.has(a, 'disadvNext')) this.removeStatus(a, 'disadvNext');
     let nat = d20(); let n2 = nat;
     if (adv && !dis) { n2 = d20(); nat = Math.max(nat, n2); } else if (dis && !adv) { n2 = d20(); nat = Math.min(nat, n2); }
@@ -419,14 +426,16 @@ export class Battle {
     if (this.has(a, 'bane')) bonus -= Math.floor(rand() * 4) + 1;
     const ac = this.ac(t, cover);
     const critRange = this.has(a, 'hexCurse') && this.status(a, 'hexCurse')!.val === t.uid ? 19 : 20;
-    const crit = o.autoCrit || nat >= critRange || ((melee && (this.has(t, 'paralyzed') || t.down)) && nat !== 1 && cheb(a, t) <= 1);
     const total = nat + bonus;
-    const hit = nat !== 1 && (crit || total >= ac);
+    // primero hay que acertar (el 20 natural siempre acierta); recién entonces paralizado, inconsciente o sorprendido lo vuelven crítico
+    const hit = nat !== 1 && (nat >= critRange || total >= ac);
+    const crit = hit && (o.autoCrit || nat >= critRange || ((this.has(t, 'paralyzed') || t.down) && cheb(a, t) <= 1));
     return { hit, crit: !!crit && hit, nat, total, ac, adv: adv && !dis, dis: dis && !adv };
   }
   save(t: Unit, ab: Ab, dc: number, label = ''): boolean {
-    if ((ab === 'str' || ab === 'dex') && (this.has(t, 'paralyzed') || this.has(t, 'stunned'))) { this.log(`${t.name} falla automáticamente la salvación${label}.`, 'sys'); return false; }
-    let n = d20(); if (this.has(t, 'bless')) n += Math.floor(rand() * 4) + 1; if (this.has(t, 'bane')) n -= Math.floor(rand() * 4) + 1;
+    if ((ab === 'str' || ab === 'dex') && (this.has(t, 'paralyzed') || this.has(t, 'stunned') || t.down)) { this.log(`${t.name} falla automáticamente la salvación${label}.`, 'sys'); return false; }
+    const sAdv = ab === 'dex' && this.has(t, 'dodging'), sDis = ab === 'dex' && this.has(t, 'restrained');
+    let n = d20(); if (sAdv !== sDis) { const n2 = d20(); n = sAdv ? Math.max(n, n2) : Math.min(n, n2); } if (this.has(t, 'bless')) n += Math.floor(rand() * 4) + 1; if (this.has(t, 'bane')) n -= Math.floor(rand() * 4) + 1;
     const total = n + t.saves[ab];
     const ok = total >= dc;
     this.log(`${t.name} salva ${ab.toUpperCase()} ${label}: ${total} vs CD ${dc} → ${ok ? 'éxito' : 'fallo'}.`, 'roll');
@@ -437,25 +446,35 @@ export class Battle {
   rollParts(parts: DmgPart[], crit: boolean, bonus = 0): { amt: number; type: DmgType; txt: string }[] {
     return parts.map((p, i) => { const r = roll(p.dice, crit); return { amt: Math.max(0, r.total + (i === 0 ? bonus : 0)), type: p.type, txt: r.text }; });
   }
-  damage(t: Unit, amt: number, type: DmgType, src?: Unit, o: { quiet?: boolean; silent?: boolean; crit?: boolean } = {}): number {
+  /** Un impacto con varias partes de daño: resistencias por parte y después un solo evento de daño. */
+  damageHit(t: Unit, parts: { amt: number; type: DmgType }[], src?: Unit, o: { crit?: boolean; attack?: boolean; silent?: boolean } = {}): number {
+    if (t.dead) return 0; let sum = 0;
+    for (const p of parts) { if (p.amt <= 0 || t.immune.includes(p.type)) continue; let a = p.amt; if (t.resist.includes(p.type)) a = Math.floor(a / 2); if (t.vuln.includes(p.type)) a *= 2; sum += a; }
+    if (sum > 0 && this.has(t, 'vulnerable')) { sum *= 2; this.removeStatus(t, 'vulnerable'); }
+    if (sum > 0 && o.attack && src && t.traits.includes('uncanny') && !t.down && this.canReact(t) && this.canSee(t, src).visible) { t.reactionUsed = true; sum = Math.floor(sum / 2); this.log(`${t.name} esquiva lo peor del golpe (Esquiva Asombrosa).`, 'sys'); }
+    const main = parts.reduce((m, p) => (p.amt > m.amt ? p : m), parts[0] ?? { amt: 0, type: 'bludgeoning' as DmgType });
+    return this.damage(t, sum, main.type, src, { crit: o.crit, silent: o.silent, resolved: true });
+  }
+  damage(t: Unit, amt: number, type: DmgType, src?: Unit, o: { quiet?: boolean; silent?: boolean; crit?: boolean; resolved?: boolean } = {}): number {
     if (t.dead || amt <= 0) return 0;
     if (t.traits.includes('dormant')) this.flags['w' + t.uid] = 1;
     let a = amt;
-    if (t.immune.includes(type)) a = 0;
-    else { if (t.resist.includes(type)) a = Math.floor(a / 2); if (t.vuln.includes(type)) a *= 2; }
-    if (a > 0 && this.has(t, 'vulnerable')) { a *= 2; this.removeStatus(t, 'vulnerable'); }
+    if (!o.resolved) {
+      if (t.immune.includes(type)) a = 0;
+      else { if (t.resist.includes(type)) a = Math.floor(a / 2); if (t.vuln.includes(type)) a *= 2; }
+      if (a > 0 && this.has(t, 'vulnerable')) { a *= 2; this.removeStatus(t, 'vulnerable'); }
+    }
     if (a > 0 && t.traits.includes('shielded') && this.units.some(x => !x.dead && x.side === t.side && x.traits.includes('brazo'))) { a = Math.floor(a / 2); if (!this.flags['shieldNote']) { this.flags['shieldNote'] = 1; this.log(`Los brazos protegen a ${t.name}: el daño se reduce a la mitad mientras sigan vivos.`, 'sys'); } }
     if (a <= 0) { if (!o.quiet) this.float(t, '0', 'miss'); return 0; }
     this.emit({ t: 'hit', uid: t.uid });
     if (!o.silent) this.float(t, String(a), o.crit ? 'crit' : 'dmg');
-    if (t.down) { // ya caído: fallo de salvación de muerte
-      t.death.fail += o.crit ? 2 : 1;
+    if (t.down) { // ya caído: fallo de salvación de muerte (y deja de estar estable)
+      t.death.fail += o.crit ? 2 : 1; t.stable = false;
       this.log(`${t.name} recibe daño inconsciente (fallo ${Math.min(3, t.death.fail)}/3).`, 'dmg');
       if (t.death.fail >= 3 || a >= t.maxHp) this.kill(t, src);
       return a;
     }
-    if (src && t.traits.includes('uncanny') && !this.flags['unc' + t.uid + '_' + this.round]) { this.flags['unc' + t.uid + '_' + this.round] = 1; a = Math.floor(a / 2); this.log(`${t.name} esquiva lo peor del golpe (Esquiva Asombrosa).`, 'sys'); }
-    const absorbed = Math.min(t.temp, a); t.temp -= absorbed; a -= absorbed;
+    const dealt = a; const absorbed = Math.min(t.temp, a); t.temp -= absorbed; a -= absorbed;
     if (t.hp - a <= 0 && this.has(t, 'deathWard')) { this.removeStatus(t, 'deathWard'); t.hp = 1 + a; this.log(`La Protección contra la Muerte salva a ${t.name}.`, 'heal'); }
     const before = t.hp; t.hp -= a;
     if (t.traits.includes('zombieFort') && t.hp <= 0 && type !== 'radiant' && !o.crit) { const dc = 5 + a; if (this.save(t, 'con', dc, '(Fortaleza de No-muerto)')) { t.hp = 1; this.log(`${t.name} se mantiene en pie.`, 'sys'); } }
@@ -473,9 +492,9 @@ export class Battle {
         this.checkEnd();
       } else this.kill(t, src);
     } else if (t.traits.includes('flees50') && t.hp <= t.maxHp / 2) { this.flee(t); }
-    else if (t.conc && a > 0 && before > 0) {
-      const dc = Math.max(10, Math.floor(a / 2));
-      let n = d20(); if (t.traits.includes('warCaster')) n = Math.max(n, d20()); n += t.mods.con; if (this.has(t, 'bless')) n += 2;
+    else if (t.conc && dealt > 0 && before > 0) { // una prueba por impacto, contando el daño absorbido por PG temporales
+      const dc = Math.max(10, Math.floor(dealt / 2));
+      let n = d20(); if (t.traits.includes('warCaster')) n = Math.max(n, d20()); n += t.saves.con; if (this.has(t, 'bless')) n += Math.floor(rand() * 4) + 1;
       this.log(`${t.name} concentración: ${n} vs CD ${dc}.`, 'roll');
       if (n < dc) this.breakConc(t, ' (dañado)');
     }
@@ -491,12 +510,12 @@ export class Battle {
     onGuardDeath(this, t);
     if (t.traits.includes('pilon')) for (const co of this.units.filter(x => !x.dead && x.traits.includes('pilonRegen'))) { this.log(`El pilón estalla y el Coloso recibe la sacudida.`, 'dmg'); this.damage(co, 18, 'force', src); }
     if (t.traits.includes('boss')) for (const f of this.units.filter(x => !x.dead && x.traits.includes('flees50'))) this.flee(f);
-    if (src) { const hc = this.status(src, 'hexCurse'); if (hc && hc.val === t.uid) { const h = src.mods.cha + 3; this.heal(src, h, src, true); this.log(`${src.name} se cura ${h} (Maldición Hexblade).`, 'heal'); } }
+    if (src) { const hc = this.status(src, 'hexCurse'); if (hc && hc.val === t.uid) { const h = Math.max(1, src.level + src.mods.cha); this.heal(src, h, src, true); this.log(`${src.name} se cura ${h} (Maldición Hexblade).`, 'heal'); } }
     if (t.onDeath) {
       const od = t.onDeath; this.log(`¡${t.name} — ${od.name}!`, 'dmg'); this.emit({ t: 'fx', kind: 'boom', x: t.x, y: t.y });
       for (const v of this.units) if (!v.dead && cheb(v, t) <= od.radius && v !== t) {
         const ok = this.save(v, od.ab, od.dc, `(${od.name})`);
-        for (const r of this.rollParts(od.dmg, false)) this.damage(v, ok ? Math.floor(r.amt / 2) : r.amt, r.type, undefined);
+        this.damageHit(v, this.rollParts(od.dmg, false).map(r => ({ amt: ok ? Math.floor(r.amt / 2) : r.amt, type: r.type })), undefined);
         if (!ok && od.cond) this.addStatus(v, { id: od.cond, turns: 1 });
       }
     }
@@ -511,9 +530,10 @@ export class Battle {
     if (t.dead || amt <= 0) return 0;
     if (t.undead) return 0;
     if (this.has(t, 'noHeal')) { if (!quiet) this.log(`${t.name} no puede curarse (Maldición de Herida).`, 'sys'); return 0; }
-    if (this.has(t, 'noHeal')) { if (!quiet) this.log(`${t.name} no puede curarse (Maldición de Herida).`, 'sys'); return 0; }
-    if (t.down) { t.down = false; t.stable = false; t.death = { succ: 0, fail: 0 }; t.hp = amt; this.log(`${t.name} recupera el conocimiento.`, 'heal'); }
+    const before = t.down ? 0 : t.hp;
+    if (t.down) { t.down = false; t.stable = false; t.death = { succ: 0, fail: 0 }; t.hp = Math.min(t.maxHp, amt); this.log(`${t.name} recupera el conocimiento.`, 'heal'); }
     else t.hp = Math.min(t.maxHp, t.hp + amt);
+    amt = t.hp - before;
     if (!quiet) this.float(t, '+' + amt, 'heal');
     this.emit({ t: 'fx', kind: 'heal', x: t.x, y: t.y });
     return amt;
@@ -556,8 +576,7 @@ export class Battle {
     const ranged = !!w.ranged;
     const sharp = !!w.sharp;
     const wasInvis = this.has(u, 'invisible');
-    const r = this.rollAttack(u, t, w.toHit, { ranged, ignoreCover: sharp, forceAdv: false });
-    if (longShot && !sharp) { /* desventaja aproximada */ }
+    const r = this.rollAttack(u, t, w.toHit, { ranged, ignoreCover: sharp, forceAdv: false, forceDis: !!longShot && !sharp, autoCrit: u.traits.includes('assassinate') && !!t.surprised });
     this.emit({ t: 'fx', kind: ranged ? 'arrow' : 'slash', x: u.x, y: u.y, x2: t.x, y2: t.y });
     const tag = `${r.adv ? ' (ventaja)' : r.dis ? ' (desventaja)' : ''}`;
     if (!r.hit) { this.log(`${u.name} ataca con ${w.name}${tag}: ${r.nat}→${r.total} vs CA ${r.ac}: falla.`, 'roll'); this.float(t, 'Falla', 'miss'); }
@@ -573,7 +592,7 @@ export class Battle {
       if (this.has(u, 'wrathSmite') && !ranged) { ex.push({ dice: '1d6', type: 'psychic' }); this.removeStatus(u, 'wrathSmite'); if (!this.save(t, 'wis', u.spellDC, '(Golpe Iracundo)')) this.addStatus(t, { id: 'frightened', turns: 10, src: u.uid }); }
       if (u.traits.includes('sneak') && !this.has(u, 'sneakUsed') && (w.finesse || ranged)) {
         const flank = this.units.some(a => a !== u && !a.dead && a.side === u.side && !this.incapacitated(a) && cheb(a, t) <= 1);
-        if (r.adv || flank) { ex.push({ dice: `${Math.ceil(u.level / 2)}d6`, type: w.dmg[0].type }); this.addStatus(u, { id: 'sneakUsed', turns: -1 }, true); bonusTxt = ' +Ataque furtivo'; }
+        if (r.adv || (flank && !r.dis)) { ex.push({ dice: `${Math.ceil(u.level / 2)}d6`, type: w.dmg[0].type }); this.addStatus(u, { id: 'sneakUsed', turns: -1 }, true); bonusTxt = ' +Ataque furtivo'; }
       }
       if (this.has(u, 'ambusher') && u.attacksMade === 1 && u.turnsTaken === 1) ex.push({ dice: '1d8', type: w.dmg[0].type });
       if (this.has(u, 'ensnare') && !ranged) { this.removeStatus(u, 'ensnare'); if (!this.save(t, 'str', u.spellDC, '(Golpe Enredador)')) this.addStatus(t, { id: 'restrained', turns: 5, src: u.uid }); }
@@ -584,7 +603,8 @@ export class Battle {
       const all = this.rollParts([...parts, ...ex], r.crit);
       let total = 0; const txt: string[] = [];
       const enf = this.has(u, 'enfeebled');
-      for (const p of all) { const amt = enf ? Math.floor(p.amt / 2) : p.amt; total += this.damage(t, amt, p.type, u, { crit: r.crit, silent: true }); txt.push(`${amt} ${p.type}`); }
+      const hitParts = all.map(p => ({ amt: enf ? Math.floor(p.amt / 2) : p.amt, type: p.type })); for (const p of hitParts) txt.push(`${p.amt} ${p.type}`);
+      total += this.damageHit(t, hitParts, u, { crit: r.crit, attack: true, silent: true });
       // mostrar el total una sola vez
       this.log(`${u.name} golpea a ${t.name} con ${w.name}${tag}${r.crit ? ' ¡CRÍTICO!' : ''}: ${r.nat}→${r.total} vs CA ${r.ac}. Daño ${total} (${txt.join(' + ')})${bonusTxt}.`, 'dmg');
       if (total > 0) this.float(t, String(total), r.crit ? 'crit' : 'dmg');
@@ -597,7 +617,7 @@ export class Battle {
 
   // ---------- habilidades ----------
   slotLevels(u: Unit, min: number): number[] {
-    const out: number[] = []; for (let l = min; l <= 7; l++) if ((u.res['slot' + l] ?? 0) > 0) out.push(l); return out;
+    const out: number[] = []; for (let l = min; l <= 9; l++) if ((u.res['slot' + l] ?? 0) > 0) out.push(l); return out;
   }
   canUse(u: Unit, id: string): Res {
     const ab = ABILITIES[id]; if (!ab) return { ok: false, msg: 'Habilidad desconocida.' };
@@ -614,6 +634,10 @@ export class Battle {
     const ab = ABILITIES[id]; const c = this.canUse(u, id); if (!c.ok) return c;
     let L = lvl ?? 0;
     if (ab.slot) { const lv = this.slotLevels(u, ab.slot); L = lvl && lv.includes(lvl) ? lvl : lv[0]; }
+    if (ab.target !== 'self' && ab.target !== 'none') { // el objetivo tiene que estar entre los válidos (alcance, línea de visión, bando)
+      const ts = this.abilityTargets(u, id, L); const tg = target as any;
+      if (!tg || !ts.some(x => x === tg || (!(x as Unit).uid && !tg.uid && (x as P).x === tg.x && (x as P).y === tg.y))) return { ok: false, msg: 'Objetivo fuera de alcance o inválido.' };
+    }
     const v = ab.validate?.(this, u, target as any, L); if (v && !v.ok) return v;
     if (target && (target as Unit).uid && (target as Unit).traits?.includes('absorbSpell') && (ab.tag === 'attack' || ab.tag === 'control') && ab.cost !== 'free' && (ab.slot ?? 0) <= 3 && !ab.id.startsWith('item_') && ab.id !== 'dash') { const tg = target as Unit; const h = roll('4d8').total; if (ab.slot) u.res['slot' + L]--; if (ab.use) u.res[ab.use]--; if (ab.cost === 'action') { this.spendAction(u); u.attacksMade = 99; } if (ab.cost === 'bonus') u.bonusUsed = true; tg.hp = Math.min(tg.maxHp, tg.hp + h); this.log(`${tg.name} absorbe ${ab.name} y se cura ${h}.`, 'sys'); u.acted = true; return { ok: true }; }
     if (ab.conc) this.breakConc(u);
@@ -637,7 +661,7 @@ export class Battle {
       return out;
     }
     if (ab.target === 'tile') {
-      for (let y = 0; y < this.grid.h; y++) for (let x = 0; x < this.grid.w; x++) { if (cheb(u, { x, y }) <= ab.range && !this.blockedFor(u, x, y) && !this.unitAt(x, y)) out.push({ x, y }); }
+      for (let y = 0; y < this.grid.h; y++) for (let x = 0; x < this.grid.w; x++) { if (cheb(u, { x, y }) <= ab.range && !this.blockedFor(u, x, y) && !this.unitAt(x, y) && (cheb(u, { x, y }) <= 1 || this.grid.los(u, { x, y }).visible)) out.push({ x, y }); }
       return out;
     }
     for (const t of this.units) {
@@ -656,7 +680,7 @@ export class Battle {
   // ---------- acciones de monstruo ----------
   expectedDamage(u: Unit, a: MAction, t: Unit): number {
     if (!a.dmg) return 0;
-    const dmg = a.dmg.reduce((s, p) => s + avg(p.dice), 0);
+    const dmg = a.dmg.reduce((s, p) => s + avg(p.dice) * (t.immune.includes(p.type) ? 0 : t.resist.includes(p.type) ? .5 : t.vuln.includes(p.type) ? 2 : 1), 0);
     if (a.kind === 'save') { const dc = a.save?.dc ?? 12; const need = dc - t.saves[a.save?.ab ?? 'dex']; const pFail = Math.min(1, Math.max(0, (need - 1) / 20)); return dmg * (pFail + (a.half ? (1 - pFail) / 2 : 0)); }
     const need = this.ac(t) - (a.toHit ?? 4); const p = Math.min(0.95, Math.max(0.05, (21 - need) / 20));
     return dmg * p;
@@ -672,7 +696,8 @@ export class Battle {
         const parts = this.rollParts(a.dmg ?? [], r.crit);
         let total = 0; const txt: string[] = [];
         const enf = this.has(u, 'enfeebled') && a.kind === 'melee';
-        for (const p of parts) { const amt = enf ? Math.floor(p.amt / 2) : p.amt; total += this.damage(tu, amt, p.type, u, { crit: r.crit, silent: true }); txt.push(`${amt} ${p.type}`); }
+        const hitParts = parts.map(p => ({ amt: enf ? Math.floor(p.amt / 2) : p.amt, type: p.type })); for (const p of hitParts) txt.push(`${p.amt} ${p.type}`);
+        total += this.damageHit(tu, hitParts, u, { crit: r.crit, attack: true, silent: true });
         this.log(`${u.name} usa ${a.name} contra ${tu.name}${r.adv ? ' (ventaja)' : r.dis ? ' (desventaja)' : ''}${r.crit ? ' ¡CRÍTICO!' : ''}: ${r.nat}→${r.total} vs CA ${r.ac}. Daño ${total} (${txt.join(' + ')}).`, 'dmg');
         if (total > 0) this.float(tu, String(total), r.crit ? 'crit' : 'dmg');
         if (u.traits.includes('woundCurse') && !this.flags['wc' + u.uid] && !tu.dead) { this.flags['wc' + u.uid] = 1; this.addStatus(tu, { id: 'noHeal', turns: 600, src: u.uid }); this.log(`${tu.name} sufre la Maldición de Herida: no puede curarse.`, 'sys'); }
@@ -686,7 +711,7 @@ export class Battle {
       if (a.dmg && a.aoe) this.hitArea(center, a.aoe, a.dmg.reduce((sum, p) => sum + roll(p.dice).total, 0), a.dmg[0].type, u);
       for (const v of victims) {
         const ok = this.save(v, a.save!.ab, a.save!.dc, `(${a.name})`);
-        if (a.dmg) { const ev = v.traits.includes('evasion') && a.save!.ab === 'dex'; for (const p of this.rollParts(a.dmg, false)) this.damage(v, ok ? (ev ? 0 : a.half ? Math.floor(p.amt / 2) : 0) : (ev ? Math.floor(p.amt / 2) : p.amt), p.type, u); }
+        if (a.dmg) { const ev = v.traits.includes('evasion') && a.save!.ab === 'dex'; this.damageHit(v, this.rollParts(a.dmg, false).map(p => ({ amt: ok ? (ev ? 0 : a.half ? Math.floor(p.amt / 2) : 0) : (ev ? Math.floor(p.amt / 2) : p.amt), type: p.type })), u); }
         if (!ok && a.save!.cond && !v.dead) this.addStatus(v, { id: a.save!.cond, turns: a.save!.turns ?? 1, src: u.uid, dot: a.save!.dot });
       }
     } else if (a.kind === 'heal') {
