@@ -12,13 +12,13 @@ export const DESIGN_LVL: Record<string, number> = {
   varreth: 8, d4_defensa: 8, marid: 9, al_mazhar: 10, gusano: 11, huida_mina: 11, razul_final: 13, eclipse: 14,
 };
 /** Combates que no se miden por victoria (duelo perdido, objetivos, huida): no se calibran. */
-export const NO_CAL = new Set(['gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
+export const NO_CAL = new Set(['huida_mina', 'gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
 export const CALIBRATED = CAL as Record<string, number>;
 
-/** «Potencia» calibrada p (1 = sin cambio): PG ×p^0,6 (con tope total HP_RATIO), ataque +1,2·ln p y daño +1,5·ln p. */
+/** «Potencia» calibrada p (1 = sin cambio): PG ×p^0,6 (con tope total HP_RATIO), ataque +1,4·ln p y daño +2,6·ln p. */
 const ENV = (globalThis as any).process?.env ?? {};
 // la vida total enemiga tiene tope (HP_RATIO, en setup.ts): pasado ese punto la calibración sube ataque y daño
-const PHP = +(ENV.PHP ?? 0.6), PHPCAP = +(ENV.PHPCAP ?? 99), PATK = +(ENV.PATK ?? 1.2), PDMG = +(ENV.PDMG ?? 1.5);
+const PHP = +(ENV.PHP ?? 0.6), PHPCAP = +(ENV.PHPCAP ?? 99), PATK = +(ENV.PATK ?? 1.4), PDMG = +(ENV.PDMG ?? 2.6);
 export const powerScale = (p: number) => ({ hp: Math.min(PHPCAP, Math.pow(p, PHP)), atk: Math.round(PATK * Math.log(p)), dmg: Math.trunc(PDMG * Math.log(p)) });
 /** Escala de los enemigos: calibrada para ≈ 50 % al nivel de diseño; `edge` (ventajas de campaña) los debilita. */
 export function foeScaleFor(encId: string, enc: Encounter, level: number, edge = 0): { hp: number; atk: number; dmg: number } | undefined {

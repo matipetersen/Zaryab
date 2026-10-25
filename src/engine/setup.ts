@@ -29,7 +29,8 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
   // Sin esponjas de vida: la vida total enemiga no pasa de HP_RATIO × la vida de la compañía (las ventajas de campaña se respetan aparte).
   if (DESIGN_LVL[encId] != null && !NO_CAL.has(encId) && !enc.duel && !enc.soft) {
     const foeHp = units.filter(u => u.side === 'foe').reduce((t, u) => t + u.maxHp, 0), pcHp = units.filter(u => u.pcId).reduce((t, u) => t + u.maxHp, 0);
-    const e = 1 / (1 + EDGE_HP * (opts.edge ?? 0)), cut = pcHp && foeHp ? Math.min(1, HP_RATIO * e * pcHp / foeHp) : 1;
+    const nf = units.filter(u => u.side === 'foe' && u.sprite !== 'wall').length; const ratio = HP_RATIO * (nf <= 1 ? 1.35 : nf <= 3 ? 1.15 : 1); // los jefes solos aguantan más: si no, seis contra uno dura dos rondas
+    const e = 1 / (1 + EDGE_HP * (opts.edge ?? 0)), cut = pcHp && foeHp ? Math.min(1, ratio * e * pcHp / foeHp) : 1;
     if (cut < 1) { hpCut = cut; for (const u of units) if (u.side === 'foe') { u.maxHp = Math.max(1, Math.round(u.maxHp * cut)); u.hp = u.maxHp; } }
   }
   for (const a of enc.ally ?? []) { const p = grid.spawns.ally[a.slot]; const al = makeFoe(a.id, p.x, p.y, '', 'pc'); al.traits.push('encAlly'); units.push(al); }
