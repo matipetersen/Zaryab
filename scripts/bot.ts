@@ -48,7 +48,7 @@ async function post(b: Battle, u: Unit) {
   if (u.id === 'pact' && u.extraActions > 0 && !b.over) { u.extraActions--; u.actionUsed = false; u.attacksMade = 0; await runAI(b, u, undefined, bias); }
   if (u.id === 'panchi' && !b.over) {
     const adj = foesOf(b, u).filter(f => cheb(f, u) <= 1)[0];
-    if (adj) { const w = u.weapons.find(x => x.bonusAction)!; if (u.res.ki > 0) b.useAbility(u, 'flurry', undefined); b.weaponAttack(u, w, adj); const adj2 = foesOf(b, u).filter(f => cheb(f, u) <= 1)[0]; if (adj2 && u.res.flurry > 0) b.weaponAttack(u, w, adj2); }
+    if (adj && u.actionUsed) { u.attacksMade = 1; /* el bot atacó con la acción (vía runAI) */ const w = u.weapons.find(x => x.bonusAction)!; if (u.res.ki > 0) b.useAbility(u, 'flurry', undefined); b.weaponAttack(u, w, adj); const adj2 = foesOf(b, u).filter(f => cheb(f, u) <= 1)[0]; if (adj2 && u.res.flurry > 0) b.weaponAttack(u, w, adj2); }
   }
 }
 const bias = (t: Unit) => (t.traits.includes('pilon') ? 9 : t.traits.includes('flees50') ? -5 : t.sprite === 'colossus' ? -1 : 0);

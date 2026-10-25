@@ -15,8 +15,11 @@ export const DESIGN_LVL: Record<string, number> = {
 export const NO_CAL = new Set(['gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
 export const CALIBRATED = CAL as Record<string, number>;
 
-/** «Potencia» calibrada p (1 = sin cambio): PG ×p^0,6, ataque +1,2·ln p y daño +1,5·ln p. Así los enemigos no son sólo esponjas de PG. */
-export const powerScale = (p: number) => ({ hp: Math.pow(p, 0.6), atk: Math.round(1.2 * Math.log(p)), dmg: Math.trunc(1.5 * Math.log(p)) });
+/** «Potencia» calibrada p (1 = sin cambio): PG ×min(1,2; p^0,6), ataque +1,6·ln p y daño +2,5·ln p. Así los enemigos no son esponjas de PG. */
+const ENV = (globalThis as any).process?.env ?? {};
+// la calibración ya no infla la vida (tope ×1,2): la dificultad sale del ataque y el daño, para que los combates duren ~4–8 rondas
+const PHP = +(ENV.PHP ?? 0.6), PHPCAP = +(ENV.PHPCAP ?? 1.2), PATK = +(ENV.PATK ?? 1.6), PDMG = +(ENV.PDMG ?? 2.5);
+export const powerScale = (p: number) => ({ hp: Math.min(PHPCAP, Math.pow(p, PHP)), atk: Math.round(PATK * Math.log(p)), dmg: Math.trunc(PDMG * Math.log(p)) });
 /** Escala de los enemigos: calibrada para ≈ 50 % al nivel de diseño; `edge` (ventajas de campaña) los debilita. */
 export function foeScaleFor(encId: string, enc: Encounter, level: number, edge = 0): { hp: number; atk: number; dmg: number } | undefined {
   const d = DESIGN_LVL[encId];

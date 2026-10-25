@@ -257,6 +257,7 @@ export class Battle {
     if (tile?.kind === 'hazard' && !u.dead && !u.down && !u.fly) { const r = roll('1d6'); this.log(`${u.name} arde en terreno peligroso (${r.total}).`, 'dmg'); this.damage(u, r.total, 'fire', undefined); }
     if (u.dead) return;
     if (wasDown && u.down && !u.stable) this.deathSave(u);
+    if (u.dead) return;
     if (this.has(u, 'restrained') || this.has(u, 'grappled')) u.moveLeft = 0;
     if (this.has(u, 'prone') && !u.down && u.moveLeft > 0) { this.removeStatus(u, 'prone'); u.moveLeft = Math.floor(u.moveLeft / 2); this.log(`${u.name} se levanta.`, 'sys'); }
     this.removeStatus(u, 'ready');

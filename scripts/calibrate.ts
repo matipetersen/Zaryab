@@ -7,7 +7,7 @@ const names = process.argv[2].split(','); const out = process.argv[3]; const N =
 const res: Record<string, number> = {}; const log: string[] = [];
 const rate = async (enc: string, f: number) => { CALIBRATED[enc] = f; let w = 0; for (let i = 0; i < N; i++) if ((await playBattle(enc, 7000 + i)).result === 'victory') w++; return w / N; };
 for (const enc of names) {
-  const p0 = CALIBRATED[enc] ?? 0; let lo = p0 ? Math.log(p0 / 3) : Math.log(0.1), hi = p0 ? Math.log(p0 * 3) : Math.log(300), best = p0 || 1, bestD = 9;
+  const p0 = process.env.FRESH ? 0 : (CALIBRATED[enc] ?? 0); let lo = p0 ? Math.log(p0 / 3) : Math.log(0.1), hi = p0 ? Math.log(p0 * 3) : Math.log(300), best = p0 || 1, bestD = 9;
   for (let it = 0; it < (p0 ? 6 : 9); it++) {
     const mid = (lo + hi) / 2, f = Math.exp(mid), p = await rate(enc, f);
     if (Math.abs(p - 0.5) < bestD) { bestD = Math.abs(p - 0.5); best = f; }

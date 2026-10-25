@@ -367,7 +367,7 @@ export function progUpTo(pc: string, level: number, d = 5, c = 0): Prog { const 
 /** Factor de dificultad de un encuentro según el nivel del grupo (las escalas de maps.ts están calibradas para nivel 3). */
 const ENV = (globalThis as any).process?.env ?? {};
 export function levelScale(scale: { hp?: number; atk?: number } | undefined, level: number): { hp: number; atk: number; dmg: number } {
-  const hp0 = scale?.hp ?? 1, atk0 = scale?.atk ?? 0; const e = +(ENV.HPEXP ?? 2.2), cap = +(ENV.HPCAP ?? 4), slope = +(ENV.ATKSLOPE ?? 1), ds = +(ENV.DMGSLOPE ?? 0.9);
+  const hp0 = scale?.hp ?? 1, atk0 = scale?.atk ?? 0; const e = +(ENV.HPEXP ?? 2.2), cap = +(ENV.HPCAP ?? 3), slope = +(ENV.ATKSLOPE ?? 1), ds = +(ENV.DMGSLOPE ?? 0.9);
   const k = level >= 3 ? Math.pow(level / 3, e) : (+(ENV.LOW1 ?? 1.2) + (level - 1) * (+(ENV.LOW2 ?? 1.4) - +(ENV.LOW1 ?? 1.2)));
   return { dmg: scale && level > 3 ? Math.floor((level - 3) * ds) : 0, hp: Math.min(Math.max(cap, hp0), hp0 * k), atk: atk0 > 0 ? atk0 : Math.min(+(ENV.ATKMAX ?? 3), Math.round(atk0 + (level - 3) * slope)) };
 }
