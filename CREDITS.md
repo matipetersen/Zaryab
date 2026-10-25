@@ -6,3 +6,4 @@
 
 ## Tipografías
 Lemonada, Cairo y Reem Kufi (SIL Open Font License 1.1), distribuidas vía Fontsource. Ver `src/assets/fonts/LICENSE-lemonada.txt` (misma licencia OFL).
+Pixelify Sans (SIL Open Font License 1.1, The Pixelify Sans Project Authors), distribuida vía Fontsource: tipografía de títulos, botones y números del estilo diorama. Ver `src/assets/fonts/LICENSE-pixelify-sans.txt`.

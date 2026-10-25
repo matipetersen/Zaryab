@@ -1,3 +1,6 @@
+@font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-style: normal; font-display: swap; src: url('./assets/fonts/pixelify-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 600; font-style: normal; font-display: swap; src: url('./assets/fonts/pixelify-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/pixelify-sans-latin-700-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Lemonada'; font-weight: 500; font-style: normal; font-display: swap; src: url('./assets/fonts/lemonada-latin-500-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Lemonada'; font-weight: 600; font-style: normal; font-display: swap; src: url('./assets/fonts/lemonada-latin-600-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Lemonada'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/lemonada-latin-700-normal.woff2') format('woff2'); }
@@ -8,10 +11,11 @@
 @font-face { font-family: 'Reem Kufi'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/reem-kufi-latin-700-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Reem Kufi Ar'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/reem-kufi-arabic-700-normal.woff2') format('woff2'); }
 :root {
-  --primary: #6B2D5C; --secondary: #D4A574; --accent: #8B4513; --bg: #1A1A2E; --text: #F5F5DC;
-  --hp: #E74C3C; --mp: #3498DB; --pf: #F1C40F; --corr: #8E44AD; --dev: #2ECC71;
-  --panel: rgba(20, 16, 36, .92); --panel2: rgba(34, 26, 56, .92); --line: rgba(212, 165, 116, .28);
-  --f-head: 'Lemonada', 'Reem Kufi', Georgia, serif; --f-body: 'Cairo', system-ui, sans-serif; --f-num: 'Cairo', ui-monospace, monospace; --f-ar: 'Reem Kufi Ar', 'Reem Kufi', serif;
+  /* estética diorama (estilo Bleak Sword): negro, ciruela, hueso; rojo = sangre/peligro; violeta = Zahir */
+  --primary: #5e0b19; --secondary: #c9b49a; --accent: #8a7668; --bg: #050307; --text: #ece0c8;
+  --hp: #b3192f; --mp: #8a7668; --pf: #e0a050; --corr: #9a5cff; --dev: #ece0c8;
+  --panel: rgba(11, 8, 16, .94); --panel2: rgba(23, 18, 28, .94); --line: rgba(201, 180, 154, .22);
+  --f-head: 'Pixelify Sans', ui-monospace, monospace; --f-body: 'Cairo', system-ui, sans-serif; --f-num: 'Pixelify Sans', ui-monospace, monospace; --f-ar: 'Reem Kufi Ar', 'Reem Kufi', serif;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--f-body); overflow: hidden; }
@@ -314,3 +318,15 @@ body { font-weight: 400; }
 #battle.diorama #objective, #battle.diorama #log, #battle.diorama #tracker { background: rgba(5,3,7,.88); border-color: #2f2733; }
 #battle.diorama #board { background: #000; }
 #battle.diorama .bar.hp i { background: #b3192f; }
+
+/* ───── estilo diorama en toda la interfaz: cajas rectas, sin degradados, hueso sobre negro, rojo para lo urgente ───── */
+*:not(.avatar):not(.tk):not(.ic):not(.dot) { border-radius: 0 !important; }
+.btn, .sheet .go { background: #1c1622 !important; border: 2px solid var(--secondary) !important; box-shadow: 3px 3px 0 #000; font-weight: 600; }
+.btn:hover:not(:disabled), .sheet .go:hover:not(:disabled) { transform: none; filter: none; border-color: var(--hp) !important; color: #fff; }
+.act { background: #0e0a12; border: 2px solid #3f3540; box-shadow: 2px 2px 0 #000; font-family: var(--f-head); }
+.act.on { box-shadow: 0 0 0 2px var(--hp); } .act:hover:not(:disabled) { border-color: var(--secondary); filter: none; }
+.choice { border: 2px solid #3f3540 !important; background: #0e0a12 !important; } .choice:hover:not(:disabled) { border-color: var(--hp) !important; }
+#topbar { background: #050307 !important; border-bottom: 2px solid #2f2733; }
+.bar.hp i { background: var(--hp) !important; }
+h1, h2, h3, h4, .stage-title h1 { font-family: var(--f-head); letter-spacing: .04em; text-shadow: 3px 3px 0 #000; }
+canvas#board, .stage-cv { image-rendering: pixelated; }

@@ -1,4 +1,5 @@
 import { h } from './dom';
+import { dioramaPref, pixelWidth, quantize } from './diorama';
 
 /** Escena inicial: noche en el desierto, un meteorito cae detrás de los médanos y deja un resplandor violeta, blanco y rosa. */
 export function playIntro(root: HTMLElement, onDone: () => void): void {
@@ -6,7 +7,8 @@ export function playIntro(root: HTMLElement, onDone: () => void): void {
   const cap = h('div', { class: 'intro-cap' }); const skip = h('button', { class: 'intro-skip' }, 'Saltar ›');
   const el = h('div', { class: 'intro' }, cv, cap, skip); root.append(el);
   const c = cv.getContext('2d')!; let W = 0, H = 0, dpr = 1;
-  const fit = () => { const r = el.getBoundingClientRect(); dpr = Math.min(1.25, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; };
+  const pix = dioramaPref();
+  const fit = () => { const r = el.getBoundingClientRect(); dpr = pix && r.width > 4 ? pixelWidth(r.width) / r.width : Math.min(1.25, devicePixelRatio || 1); cv.style.imageRendering = pix ? 'pixelated' : ''; W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; };
   fit(); window.addEventListener('resize', fit);
   const stars = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random() * .62, s: Math.random() * 1.6 + .3, p: Math.random() * 6 }));
   const sand: { x: number; y: number; vx: number; vy: number; l: number }[] = [];
@@ -66,6 +68,7 @@ export function playIntro(root: HTMLElement, onDone: () => void): void {
     const v = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)'); c.fillStyle = v; c.fillRect(0, 0, W, H);
     // subtítulos
     const ln = [...lines].reverse().find(l => t >= l[0]); if (ln) { const a = Math.min(1, (t - ln[0]) / .8); cap.textContent = ln[1]; cap.style.opacity = String(a * (t > END - 1 ? Math.max(0, END - t) : 1)); }
+    if (pix) quantize(c, cv.width, cv.height, 'crater');
     if (t >= END) { finish(); return; }
     raf = requestAnimationFrame(frame);
   };

@@ -11,7 +11,7 @@ import { sleep } from './dom';
 /** Fondo de historia → mapa jugable donde transcurre la escena (los que no figuran quedan como fondo pintado). */
 export const BG_MAP: Record<string, string> = {
   dunas: 'dunas', tormenta: 'dunas', prison: 'mina', coliseo: 'arena', medinat: 'medinat', bajo: 'callejon', choza: 'santuario', taller: 'santuario',
-  zoco: 'zoco', hammam: 'pozo', espejos: 'cubo', cubo: 'cubo', acueducto: 'acueducto', plaza: 'plaza', oraculo: 'templo',
+  zoco: 'zoco', hammam: 'pozo', espejos: 'cubo', cubo: 'cubo', acueducto: 'acueducto', plaza: 'plaza', oraculo: 'templo', limbo: 'cripta', jardin: 'jardin', mina: 'mina',
 };
 
 /** Escena sobre el mapa: la compañía entra caminando, deambula, y quien habla se adelanta y se ilumina. */

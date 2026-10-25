@@ -20,9 +20,9 @@ Hoy todo (sprites, baldosas, fondos, la mayoría de los retratos) se dibuja por 
 3. **Vías:** artista por encargo (mejor coherencia), generación con IA a partir de una imagen de referencia (rápida y barata; revisar licencia comercial del servicio y cuidar la coherencia entre piezas) o un único pack con licencia para baldosas e íconos (revisar CC0/CC-BY y acreditar en `CREDITS.md`).
 4. Todo arte nuevo con licencia que exija crédito va a `CREDITS.md`.
 
-## Modo diorama (experimental, estilo Bleak Sword)
+## Estilo diorama (estilo Bleak Sword) — el estilo por defecto
 
-Código: `src/ui/diorama.ts` + ganchos en `src/ui/render.ts` (`pixel`, `setPixel`, `drawCliff`, `drawSandFall`, `drawFigure`). Por ahora solo en el mapa **Callejón** (`DIORAMA_MAPS`); se apaga y prende con el botón ▦ del combate (se recuerda en `localStorage`, clave `zaryab.diorama`).
+Código: `src/ui/diorama.ts` + ganchos en `src/ui/render.ts` (`pixel`, `setPixel`, `drawCliff`, `drawSandFall`, `drawFigure`). Activo en todos los mapas, en las escenas de historia sobre mapa, en el menú y en la escena del meteorito. El botón ▦ del combate vuelve a los gráficos anteriores (se recuerda en `localStorage`, clave `zaryab.diorama`).
 
 - El tablero se dibuja a ~1/3 de la resolución (`pixelWidth`) y el navegador lo agranda con `image-rendering: pixelated`.
 - Al final de cada cuadro se reduce todo a una paleta de 18 colores (`PIX`) con tramado ordenado 4×4 (`quantize`): los degradados de luz se vuelven puntos.
@@ -30,3 +30,8 @@ Código: `src/ui/diorama.ts` + ganchos en `src/ui/render.ts` (`pixel`, `setPixel
 - Figuras de 10 × 16 celdas (`T`): la compañía en tonos claros (hueso, blanco, con el rasgo de cada uno: alas, cuernos, capucha, arco), los enemigos como siluetas oscuras con ojos rojos, mirando hacia la compañía.
 - Rojo = sangre, golpes, vida enemiga; violeta = Zahir y la magia; las marcas de movimiento y ataque son contornos de 1 píxel.
 - Rinde más que el modo normal (60 cuadros por segundo frente a 47–52 en la prueba, porque se pintan muchos menos píxeles).
+
+- Cada tema de mapa tiene su rampa de 5 tonos (`RAMPS`: callejón arena, acueducto verde agua, jardín musgo, plaza arenisca roja, cráter violeta, mina azul gris…); negros, hueso, blanco, rojo, violeta, fuego, verde, agua y rosa son comunes.
+- ~40 figuras (`T` + `ALIAS` por monstruo y `BY_SPRITE` como respaldo por tipo de criatura). Los djinn son de fuego y el Marid de agua; el resto de los enemigos son siluetas oscuras.
+- Animación: balanceo en reposo, embestida e inclinación al atacar (`lungeAt`), destello blanco al recibir daño, caída de costado al quedar derribado.
+- Textos flotantes con una tipografía de píxeles 3×5 propia (`drawPixText`). La interfaz usa **Pixelify Sans** (OFL) en títulos, botones y números, cajas rectas y paleta hueso/negro/rojo.

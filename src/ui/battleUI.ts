@@ -1,4 +1,4 @@
-import { DIORAMA_MAPS, dioramaPref, setDioramaPref } from './diorama';
+import { dioramaPref, setDioramaPref } from './diorama';
 import { Battle, COND_LABEL, isHiddenCond } from '../engine/battle';
 import { runAI } from '../engine/ai';
 import { ABILITIES } from '../engine/abilities';
@@ -43,7 +43,7 @@ export class BattleUI {
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
     let fogPref = true; try { fogPref = localStorage.getItem('zaryab.fog') !== '0'; } catch { /* */ } b.fogOn = fogPref;
     const fogBtn = h('button', { class: `dbtn ${b.fogOn ? '' : 'off'}`, title: 'Niebla de guerra: solo se ve lo que la compañía alcanza a ver', onClick: () => { b.fogOn = !b.fogOn; try { localStorage.setItem('zaryab.fog', b.fogOn ? '1' : '0'); } catch { /* */ } fogBtn.classList.toggle('off', !b.fogOn); this.renderPanels(); } }, '👁');
-    const dioBtn = DIORAMA_MAPS.has(mapId) ? h('button', { class: `dbtn ${dioramaPref() ? '' : 'off'}`, title: 'Modo diorama (experimental): pixel art de paleta cerrada, estilo Bleak Sword', onClick: () => { const on = !dioramaPref(); setDioramaPref(on); this.r.setPixel(on); this.root.classList.toggle('diorama', on); dioBtn!.classList.toggle('off', !on); } }, '▦') : null;
+    const dioBtn = h('button', { class: `dbtn ${dioramaPref() ? '' : 'off'}`, title: 'Estilo visual: diorama en pixel art (apagado = gráficos anteriores)', onClick: () => { const on = !dioramaPref(); setDioramaPref(on); this.r.setPixel(on); this.root.classList.toggle('diorama', on); dioBtn.classList.toggle('off', !on); } }, '▦');
     stage.append(h('div', { id: 'rotbtns' }, fogBtn, dioBtn, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
     stage.append(dBtns); this.coach = new Coach(stage); const help = h('button', { class: 'dbtn', title: 'Guía rápida', onClick: () => this.coach?.open() }, '?'); dBtns.append(help);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
@@ -151,15 +151,21 @@ export class BattleUI {
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }
 
   // ---------- entrada ----------
+  /** Punto del evento en coordenadas del tablero. Si el lienzo cambió de tamaño sin avisar (barra táctil, cajones, teclado del celular),
+   * se reajusta antes de medir: antes el toque caía varias casillas corrido respecto de lo dibujado. */
+  toBoard(e: { clientX: number; clientY: number }) {
+    const rc = this.canvas.getBoundingClientRect(); if (Math.abs(rc.width - this.r.W) > .5 || Math.abs(rc.height - this.r.H) > .5) this.r.resize();
+    return { x: (e.clientX - rc.left) * (this.r.W / (rc.width || 1)), y: (e.clientY - rc.top) * (this.r.H / (rc.height || 1)) };
+  }
   bindInput() {
     let touch = false; this.canvas.addEventListener('pointerdown', e => { touch = e.pointerType === 'touch'; this.isTouch = touch; });
     this.canvas.addEventListener('mousemove', e => {
       if (touch) return; // el navegador táctil simula un mousemove al tocar: no debe contar como «vista previa»
-      const rc = this.canvas.getBoundingClientRect(); const t = this.r.tileFromMouse(e.clientX - rc.left, e.clientY - rc.top); this.r.hover = t; this.showHoverTip(e, t);
+      const q = this.toBoard(e); const t = this.r.tileFromMouse(q.x, q.y); this.r.hover = t; this.showHoverTip(e, t);
     });
     this.canvas.addEventListener('mouseleave', () => { this.r.hover = null; this.tip.classList.add('hidden'); this.threat(null); });
     this.canvas.addEventListener('click', e => {
-      if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const rc = this.canvas.getBoundingClientRect(); const mx = e.clientX - rc.left, my = e.clientY - rc.top; const t = this.r.unitTileFromPoint(mx, my, u => u.side === 'pc' || this.seen(u)) ?? this.r.tileFromMouse(mx, my); if (!t) return;
+      if (e.button !== 0 || performance.now() - this.r.lastDrag < 250) return; const { x: mx, y: my } = this.toBoard(e); const t = this.r.unitTileFromPoint(mx, my, u => u.side === 'pc' || this.seen(u)) ?? this.r.tileFromMouse(mx, my); if (!t) return;
       if (touch) this.r.hover = t; // en táctil no hay «doble toque»: el toque marca la casilla y abre una hoja con lo que va a pasar
       this.clickTile(t);
     });

@@ -1,3 +1,4 @@
+import { dioramaPref, pixelWidth, quantize } from './diorama';
 /** Fondo animado de la pantalla principal: noche en el desierto, arena que fluye con el viento y una fogata que ilumina y proyecta sombras. */
 export class MenuFx {
   cv = document.createElement('canvas'); c: CanvasRenderingContext2D; W = 0; H = 0; dpr = 1; t = 0; last = 0; raf = 0; alive = true;
@@ -12,7 +13,8 @@ export class MenuFx {
     this.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; host.prepend(this.cv); this.c = this.cv.getContext('2d')!;
     this.fit(); window.addEventListener('resize', this.onResize); this.last = performance.now(); this.raf = requestAnimationFrame(n => this.frame(n));
   }
-  fit() { const r = this.host.getBoundingClientRect(); this.dpr = Math.min(1.25, devicePixelRatio || 1); this.W = r.width; this.H = r.height; this.cv.width = this.W * this.dpr; this.cv.height = this.H * this.dpr; }
+  pixel = false;
+  fit() { const r = this.host.getBoundingClientRect(); this.pixel = dioramaPref(); this.dpr = this.pixel && r.width > 4 ? pixelWidth(r.width) / r.width : Math.min(1.25, devicePixelRatio || 1); this.cv.style.imageRendering = this.pixel ? 'pixelated' : ''; this.W = r.width; this.H = r.height; this.cv.width = this.W * this.dpr; this.cv.height = this.H * this.dpr; }
   destroy() { this.alive = false; cancelAnimationFrame(this.raf); window.removeEventListener('resize', this.onResize); this.cv.remove(); }
   dune(base: number, amp: number, ph: number, col: string, scroll = 0) {
     const c = this.c, W = this.W, H = this.H; c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
@@ -74,6 +76,7 @@ export class MenuFx {
     }
     // viñeta
     const v = c.createRadialGradient(W / 2, H * .6, Math.min(W, H) * .3, W / 2, H * .6, Math.max(W, H) * .8); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.65)'); c.fillStyle = v; c.fillRect(0, 0, W, H);
+    if (this.pixel) quantize(c, this.cv.width, this.cv.height, 'crater');
     this.raf = requestAnimationFrame(n => this.frame(n));
   }
 }
