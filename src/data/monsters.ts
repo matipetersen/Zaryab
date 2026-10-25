@@ -324,7 +324,7 @@ export function makeFoe(id: string, x: number, y: number, nameSuffix = '', side:
   const d = MONSTERS[id]; if (!d) throw new Error('Monstruo desconocido ' + id);
   const saves: Mods = { ...d.mods, ...(d.saves ?? {}) } as Mods;
   return {
-    uid: 0, id: d.id, name: d.name + nameSuffix, side, ai: true, color: d.color, glyph: d.glyph, sprite: d.sprite, x, y, size: d.size ?? 1,
+    uid: 0, id: d.id, name: d.name + nameSuffix, side, ai: true, color: d.color, glyph: d.glyph, sprite: d.sprite, x, y, size: d.size ?? 1, ctype: d.type,
     mods: { ...d.mods }, saves, prof: d.prof, level: 0, hp: d.hp, maxHp: d.hp, temp: 0, ac: d.ac, speed: Math.ceil(d.speed / 5), fly: !!d.fly,
     spellMod: 0, spellDC: 12, spellAtk: 4, weapons: [], abilities: [], actions: d.actions.map(a => ({ ...a })), multiattack: d.multiattack ?? [],
     res: {}, resMax: {}, statuses: [], death: { succ: 0, fail: 0 }, down: false, dead: false, stable: false,

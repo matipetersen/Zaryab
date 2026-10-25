@@ -8,9 +8,10 @@ export type CondId =
   | 'prone' | 'blinded' | 'poisoned' | 'frightened' | 'charmed' | 'paralyzed' | 'stunned' | 'restrained' | 'invisible'
   | 'burning' | 'dodging' | 'bless' | 'bane' | 'shieldFaith' | 'hex' | 'hunterMark' | 'hexCurse' | 'enfeebled'
   | 'wrathSmite' | 'radiantSoul' | 'rallied' | 'vulnerable' | 'guided' | 'aided' | 'sharp' | 'weakened' | 'ambusher'
-  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped' | 'grappled' | 'ready' | 'sprinting';
+  | 'noHeal' | 'spiritGuard' | 'deathWard' | 'ensnare' | 'faerie' | 'flameFist' | 'taunted' | 'disadvNext' | 'surgeUsed' | 'sneakUsed' | 'disengaged' | 'helped' | 'grappled' | 'ready' | 'sprinting'
+  | 'maneuverTrip' | 'maneuverMenace' | 'stunArmed' | 'banished';
 
-export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string; /** Puesto durante el turno de quien lo tiene: no se descuenta al terminar ese turno. */ fresh?: boolean; /** Termina si quien lo lanzó pierde la concentración. */ conc?: boolean }
+export interface Status { id: CondId; turns: number; src?: number; val?: number; dot?: string; /** Salvación que repite al final de cada turno propio para librarse. */ save?: { ab: Ab; dc: number }; /** Puesto durante el turno de quien lo tiene: no se descuenta al terminar ese turno. */ fresh?: boolean; /** Termina si quien lo lanzó pierde la concentración. */ conc?: boolean }
 
 export interface DmgPart { dice: string; type: DmgType }
 
@@ -50,7 +51,7 @@ export type Sprite = 'humanoid' | 'beast' | 'construct' | 'undead' | 'elemental'
 export interface Unit {
   /** Reacción gastada en esta ronda (ataque de oportunidad). Se recupera al empezar su turno. */ reactionUsed?: boolean; /** Sorprendido: pierde su primer turno y no puede reaccionar hasta entonces. */ surprised?: boolean; /** Marca interna: el turno perdido por sorpresa se salta solo. */ lostTurn?: boolean;
   uid: number; id: string; name: string; side: Side; ai: boolean; color: string; glyph: string; sprite: Sprite;
-  x: number; y: number; size: number;
+  x: number; y: number; size: number; /** Tipo de criatura (humanoide, no-muerto, bestia…). */ ctype?: string;
   mods: Mods; saves: Mods; prof: number; level: number;
   hp: number; maxHp: number; temp: number; ac: number; speed: number; fly: boolean;
   spellMod: number; spellDC: number; spellAtk: number;

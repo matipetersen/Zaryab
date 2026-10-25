@@ -95,8 +95,8 @@ def({ id: 'inflict_wounds', name: 'Infligir Heridas', desc: 'Toque. Ataque de co
   run: (b, u, t: Unit, l) => spellAttack(b, u, t, `${2 + l}d10`, 'necrotic', 'Infligir Heridas', false) });
 def({ id: 'shield_of_faith', name: 'Escudo de la Fe', desc: 'Acción adicional, concentración. Un aliado gana +2 CA.', cost: 'bonus', range: 12, target: 'allyOrSelf', slot: 1, conc: true, tag: 'buff', los: false,
   run: (b, u, t: Unit) => { u.conc = { id: 'shield_of_faith', targets: [t.uid] }; b.addStatus(t, { id: 'shieldFaith', turns: 100, src: u.uid }); b.log(`${u.name} protege a ${t.name} con el Escudo de la Fe.`, 'buff'); } });
-def({ id: 'word_of_radiance', name: 'Palabra de Resplandor', desc: 'Truco. Enemigos a 1 casilla: salvación CON o 1d6 radiante.', cost: 'action', range: 0, target: 'none', aoe: 1, tag: 'attack',
-  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 1)) { const ok = b.save(f, 'con', u.spellDC, '(Palabra de Resplandor)'); if (!ok) b.damage(f, roll('1d6').total, 'radiant', u); } } });
+def({ id: 'word_of_radiance', name: 'Palabra de Resplandor', desc: 'Truco. Enemigos a 1 casilla: salvación CON o 1d6 radiante (2d6 al nv 5, 3d6 al nv 11).', cost: 'action', range: 0, target: 'none', aoe: 1, tag: 'attack',
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 1)) { const ok = b.save(f, 'con', u.spellDC, '(Palabra de Resplandor)'); if (!ok) b.damage(f, roll(`${1 + (u.level >= 5 ? 1 : 0) + (u.level >= 11 ? 1 : 0)}d6`).total, 'radiant', u); } } });
 def({ id: 'spare_the_dying', name: 'Estabilizar', desc: 'Truco, toque. Estabiliza a un aliado a 0 PG.', cost: 'action', range: 1, target: 'downedAlly', tag: 'heal',
   run: (b, u, t: Unit) => { t.stable = true; b.log(`${u.name} estabiliza a ${t.name}.`, 'heal'); b.float(t, 'Estable', 'heal'); } });
 def({ id: 'turn_undead', name: 'Expulsar no-muertos', desc: 'Canalizar Divinidad. No-muertos a 6 casillas: salvación SAB o huyen aterrados.', cost: 'action', range: 0, target: 'none', use: 'channel', aoe: 6, tag: 'control',
@@ -106,7 +106,7 @@ def({ id: 'path_to_grave', name: 'Sendero a la Tumba', desc: 'Canalizar Divinida
 def({ id: 'lesser_restoration', name: 'Restauración Menor', desc: 'Toque. Quita cegado, envenenado o paralizado.', cost: 'action', range: 1, target: 'allyOrSelf', slot: 2, tag: 'heal',
   run: (b, u, t: Unit) => { for (const c of ['blinded', 'poisoned', 'paralyzed'] as const) b.removeStatus(t, c); b.float(t, 'Purificado', 'heal'); b.log(`${u.name} purifica a ${t.name}.`, 'heal'); } });
 def({ id: 'aid', name: 'Auxilio', desc: 'Hasta 3 aliados a 6 casillas suben 5 PG máximos y actuales.', cost: 'action', range: 0, target: 'none', slot: 2, upcast: true, tag: 'buff',
-  run: (b, u, _t, l) => { for (const a of nearestAllies(b, u, 6, 3)) { const g = 5 * (l - 1); a.maxHp += g; a.hp += g; b.float(a, `+${g} PG`, 'heal'); } b.log(`${u.name} invoca Auxilio.`, 'buff'); } });
+  run: (b, u, _t, l) => { for (const a of nearestAllies(b, u, 6, 3)) { const g = 5 * (l - 1); const prev = b.status(a, 'aided')?.val ?? 0; if (g <= prev) continue; const d = g - prev; a.maxHp += d; a.hp += d; b.addStatus(a, { id: 'aided', turns: -1, src: u.uid, val: g }, true); b.float(a, `+${d} PG`, 'heal'); } b.log(`${u.name} invoca Auxilio.`, 'buff'); } });
 def({ id: 'ray_of_enfeeblement', name: 'Rayo de Debilitamiento', desc: 'Concentración. Ataque de conjuro: el objetivo hace la mitad de daño con armas.', cost: 'action', range: 12, target: 'enemy', slot: 2, conc: true, tag: 'control',
   run: (b, u, t: Unit) => { const r = b.rollAttack(u, t, u.spellAtk, { ranged: true, spell: true }); b.emit({ t: 'fx', kind: 'bolt', x: u.x, y: u.y, x2: t.x, y2: t.y }); if (!r.hit) { b.log('El rayo falla.', 'roll'); b.float(t, 'Falla', 'miss'); u.conc = undefined; return; } u.conc = { id: 'ray_of_enfeeblement', targets: [t.uid] }; b.addStatus(t, { id: 'enfeebled', turns: 10, src: u.uid }); } });
 
@@ -115,7 +115,7 @@ def({ id: 'second_wind', name: 'Tomar Aliento', desc: 'Acción adicional. Recupe
   run: (b, u) => { const a = roll('1d10').total + u.level; b.heal(u, a, u); b.log(`${u.name} toma aliento (+${a}).`, 'heal'); } });
 def({ id: 'action_surge', name: 'Oleada de Acción', desc: 'Obtenés una acción adicional este turno.', cost: 'free', range: 0, target: 'self', use: 'surge', tag: 'buff',
   run: (b, u) => { u.extraActions++; b.log(`${u.name} lanza una Oleada de Acción.`, 'buff'); b.float(u, '¡Oleada!', 'status'); } });
-def({ id: 'rally', name: 'Reagrupar', desc: 'Acción adicional, dado de superioridad. Aliado a 12 casillas gana 1d8+CAR PG temporales.', cost: 'bonus', range: 12, target: 'allyOrSelf', use: 'sd', tag: 'buff', los: false,
+def({ id: 'rally', name: 'Reagrupar', desc: 'Acción adicional, dado de superioridad. Otro aliado a 12 casillas gana 1d8+CAR PG temporales.', cost: 'bonus', range: 12, target: 'ally', use: 'sd', tag: 'buff', los: false,
   run: (b, u, t: Unit) => { const a = roll(sdDie(u)).total + u.mods.cha; t.temp = Math.max(t.temp, a); b.float(t, `+${a} temp`, 'heal'); b.log(`${u.name} reagrupa a ${t.name} (+${a} PG temporales).`, 'buff'); } });
 def({ id: 'radiant_soul', name: 'Alma Radiante', desc: 'Brotan alas luminosas: volás y sumás 3 de daño radiante por turno (10 rondas).', cost: 'action', range: 0, target: 'self', use: 'soul', tag: 'buff',
   run: (b, u) => { u.fly = true; b.addStatus(u, { id: 'radiantSoul', turns: 10, src: u.uid }); b.log(`Dos alas de luz brotan de la espalda de ${u.name}.`, 'buff'); b.emit({ t: 'fx', kind: 'heal', x: u.x, y: u.y }); } });
@@ -141,11 +141,12 @@ def({ id: 'hide', name: 'Esconderse', desc: 'Acción adicional. Quedás oculto h
   run: (b, u) => { b.addStatus(u, { id: 'invisible', turns: 3, src: u.uid }); b.log(`${u.name} se funde con las sombras.`, 'buff'); } });
 def({ id: 'cunning_dash', name: 'Acción Astuta: Correr', desc: 'Acción adicional. Duplicás tu movimiento.', cost: 'bonus', range: 0, target: 'self', tag: 'move',
   run: (b, u) => { u.moveLeft += u.speed; b.log(`${u.name} corre entre las sombras.`, 'sys'); } });
-def({ id: 'faerie_fire', name: 'Fuego Feérico', desc: '1/día. Enemigos a 2 casillas del punto: salvación DES o quedan delineados (ventaja para atacarles).', cost: 'action', range: 12, target: 'tile', use: 'faerie', aoe: 2, tag: 'control',
-  run: (b, u, t: P) => { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); for (const f of b.foesOf(u).filter(f => cheb(f, t) <= 2)) if (!b.save(f, 'dex', u.spellDC, '(Fuego Feérico)')) b.addStatus(f, { id: 'faerie', turns: 10, src: u.uid }); } });
+def({ id: 'faerie_fire', name: 'Fuego Feérico', desc: '1/día, concentración. Enemigos a 2 casillas del punto: salvación DES o quedan delineados (ventaja para atacarles).', cost: 'action', range: 12, target: 'tile', use: 'faerie', aoe: 2, conc: true, tag: 'control',
+  run: (b, u, t: P) => { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); const hit: number[] = []; for (const f of b.foesOf(u).filter(f => cheb(f, t) <= 2)) if (!b.save(f, 'dex', u.spellDC, '(Fuego Feérico)')) { b.addStatus(f, { id: 'faerie', turns: 10, src: u.uid, conc: true }); hit.push(f.uid); } u.conc = hit.length ? { id: 'faerie_fire', targets: hit } : undefined; } });
 
 // ---------- Panchi (Monje) ----------
-def({ id: 'flurry', name: 'Ráfaga de Golpes', desc: 'Gastás 1 ki: dos golpes desarmados como acción adicional.', cost: 'bonus', range: 0, target: 'none', use: 'ki', tag: 'attack',
+def({ id: 'flurry', name: 'Ráfaga de Golpes', desc: 'Gastás 1 ki: dos golpes desarmados como acción adicional, después de usar la acción de Atacar.', cost: 'bonus', range: 0, target: 'none', use: 'ki', tag: 'attack',
+  validate: (_b, u) => u.attacksMade > 0 && u.attacksMade < 99 ? { ok: true } : { ok: false, msg: 'Primero usá la acción de Atacar.' },
   run: (b, u) => { u.res['flurry'] = 2; b.log(`${u.name} desata una Ráfaga de Golpes.`, 'buff'); } });
 def({ id: 'patient_defense', name: 'Defensa Paciente', desc: 'Gastás 1 ki: Esquivar como acción adicional.', cost: 'bonus', range: 0, target: 'self', use: 'ki', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'dodging', turns: -1 }); } });
@@ -173,7 +174,7 @@ export const MIRACLES: { id: string; need: 'd' | 'c'; min: number }[] = [
 
 // ---------- Habilidades ganadas por los arcos personales ----------
 def({ id: 'eclipse_personal', name: 'Eclipse Personal', desc: 'Una vez por combate. Enemigos a 2 casillas: salvación CON o 2d6 radiante y cegados; aliados a 2 casillas ganan +2 CA 2 turnos.', cost: 'action', range: 0, target: 'none', use: 'eclipse', aoe: 2, tag: 'control',
-  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log(`${u.name} oscurece el sol a su alrededor: Eclipse Personal.`, 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 2)) { if (!b.save(f, 'con', Math.max(12, u.spellDC), '(Eclipse Personal)')) { b.damage(f, roll('2d6').total, 'radiant', u); b.addStatus(f, { id: 'blinded', turns: 1, src: u.uid }); } } for (const a of b.alliesOf(u).filter(a => cheb(a, u) <= 2 && !a.dead)) b.addStatus(a, { id: 'shieldFaith', turns: 2, src: u.uid }, true); } });
+  run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log(`${u.name} oscurece el sol a su alrededor: Eclipse Personal.`, 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 2)) { if (!b.save(f, 'con', Math.max(12, u.spellDC), '(Eclipse Personal)')) { b.damage(f, roll('2d6').total, 'radiant', u); b.addStatus(f, { id: 'blinded', turns: 1, src: u.uid }); } } for (const a of b.alliesOf(u).filter(a => cheb(a, u) <= 2 && !a.dead)) b.addStatus(a, { id: 'shieldFaith', turns: 2, src: u.uid, conc: false }, true); } });
 def({ id: 'declarar_verdad', name: 'Declarar una Verdad', desc: 'Una vez por combate. Un enemigo a 6 casillas: salvación SAB 13 o queda al descubierto (sin invisibilidad, desventaja 2 turnos) y sufre 2d6 radiante.', cost: 'action', range: 6, target: 'enemy', use: 'verdad', tag: 'control',
   run: (b, u, t: Unit) => { b.emit({ t: 'fx', kind: 'bolt', x: u.x, y: u.y, x2: t.x, y2: t.y }); b.log(`${u.name} pronuncia una verdad que quema.`, 'roll'); if (!b.save(t, 'wis', 13, '(Una Verdad)')) { b.removeStatus(t, 'invisible'); b.addStatus(t, { id: 'disadvNext', turns: 2, src: u.uid }); b.damage(t, roll('2d6').total, 'radiant', u); } else b.float(t, 'Resiste', 'miss'); } });
 
@@ -194,15 +195,15 @@ def({ id: 'item_acido', name: 'Frasco de ácido', desc: 'Lanza a 5 casillas: 2d6
 def({ id: 'item_muro', name: 'Pergamino: Muro de Piedra', desc: 'Alza un muro de piedra de 3 casillas.', cost: 'action', range: 5, target: 'tile', item: 'pergamino_muro', tag: 'utility',
   run: (b, u, t: P) => { const n = b.buildWall(u, t, 3, 'C'); b.log(`${u.name} lee el pergamino: ${n} bloques de piedra surgen del suelo.`, 'buff'); } });
 def({ id: 'item_escudo_fe', name: 'Pergamino: Escudo de la Fe', desc: '+2 CA durante 10 rondas.', cost: 'bonus', range: 6, target: 'allyOrSelf', item: 'pergamino_fe', tag: 'buff', los: false,
-  run: (b, u, t: Unit) => { b.addStatus(t, { id: 'shieldFaith', turns: 10, src: u.uid }); b.log(`${u.name} protege a ${t.name} con un pergamino.`, 'buff'); } });
+  run: (b, u, t: Unit) => { b.addStatus(t, { id: 'shieldFaith', turns: 10, src: u.uid, conc: false }); b.log(`${u.name} protege a ${t.name} con un pergamino.`, 'buff'); } });
 def({ id: 'item_arena_negra', name: 'Polvo de arena negra', desc: 'Invisible hasta que ataques.', cost: 'bonus', range: 0, target: 'self', item: 'arena_negra', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'invisible', turns: 4, src: u.uid }); b.log(`${u.name} se esfuma en arena negra.`, 'buff'); } });
 def({ id: 'item_valor', name: 'Elixir de valor', desc: 'Bendecido 10 rondas.', cost: 'bonus', range: 1, target: 'allyOrSelf', item: 'elixir_valor', tag: 'buff', los: false,
-  run: (b, u, t: Unit) => { b.addStatus(t, { id: 'bless', turns: 10, src: u.uid }); b.log(`${t.name} bebe un elixir de valor.`, 'buff'); } });
+  run: (b, u, t: Unit) => { b.addStatus(t, { id: 'bless', turns: 10, src: u.uid, conc: false }); b.log(`${t.name} bebe un elixir de valor.`, 'buff'); } });
 // ---------- Habilidades de objetos mágicos equipados ----------
 def({ id: 'manos_ardientes', name: 'Manos Ardientes (Gema)', desc: '1/día. Enemigos a 2 casillas: 3d6 de fuego, DES 13 mitad.', cost: 'action', range: 0, target: 'none', use: 'gema', aoe: 2, tag: 'attack',
   run: (b, u) => { b.emit({ t: 'fx', kind: 'burst', x: u.x, y: u.y }); b.log(`${u.name} libera la llama de la gema.`, 'roll'); for (const f of b.foesOf(u).filter(f => cheb(f, u) <= 2)) { const ok = b.save(f, 'dex', 13, '(Manos Ardientes)'); const r = roll('3d6').total; b.damage(f, ok ? Math.floor(r / 2) : r, 'fire', u); } b.hitArea(u, 2, 8, 'fire', u); } });
 def({ id: 'bendicion_perla', name: 'Bendición (Perla violeta)', desc: '1 vez por combate: bendice a 3 aliados sin gastar espacio.', cost: 'action', range: 0, target: 'none', use: 'perla', tag: 'buff',
-  run: (b, u) => { const al = nearestAllies(b, u, 6, 3); for (const a of al) b.addStatus(a, { id: 'bless', turns: 10, src: u.uid }); b.log(`La perla violeta de ${u.name} bendice a ${al.map(a => a.name).join(', ')}.`, 'buff'); } });
+  run: (b, u) => { const al = nearestAllies(b, u, 6, 3); for (const a of al) b.addStatus(a, { id: 'bless', turns: 10, src: u.uid, conc: false }); b.log(`La perla violeta de ${u.name} bendice a ${al.map(a => a.name).join(', ')}.`, 'buff'); } });
 def({ id: 'puno_llama', name: 'Puño de Llama Estancada', desc: '1/día. Tu siguiente impacto cuerpo a cuerpo suma 2d6 de fuego.', cost: 'bonus', range: 0, target: 'self', use: 'llama', tag: 'buff',
   run: (b, u) => { b.addStatus(u, { id: 'flameFist', turns: 3, src: u.uid }); b.log(`Los guanteletes de ${u.name} arden sin quemar.`, 'buff'); } });

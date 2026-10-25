@@ -204,7 +204,7 @@ const PANCHI: Track = {
   paths: { luz: 'Camino del Puño Abierto', sombra: 'Camino del Puño Cerrado', neutro: 'Camino del Peregrino' },
   slots: {}, res: { 6: { whole: 1 }, 15: { palm: 1 } },
   auto: {
-    4: [F('m4', 'Caída Lenta', '+1 casilla de movimiento.', { speed: 1 })],
+    4: [F('m4', 'Caída Lenta', 'Reacción para frenar una caída (no cambia el combate).', {})],
     5: [F('m5', 'Ataque Extra y Golpe Aturdidor', 'Atacás dos veces; el dado de artes marciales pasa a d8.', { attacks: 1, abilities: ['stunning_strike'] })],
     6: [F('m6', 'Golpes Imbuidos de Ki', '+1 al daño desarmado, +1 casilla de movimiento y Plenitud Corporal.', { weaponDmg: 1, speed: 1, abilities: ['wholeness_of_body'] })],
     7: [F('m7', 'Evasión y Quietud Mental', 'Evasión y no podés ser hechizado ni aterrado.', { traits: ['evasion'], condImmune: ['charmed', 'frightened'] })],
@@ -292,7 +292,7 @@ const LOW: Record<string, Record<1 | 2, { res: Record<string, number>; drop: str
   pact: { 1: { res: { sw: 1, hh: 1 }, drop: ['action_surge', 'rally', 'radiant_soul'] }, 2: { res: { sw: 1, surge: 1, hh: 1 }, drop: ['rally', 'radiant_soul'] } },
   rabb: { 1: { res: { slot1: 1, curse: 1 }, drop: [] }, 2: { res: { slot1: 2, curse: 1 }, drop: [] } },
   joren: { 1: { res: {}, drop: ['hunters_mark', 'cure_wounds'], dropTraits: ['dreadInit'] }, 2: { res: { slot1: 2 }, drop: [], dropTraits: ['dreadInit'] } },
-  zyrthar: { 1: { res: {}, drop: ['cunning_dash', 'cunning_disengage', 'faerie_fire'], dropTraits: ['assassinate'] }, 2: { res: {}, drop: ['faerie_fire'], dropTraits: ['assassinate'] } },
+  zyrthar: { 1: { res: {}, drop: ['cunning_dash', 'cunning_disengage', 'hide', 'faerie_fire'], dropTraits: ['assassinate'] }, 2: { res: {}, drop: ['faerie_fire'], dropTraits: ['assassinate'] } },
   panchi: { 1: { res: { ki: 0 }, drop: ['flurry', 'patient_defense', 'step_of_wind', 'step_disengage'], speed: 5 }, 2: { res: { ki: 2 }, drop: [], speed: 7 } },
 };
 function applyLow(u: Unit, def: PCDef, L: 1 | 2) {
@@ -328,13 +328,13 @@ export function applyProgression(u: Unit, def: PCDef, prog: Prog) {
   // ── conjuros
   if (def.spellAb) { const sm = u.mods[def.spellAb]; u.spellMod = sm; u.spellDC = 8 + prof + sm + (p.spellDC ?? 0); u.spellAtk = prof + sm + (p.spellDC ?? 0); }
   // ── armas
-  const unarmedDie = L >= 11 ? '1d10' : L >= 5 ? '1d8' : null;
+  const unarmedDie = L >= 11 ? '1d8' : null; // artes marciales: d6 desde el nivel 5 (la ficha ya trae d6), d8 desde el 11
   for (const w of u.weapons) {
     const ab = w.ranged ? t.weaponAb.ranged : t.weaponAb.melee; const dm = dMods[ab] ?? 0; const unarmed = w.id.startsWith('fist');
     w.toHit += dProf + dm + (p.weaponHit ?? 0) + (p.spellDC && ab === t.spellAb ? p.spellDC : 0);
     if (dm + (p.weaponDmg ?? 0)) w.dmg = [{ ...w.dmg[0], dice: addFlat(w.dmg[0].dice, dm + (p.weaponDmg ?? 0)) }, ...w.dmg.slice(1)];
     if (unarmed && unarmedDie) w.dmg = [{ ...w.dmg[0], dice: w.dmg[0].dice.replace(/^1d\d+/, unarmedDie) }, ...w.dmg.slice(1)];
-    for (const e of p.extra ?? []) { const ok = !e.applies || e.applies === 'all' || (e.applies === 'melee' && !w.ranged) || (e.applies === 'ranged' && w.ranged); if (ok && !w.bonusAction) w.dmg = [...w.dmg, { dice: e.dice, type: e.type }]; }
+    for (const e of p.extra ?? []) { const ok = !e.applies || e.applies === 'all' || (e.applies === 'melee' && !w.ranged) || (e.applies === 'ranged' && w.ranged); if (ok && (!w.bonusAction || unarmed)) w.dmg = [...w.dmg, { dice: e.dice, type: e.type }]; }
   }
   u.extraAtk = (u.extraAtk ?? 0) + (p.attacks ?? 0);
   // ── recursos

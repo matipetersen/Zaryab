@@ -433,7 +433,7 @@ export class Renderer {
     const c = this.ctx; const t = this.b!.grid.at(Math.round(v.x), Math.round(v.y)); const el = (t?.kind === 'high' ? ELEV : 0) + (u.fly && !u.dead ? 10 + Math.sin(this.time * 3) * 2 : 0);
     const bob = u.fly || u.sprite === 'djinn' ? Math.sin(this.time * 2 + v.wobble) * 2 : 0;
     const P = this.center(v.x, v.y, el); const sx = P.x + (v.shake ? (Math.random() - .5) * 6 * v.shake : 0), sy = P.y - bob * s;
-    const k = s * US * (1 + (u.size - 1) * 0.55); c.globalAlpha = v.alpha * (this.b!.has(u, 'invisible') ? .4 : 1);
+    const k = s * US * (1 + (u.size - 1) * 0.55); c.globalAlpha = v.alpha * (this.b!.has(u, 'banished') ? .12 : this.b!.has(u, 'invisible') ? .4 : 1);
     // sombra y anillo de turno
     { const L = SHADOW_DIR; c.fillStyle = 'rgba(6,2,14,.46)'; c.beginPath(); c.ellipse(P.x + L.x * 11 * k, P.y + 2 * s + L.y * 11 * k, 25 * k, 7.5 * k, Math.atan2(L.y, L.x) * .35, 0, 6.28); c.fill(); c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 15 * k, 6 * k, 0, 0, 6.28); c.fill(); }
     if (u.uid === this.activeUid) { c.strokeStyle = `rgba(255,215,90,${.65 + .3 * Math.sin(this.time * 5)})`; c.lineWidth = 3; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 21 * k, 9.5 * k, 0, 0, 6.28); c.stroke(); }

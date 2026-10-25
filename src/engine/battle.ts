@@ -23,7 +23,10 @@ export const COND_LABEL: Record<CondId, string> = {
   enfeebled: 'Debilitado', flameFist: 'Puño de llama', wrathSmite: 'Golpe Iracundo', radiantSoul: 'Alma Radiante', rallied: 'Reanimado', vulnerable: 'Vulnerable',
   guided: 'Guiado', aided: 'Auxiliado', sharp: 'Tirador Certero', weakened: 'Debilitado', ambusher: 'Emboscador', noHeal: 'Sin curación', spiritGuard: 'Guardianes', deathWard: 'Protegido', ensnare: 'Enredador', faerie: 'Delineado',
   taunted: 'Provocado', disadvNext: 'Desventaja', surgeUsed: '', sneakUsed: '', disengaged: 'Desenganche', helped: 'Ayudado', grappled: 'Agarrado', ready: 'Acción preparada', sprinting: 'Esprintando',
+  maneuverTrip: 'Derribo listo', maneuverMenace: 'Amenaza lista', stunArmed: 'Ki listo', banished: 'Desterrado',
 };
+/** Dado de superioridad según el nivel del Maestro de Batalla. */
+const sdDieOf = (u: Unit) => `1d${u.traits.includes('sd12') ? 12 : u.traits.includes('sd10') ? 10 : 8}`;
 const CONC_CONDS: CondId[] = ['bless', 'bane', 'shieldFaith', 'hex', 'hunterMark', 'enfeebled', 'wrathSmite', 'spiritGuard', 'ensnare'];
 /** Estados que se guardan uno por cada fuente (dos aliados ayudando, dos agarres…). */
 const SRC_CONDS: CondId[] = ['helped', 'frightened', 'charmed', 'grappled'];
@@ -40,6 +43,7 @@ export class Battle {
   flags: Record<string, any> = {};
   maxRounds = 0; surviveRounds = 0; goalOnly = false; goal?: { x: number; y: number }; goalMsg = '';
   cube?: CubeState; carry: Record<string, boolean> = {}; storyFlags = new Set<string>(); storyFlagsOut = new Set<string>(); scaleFoe?: (u: Unit) => void; scripts: ((b: Battle, round: number) => void)[] = []; inv: Record<string, number> = {}; itemsUsed: Record<string, number> = {};
+  /** Cuenta global de turnos (rasgos «una vez por turno», también en turnos ajenos). */ turnNo = 0;
   pfPool = 0; pfSpent = 0; onRound?: (b: Battle, round: number) => void;
   constructor(grid: Grid, units: Unit[]) { this.grid = grid; this.units = units; units.forEach(u => (u.uid = this.nextUid++)); }
 
@@ -110,7 +114,7 @@ export class Battle {
   dist(a: P, b: P) { return cheb(a, b); }
   has(u: Unit, id: CondId) { return u.statuses.some(s => s.id === id); }
   status(u: Unit, id: CondId) { return u.statuses.find(s => s.id === id); }
-  incapacitated(u: Unit) { return u.down || u.dead || this.has(u, 'paralyzed') || this.has(u, 'stunned'); }
+  incapacitated(u: Unit) { return u.down || u.dead || this.has(u, 'paralyzed') || this.has(u, 'stunned') || this.has(u, 'banished'); }
   /** Relación (puntos) entre pares de la compañía: la fija la campaña; por defecto, la de partida. */
   chem: Record<string, number> = {};
   // ───── giros de objetivo y terreno vivo (ver twists.ts) ─────
@@ -226,7 +230,9 @@ export class Battle {
     return undefined;
   }
   startTurn(u: Unit) {
-    u.turnsTaken++; u.reactionUsed = false;
+    u.turnsTaken++; u.reactionUsed = false; this.turnNo++;
+    if (this.has(u, 'maneuverTrip') || this.has(u, 'maneuverMenace')) { this.removeStatus(u, 'maneuverTrip'); this.removeStatus(u, 'maneuverMenace'); u.res['sd'] = Math.min(u.resMax['sd'] ?? 99, (u.res['sd'] ?? 0) + 1); }
+    if (this.has(u, 'stunArmed')) { this.removeStatus(u, 'stunArmed'); u.res['ki'] = Math.min(u.resMax['ki'] ?? 99, (u.res['ki'] ?? 0) + 1); }
     const lost = !!u.surprised;
     for (const o of this.units) if (this.has(o, 'helped') && this.status(o, 'helped')!.src === u.uid) this.removeStatus(o, 'helped'); // la ayuda dura hasta el próximo turno de quien ayuda
     u.actionUsed = false; u.bonusUsed = false; u.extraActions = 0; u.attacksMade = 0; u.res['flurry'] = 0;
@@ -258,6 +264,7 @@ export class Battle {
   }
   endTurn(auto = false) {
     const u = this.cur; if (!u) return;
+    for (const s of [...u.statuses]) if (s.save && !u.dead && this.save(u, s.save.ab, s.save.dc, `(${COND_LABEL[s.id] ?? s.id})`)) { u.statuses = u.statuses.filter(x => x !== s); this.log(`${u.name} se libera.`, 'buff'); }
     for (const s of [...u.statuses]) if (s.turns > 0) { if (s.fresh) { s.fresh = false; continue; } s.turns--; if (s.turns === 0) { u.statuses = u.statuses.filter(x => x !== s); if (s.id === 'radiantSoul') u.fly = false; } }
     if (u.conc && (u.down || u.dead)) this.breakConc(u);
     if (!auto && !u.ai) { /* turno del jugador terminado */ }
@@ -558,7 +565,7 @@ export class Battle {
     if (cheb(a, t) > range) return false;
     return !needLos || this.canSee(a, t).visible;
   }
-  targetable(a: Unit, t: Unit) { return !t.dead && !(this.has(t, 'invisible') && cheb(a, t) > 1 && t.side !== a.side); }
+  targetable(a: Unit, t: Unit) { return !t.dead && !this.has(t, 'banished') && !(this.has(t, 'invisible') && cheb(a, t) > 1 && t.side !== a.side); }
 
   // ---------- ataque con arma (PJ) ----------
   weaponAttack(u: Unit, w: Weapon, t: Unit): Res {
@@ -567,7 +574,7 @@ export class Battle {
     if (this.has(u, 'charmed') && this.status(u, 'charmed')!.src === t.uid) return { ok: false, msg: 'No podés atacar a quien te hechizó.' };
     if (!this.inRange(u, t, w.longRange ?? w.range)) return { ok: false, msg: 'Fuera de alcance o sin línea de visión.' };
     const longShot = w.longRange && cheb(u, t) > w.range;
-    if (w.bonusAction) { if (u.bonusUsed && !(u.res['flurry'] > 0)) return { ok: false, msg: 'Ya usaste tu acción adicional.' }; }
+    if (w.bonusAction) { if (u.bonusUsed && !(u.res['flurry'] > 0)) return { ok: false, msg: 'Ya usaste tu acción adicional.' }; if (!(u.attacksMade > 0 && u.attacksMade < 99)) return { ok: false, msg: 'Primero usá la acción de Atacar.' }; }
     else {
       const mid = u.attacksMade > 0 && u.attacksMade < this.maxAttacks(u);
       if (!mid) { if (!this.spendAction(u)) return { ok: false, msg: 'No te queda acción.' }; u.attacksMade = 0; }
@@ -588,14 +595,21 @@ export class Battle {
       if (this.has(u, 'hunterMark') && this.status(u, 'hunterMark')!.val === t.uid) ex.push({ dice: '1d6', type: w.dmg[0].type });
       if (this.has(u, 'hexCurse') && this.status(u, 'hexCurse')!.val === t.uid) ex.push({ dice: String(u.prof), type: w.dmg[0].type });
       if (this.has(u, 'flameFist') && !ranged) { ex.push({ dice: '2d6', type: 'fire' }); this.removeStatus(u, 'flameFist'); }
-      if (this.has(u, 'radiantSoul') && !this.has(u, 'surgeUsed')) { ex.push({ dice: '3', type: 'radiant' }); this.addStatus(u, { id: 'surgeUsed', turns: -1 }, true); }
+      if (this.has(u, 'radiantSoul') && !this.has(u, 'surgeUsed')) { ex.push({ dice: String(Math.max(1, u.level)), type: 'radiant' }); this.addStatus(u, { id: 'surgeUsed', turns: -1 }, true); }
       if (this.has(u, 'wrathSmite') && !ranged) { ex.push({ dice: '1d6', type: 'psychic' }); this.removeStatus(u, 'wrathSmite'); if (!this.save(t, 'wis', u.spellDC, '(Golpe Iracundo)')) this.addStatus(t, { id: 'frightened', turns: 10, src: u.uid }); }
-      if (u.traits.includes('sneak') && !this.has(u, 'sneakUsed') && (w.finesse || ranged)) {
+      if (u.traits.includes('sneak') && this.flags['snk' + u.uid] !== this.turnNo && (w.finesse || ranged)) {
         const flank = this.units.some(a => a !== u && !a.dead && a.side === u.side && !this.incapacitated(a) && cheb(a, t) <= 1);
-        if (r.adv || (flank && !r.dis)) { ex.push({ dice: `${Math.ceil(u.level / 2)}d6`, type: w.dmg[0].type }); this.addStatus(u, { id: 'sneakUsed', turns: -1 }, true); bonusTxt = ' +Ataque furtivo'; }
+        if (r.adv || (flank && !r.dis)) { ex.push({ dice: `${Math.ceil(u.level / 2)}d6`, type: w.dmg[0].type }); this.flags['snk' + u.uid] = this.turnNo; bonusTxt = ' +Ataque furtivo'; }
       }
       if (this.has(u, 'ambusher') && u.attacksMade === 1 && u.turnsTaken === 1) ex.push({ dice: '1d8', type: w.dmg[0].type });
-      if (this.has(u, 'ensnare') && !ranged) { this.removeStatus(u, 'ensnare'); if (!this.save(t, 'str', u.spellDC, '(Golpe Enredador)')) this.addStatus(t, { id: 'restrained', turns: 5, src: u.uid }); }
+      if (this.has(u, 'ensnare')) { this.removeStatus(u, 'ensnare'); if (!this.save(t, 'str', u.spellDC, '(Golpe Enredador)')) { this.addStatus(t, { id: 'restrained', turns: 10, src: u.uid, conc: true }); if (u.conc) u.conc.targets = [t.uid]; } else this.breakConc(u, ' (el enredo no prende)'); }
+      if (this.has(u, 'maneuverTrip') || this.has(u, 'maneuverMenace')) { // maniobras del Maestro de Batalla: sobre este impacto
+        const trip = this.has(u, 'maneuverTrip'); this.removeStatus(u, 'maneuverTrip'); this.removeStatus(u, 'maneuverMenace'); ex.push({ dice: sdDieOf(u), type: w.dmg[0].type });
+        const dc = 8 + u.prof + Math.max(u.mods.str, u.mods.dex);
+        if (trip) { if (t.size <= 2 && !this.save(t, 'str', dc, '(Derribo)')) this.addStatus(t, { id: 'prone', turns: -1, src: u.uid }); else if (t.size > 2) this.log(`${t.name} es demasiado grande para derribarlo.`, 'sys'); bonusTxt += ' +Derribo'; }
+        else { if (!this.save(t, 'wis', dc, '(Amenaza)')) this.addStatus(t, { id: 'frightened', turns: 1, src: u.uid }); bonusTxt += ' +Amenaza'; }
+      }
+      if (this.has(u, 'stunArmed') && !ranged) { this.removeStatus(u, 'stunArmed'); if (!this.save(t, 'con', 8 + u.prof + u.mods.wis, '(Golpe Aturdidor)')) this.addStatus(t, { id: 'stunned', turns: 1, src: u.uid }); bonusTxt += ' +Golpe Aturdidor'; }
       for (const [tr, dice, type] of [['divineStrike', u.level >= 14 ? '2d8' : '1d8', 'necrotic'], ['radStrike', u.level >= 14 ? '2d8' : '1d8', 'radiant']] as const) if (u.traits.includes(tr) && !ranged && !this.flags[`${tr}${u.uid}_${this.round}`]) { this.flags[`${tr}${u.uid}_${this.round}`] = 1; ex.push({ dice, type }); }
       if (u.traits.includes('lifedrinker') && !ranged) ex.push({ dice: String(Math.max(1, u.spellMod)), type: 'necrotic' });
       if (t.traits.includes('acidBody') && !ranged) { const ac = roll('2d8').total; this.log(`El ácido del ${t.name} abrasa a ${u.name} (${ac}).`, 'dmg'); this.damage(u, ac, 'acid', undefined); }
@@ -667,7 +681,7 @@ export class Battle {
     for (const t of this.units) {
       if (t.dead && ab.target !== 'deadAlly') continue;
       if (ab.target === 'enemy' && (t.side === u.side || !this.targetable(u, t) || t.dead)) continue;
-      if (ab.target === 'ally' && (t.side !== u.side || t.dead || t.sprite === 'wall')) continue;
+      if (ab.target === 'ally' && (t.side !== u.side || t.dead || t.sprite === 'wall' || t === u)) continue;
       if (ab.target === 'allyOrSelf' && (t.side !== u.side || t.dead)) continue;
       if (ab.target === 'downedAlly' && !(t.side === u.side && t.down && !t.dead)) continue;
       if (ab.target === 'any' && t.dead) continue;
