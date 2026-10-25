@@ -37,10 +37,13 @@ import { assetImg, hasAssets } from './assets';
 import { audio } from './audio';
 import { TRAP_ICON } from '../engine/traps';
 import { drawPC } from './pcSprites';
+import { dioramaFor, pixelWidth, quantize, DIORAMA_PAL, templateFor, drawFigure, PIX } from './diorama';
 import { floorTex, blockTex } from './textures';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
+  /** Modo diorama (pixel art de paleta cerrada, ver diorama.ts). */ pixel = false;
+  setPixel(on: boolean) { this.pixel = on; this.pal = on ? DIORAMA_PAL : (PALS[this.map?.theme ?? ''] ?? PALS.alley); this.gcache = undefined; this.canvas.style.imageRendering = on ? 'pixelated' : ''; this.resize(); }
   /** Modo escena: sin barras de PG ni anillos de bando (se usa en las cutscenes sobre mapa). */ cine = false;
   weather = new Weather(); lighting = new Lighting(); amb: Ambience = ambienceFor(''); flashes: Flash[] = []; freeze = 0;
   ctx: CanvasRenderingContext2D; b?: Battle; map?: MapDef; pal: Pal = PALS.alley;
@@ -72,13 +75,13 @@ export class Renderer {
   }
   destroy() { this.running = false; }
   resize() {
-    const r = this.canvas.getBoundingClientRect(); this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    const r = this.canvas.getBoundingClientRect(); this.dpr = this.pixel && r.width > 4 ? pixelWidth(r.width) / r.width : Math.min(2, window.devicePixelRatio || 1);
     this.W = r.width; this.H = r.height; this.canvas.width = r.width * this.dpr; this.canvas.height = r.height * this.dpr; this.weather.set(this.amb.weather, this.W, this.H);
   }
   setBattle(b: Battle, map: MapDef) {
     this.b = b; this.map = map; this.rot = 0; this.rotT = -1; this.rotFade = 0; this.pal = PALS[map.theme] ?? PALS.alley; this.amb = ambienceFor(map.id); this.weather.set(this.amb.weather, this.W, this.H); this.vis.clear(); this.floats = []; this.parts = []; this.overlays = [];
     for (const u of b.units) this.vis.set(u.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 0, dead: 0, wobble: Math.random() * 6 });
-    this.zoom = 1; this.panX = 0; this.panY = 0; this.fogA = new Float32Array(0); this.updateFog(0, true); this.resize();
+    this.zoom = 1; this.panX = 0; this.panY = 0; this.fogA = new Float32Array(0); this.updateFog(0, true); this.setPixel(dioramaFor(map.id));
   }
   // ---------- proyección ----------
   /** Niebla de guerra: opacidad actual de cada casilla (0 = visible) y si está activa (se apaga en el despliegue). */
@@ -212,11 +215,12 @@ export class Renderer {
   // ---------- dibujo ----------
   diamond(x: number, y: number, s: number, fill: string, stroke?: string) {
     const c = this.ctx; c.beginPath(); c.moveTo(x, y); c.lineTo(x + TW / 2 * s, y + TH / 2 * s); c.lineTo(x, y + TH * s); c.lineTo(x - TW / 2 * s, y + TH / 2 * s); c.closePath();
-    c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); }
+    c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = this.pixel ? 1 / this.dpr : 1; c.stroke(); }
   }
   /** Textura externa para las caras del bloque que se está dibujando (si hay arte cargado). */
   boxTex: HTMLImageElement | HTMLCanvasElement | null = null;
   overlay(x: number, y: number, s: number, hh: number, dark: number) {
+    if (this.pixel) return;
     const img = this.boxTex; if (!img) return; const c = this.ctx; c.save(); c.clip(); c.drawImage(img, x - TW / 2 * s, y - hh - TH / 2 * s, TW * s, TH * s * 1.5 + hh); if (dark) { c.fillStyle = `rgba(0,0,0,${dark})`; c.fillRect(x - TW * s, y - hh - TH * s, TW * 2 * s, TH * 3 * s + hh); } c.restore();
   }
   box(x: number, y: number, s: number, h: number, top: string, left: string, right: string) {
@@ -231,11 +235,11 @@ export class Renderer {
     const c = this.ctx; c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     const g0 = c.createRadialGradient(this.W / 2, this.H * .35, 20, this.W / 2, this.H / 2, Math.max(this.W, this.H));
     g0.addColorStop(0, (this.pal.bg0)); g0.addColorStop(1, this.pal.bg1); c.fillStyle = g0; c.fillRect(0, 0, this.W, this.H);
-    c.fillStyle = 'rgba(255,230,180,.25)'; for (const d of this.dust) { c.beginPath(); c.arc(d.x * this.W, (d.y * this.H + this.time * 6 * d.s) % this.H, d.s, 0, 6.28); c.fill(); }
+    c.fillStyle = this.pixel ? PIX.e : 'rgba(255,230,180,.25)'; for (const d of this.dust) { c.beginPath(); c.arc(d.x * this.W, (d.y * this.H + this.time * 6 * d.s) % this.H, d.s, 0, 6.28); c.fill(); }
     if (!this.b) return; const b = this.b, g = b.grid, s = this.scale();
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo: la capa estática (baldosas + sombras de bloques) se pinta una vez y se reutiliza mientras no cambie la vista ni el terreno
-    this.drawGround(s);
+    this.drawGround(s); if (this.pixel) this.drawSandFall(s);
     { const vd = this.vdims(); for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const t = g.tiles[q.y][q.x]; if (t.kind === 'water' || t.kind === 'hazard' || t.kind === 'mark') this.drawFloor(q.x, q.y, t.kind, s, 'dyn'); } }
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) { const t = g.tiles[y][x]; if (t.obj && !t.hid && t.obj !== 'trampa' && this.fogA[y * g.w + x] < .5) { const q = this.center(x, y); const c = this.ctx; const pulse = 0.5 + 0.5 * Math.sin(this.time * 3 + x + y); c.save(); c.globalAlpha = 0.55 + 0.35 * pulse; c.fillStyle = '#ffd66b'; c.beginPath(); c.moveTo(q.x, q.y - 9 * s); c.lineTo(q.x + 7 * s, q.y); c.lineTo(q.x, q.y + 5 * s); c.lineTo(q.x - 7 * s, q.y); c.closePath(); c.fill(); c.fillStyle = '#1a1020'; c.font = `bold ${Math.round(10 * s)}px sans-serif`; c.textAlign = 'center'; c.fillText('!', q.x, q.y + 3 * s); c.restore(); } }
     this.drawFloorFog(s);
@@ -268,15 +272,16 @@ export class Renderer {
     for (const r of this.rings) { const p = this.center(r.x, r.y, 0); c.strokeStyle = r.color; c.globalAlpha = 1 - r.t; c.lineWidth = 3; c.beginPath(); c.ellipse(p.x, p.y, r.t * r.max * TW * s, r.t * r.max * TH * s, 0, 0, 6.28); c.stroke(); c.globalAlpha = 1; }
     for (const p of this.parts) { c.globalAlpha = 1 - p.life / p.max; if (p.streak) { c.strokeStyle = p.color; c.lineWidth = 1.8; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x - p.vx * .035, p.y - p.vy * .035); c.stroke(); } else { c.fillStyle = p.color; c.beginPath(); c.arc(p.x, p.y, p.size, 0, 6.28); c.fill(); } } c.globalAlpha = 1;
     // clima y luces
-    this.weather.draw(c, this.amb.tint ?? '#fff'); this.lighting.draw(c, this.W, this.H, this.amb, this.lights(), this.time); c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.weather.draw(c, this.amb.tint ?? '#fff'); this.lighting.draw(c, this.W, this.H, this.pixel ? { ...this.amb, amount: this.amb.amount * .7 } : this.amb, this.lights(), this.time); c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.rotFade > 0) { c.fillStyle = `rgba(8,4,16,${this.rotFade * .9})`; c.fillRect(0, 0, this.W, this.H); }
     this.drawCompass();
     // textos flotantes
-    c.textAlign = 'center'; c.font = `bold ${Math.round(18 * Math.max(.8, s))}px "Roboto Mono", monospace`;
+    c.textAlign = 'center'; c.font = `bold ${Math.round(18 * Math.max(.8, s) * (this.pixel ? 1.9 : 1))}px "Roboto Mono", monospace`;
     for (const f of this.floats) { const p = this.center(f.x, f.y, 44); const yy = p.y - f.t * 38 * s; c.globalAlpha = Math.max(0, 1 - Math.max(0, f.t - .8) / .6);
       const col = f.cls === 'heal' ? '#5be37d' : f.cls === 'crit' ? '#ffd23f' : f.cls === 'miss' ? '#b8b8c8' : f.cls === 'status' ? '#d9b6ff' : '#ff6b5e';
       c.lineWidth = 4; c.strokeStyle = 'rgba(0,0,0,.8)'; c.strokeText(f.text, p.x + f.dx, yy); c.fillStyle = col; c.fillText(f.text, p.x + f.dx, yy); } c.globalAlpha = 1;
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.pixel) quantize(c, this.canvas.width, this.canvas.height);
   }
   drawFloor(x: number, y: number, kind: string, s: number, mode: 'all' | 'base' | 'dyn' = 'all') {
     if (mode === 'dyn' && kind !== 'water' && kind !== 'hazard' && kind !== 'mark') return;
@@ -289,7 +294,7 @@ export class Renderer {
     if (kind === 'diff') col = P.diff; else if (kind === 'water') col = P.water; else if (kind === 'hazard') col = P.hazard; else if (kind === 'mark') col = (x + y) % 2 ? P.f1 : P.f2;
     this.diamond(p.x, p.y, s, col, P.edge);
     const th = this.map?.theme ?? ''; const ext = assetImg('tiles', `${th}_${kind === 'floor' || kind === 'mark' ? 'floor' : kind}`) ?? assetImg('tiles', kind === 'floor' ? 'floor' : ''); const tex = ext ?? (kind === 'floor' || kind === 'mark' ? { img: floorTex(this.pal, th, x, y) } : null);
-    if (tex) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if (ext && (x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
+    if (tex && !this.pixel) { c.save(); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x + TW / 2 * s, p.y + TH / 2 * s); c.lineTo(p.x, p.y + TH * s); c.lineTo(p.x - TW / 2 * s, p.y + TH / 2 * s); c.closePath(); c.clip(); c.drawImage(tex.img, p.x - TW / 2 * s, p.y, TW * s, TH * s); if (ext && (x + y) % 2) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(p.x - TW / 2 * s, p.y, TW * s, TH * s); } c.restore(); }
     if (kind === 'diff') { c.strokeStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(p.x - 10 * s, p.y + 14 * s); c.lineTo(p.x + 6 * s, p.y + 10 * s); c.moveTo(p.x - 4 * s, p.y + 22 * s); c.lineTo(p.x + 12 * s, p.y + 18 * s); c.stroke(); }
     }
     if (mode !== 'base') {
@@ -345,8 +350,25 @@ export class Renderer {
     }
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(gc.cv, 0, 0); c.restore();
   }
+  /** Diorama: los bordes delanteros del mapa caen como un acantilado al vacío, con estratos. */
+  private drawCliff(s: number) {
+    const c = this.ctx, vd = this.vdims(), D = 56 * s;
+    const face = (ax: number, ay: number, bx: number, by: number, col: string, dark: string) => {
+      c.fillStyle = col; c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.lineTo(bx, by + D); c.lineTo(ax, ay + D); c.closePath(); c.fill();
+      for (let k = 1; k < 5; k++) { const yy = k * D / 5 + (k % 2 ? 2 : -1) * s; c.strokeStyle = dark; c.lineWidth = 2 * s; c.beginPath(); c.moveTo(ax, ay + yy); c.lineTo(bx, by + yy); c.stroke(); }
+    };
+    for (let vx = 0; vx < vd.w; vx++) { const q = this.rinv(vx, vd.h - 1); const p = this.proj(q.x, q.y); face(p.x - TW / 2 * s, p.y + TH / 2 * s, p.x, p.y + TH * s, PIX.s, PIX.e); }
+    for (let vy = 0; vy < vd.h; vy++) { const q = this.rinv(vd.w - 1, vy); const p = this.proj(q.x, q.y); face(p.x, p.y + TH * s, p.x + TW / 2 * s, p.y + TH / 2 * s, PIX.S, PIX.s); }
+  }
+  /** Arena que se escurre por el borde del acantilado (se dibuja cada cuadro, fuera de la caché). */
+  private drawSandFall(s: number) {
+    const c = this.ctx, vd = this.vdims(), D = 56 * s; c.fillStyle = PIX.t;
+    for (let vx = 1; vx < vd.w; vx += 3) { const q = this.rinv(vx, vd.h - 1); const p = this.proj(q.x, q.y); const x = p.x - TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vx * 13 + i * 19) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
+    for (let vy = 2; vy < vd.h; vy += 3) { const q = this.rinv(vd.w - 1, vy); const p = this.proj(q.x, q.y); const x = p.x + TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vy * 17 + i * 23) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
+  }
   private drawGroundLive(s: number) {
     const g = this.b!.grid, vd = this.vdims();
+    if (this.pixel) this.drawCliff(s);
     for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); this.drawFloor(q.x, q.y, g.tiles[q.y][q.x].kind, s, 'base'); }
     this.drawBlockShadows(s);
   }
@@ -389,6 +411,11 @@ export class Renderer {
   drawOverlay(o: Overlay, s: number) {
     const t = this.b!.grid.at(o.x, o.y); if (!t) return; const p = this.proj(o.x, o.y, t.kind === 'high' ? ELEV : 0);
     const map: Record<string, [string, string]> = { move: ['rgba(80,140,255,.38)', 'rgba(140,190,255,.9)'], atk: ['rgba(255,70,60,.42)', 'rgba(255,150,140,.95)'], ally: ['rgba(60,220,120,.38)', 'rgba(150,255,190,.95)'], aoe: ['rgba(255,150,40,.35)', 'rgba(255,200,120,.9)'], sel: ['rgba(255,215,90,.3)', 'rgba(255,230,130,1)'], path: ['rgba(255,255,255,.28)', 'rgba(255,255,255,.9)'], range: ['rgba(255,255,255,.07)', 'rgba(255,255,255,.18)'], mark: ['rgba(142,68,173,.35)', 'rgba(200,140,230,.9)'] };
+    const pix: Record<string, [string, string]> = { move: ['rgba(236,224,200,.42)', PIX.b], atk: ['rgba(179,25,47,.55)', PIX.r], ally: ['rgba(111,143,82,.5)', PIX.g], aoe: ['rgba(224,160,80,.45)', PIX.f], sel: ['rgba(255,255,255,.35)', PIX.w], path: ['rgba(236,224,200,.45)', PIX.b], range: ['rgba(236,224,200,.12)', 'rgba(0,0,0,0)'], mark: ['rgba(154,92,255,.45)', PIX.v] };
+    if (this.pixel) { // marca nítida: contorno de 1 píxel + rombo interior sólido (los velos semitransparentes se pierden en la paleta)
+      const [f, st] = pix[o.kind] ?? pix.move; this.diamond(p.x, p.y, s, 'rgba(0,0,0,0)', st);
+      if (o.kind !== 'range') { const k = .42; this.diamond(p.x, p.y + TH * s * (1 - k) / 2, s * k, st); } void f; return;
+    }
     const [f, st] = map[o.kind]; this.diamond(p.x, p.y, s, f, st);
   }
   // ---------- sprites ----------
@@ -405,13 +432,14 @@ export class Renderer {
     const down = u.down; const deadK = v.dead > 0 ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
     c.save(); c.translate(sx, sy - bounce); c.scale(k * deadK, k * deadK);
     if (down) { c.rotate(-1.35); c.translate(-8, 4); }
-    this.sprite(u); c.restore();
-    if (v.flash > 0) { c.globalAlpha = v.flash * .5 * v.alpha; c.fillStyle = '#fff'; c.beginPath(); c.ellipse(sx, sy - 22 * k, 11 * k, 20 * k, 0, 0, 6.28); c.fill(); c.globalAlpha = v.alpha; }
+    if (!this.pixel) this.sprite(u); c.restore();
+    if (this.pixel) { const cell = Math.max(1, Math.round(3.4 * k * deadK * this.dpr)); drawFigure(c, templateFor(u.pcId, u.id, u.sprite), sx * this.dpr, (sy - bounce) * this.dpr, cell, { body: u.side === 'pc' ? PIX.S : PIX.D, dark: u.side === 'pc' ? PIX.s : PIX.d, flip: u.side !== 'pc', down, flash: v.flash > .3, bob: !down && !u.dead && Math.floor(this.time * 2.2 + u.uid * .7) % 2 ? 1 : 0 }); }
+    if (v.flash > 0 && !this.pixel) { c.globalAlpha = v.flash * .5 * v.alpha; c.fillStyle = '#fff'; c.beginPath(); c.ellipse(sx, sy - 22 * k, 11 * k, 20 * k, 0, 0, 6.28); c.fill(); c.globalAlpha = v.alpha; }
     // barra de PG y estados
     if (!u.dead && !this.cine) {
       const bw = 30 * k, bx = sx - bw / 2, by = sy - 50 * k;
       c.fillStyle = 'rgba(0,0,0,.7)'; c.fillRect(bx - 1, by - 1, bw + 2, 7);
-      const pct = Math.max(0, u.hp / u.maxHp); c.fillStyle = pct > .5 ? '#2ecc71' : pct > .25 ? '#f1c40f' : '#e74c3c'; c.fillRect(bx, by, bw * pct, 5);
+      const pct = Math.max(0, u.hp / u.maxHp); c.fillStyle = this.pixel ? (u.side === 'pc' ? PIX.b : PIX.r) : pct > .5 ? '#2ecc71' : pct > .25 ? '#f1c40f' : '#e74c3c'; c.fillRect(bx, by, bw * pct, this.pixel ? Math.max(5, 2 / this.dpr) : 5);
       if (u.temp > 0) { c.fillStyle = '#5dade2'; c.fillRect(bx, by + 5, Math.min(bw, bw * u.temp / u.maxHp), 2); }
       if (u.down) { c.font = 'bold 11px Roboto Mono'; c.textAlign = 'center'; c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 3; const t2 = `☠ ${u.death.succ}✓ ${Math.min(3, u.death.fail)}✗`; c.strokeText(t2, sx, by - 6); c.fillText(t2, sx, by - 6); }
       const shown = u.statuses.filter(st => st.id !== 'surgeUsed' && st.id !== 'sneakUsed' && st.id !== 'ambusher').slice(0, 5);

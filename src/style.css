@@ -307,3 +307,10 @@ body { font-weight: 400; }
 .sheet .chips { display: flex; gap: 6px; flex-wrap: wrap; } .sheet .chip { min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #5a4a78; background: var(--panel2); color: var(--text); font-size: 13px; } .sheet .chip.on { border-color: var(--secondary); background: #3a2a52; color: #fff; }
 .touchhint { flex: 1 1 100%; padding: 2px 4px; opacity: .8; }
 @media (max-height: 520px) { .sheet { right: auto; left: 8px; width: min(54vw, 440px); margin: 0 0 4px; padding: 6px 10px; gap: 4px; background: rgba(20,12,34,.94); } .sheet .st { font-size: 13px; } .sheet .srow button { min-height: 40px; font-size: 14px; } .sheet .chip { min-height: 30px; font-size: 12px; padding: 0 10px; } .sheet .warn, .sheet .small { font-size: 11.5px; } }
+/* modo diorama (experimental): la interfaz se apaga para que mande el tablero */
+#battle.diorama { --panel: #0b0810; --panel2: #141019; }
+#battle.diorama .side, #battle.diorama #actionbar { background: #050307; border-color: #2f2733; }
+#battle.diorama .unitcard { background: #0e0a12; border-color: #2f2733; }
+#battle.diorama #objective, #battle.diorama #log, #battle.diorama #tracker { background: rgba(5,3,7,.88); border-color: #2f2733; }
+#battle.diorama #board { background: #000; }
+#battle.diorama .bar.hp i { background: #b3192f; }

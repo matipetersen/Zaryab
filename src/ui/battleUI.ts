@@ -1,3 +1,4 @@
+import { DIORAMA_MAPS, dioramaPref, setDioramaPref } from './diorama';
 import { Battle, COND_LABEL, isHiddenCond } from '../engine/battle';
 import { runAI } from '../engine/ai';
 import { ABILITIES } from '../engine/abilities';
@@ -42,18 +43,19 @@ export class BattleUI {
     const dBtns = h('div', { id: 'drawers' }, h('button', { class: 'dbtn', onClick: drawer(this.left, this.right) }, '👥'), h('button', { class: 'dbtn', onClick: drawer(this.right, this.left) }, '📖'));
     let fogPref = true; try { fogPref = localStorage.getItem('zaryab.fog') !== '0'; } catch { /* */ } b.fogOn = fogPref;
     const fogBtn = h('button', { class: `dbtn ${b.fogOn ? '' : 'off'}`, title: 'Niebla de guerra: solo se ve lo que la compañía alcanza a ver', onClick: () => { b.fogOn = !b.fogOn; try { localStorage.setItem('zaryab.fog', b.fogOn ? '1' : '0'); } catch { /* */ } fogBtn.classList.toggle('off', !b.fogOn); this.renderPanels(); } }, '👁');
-    stage.append(h('div', { id: 'rotbtns' }, fogBtn, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
+    const dioBtn = DIORAMA_MAPS.has(mapId) ? h('button', { class: `dbtn ${dioramaPref() ? '' : 'off'}`, title: 'Modo diorama (experimental): pixel art de paleta cerrada, estilo Bleak Sword', onClick: () => { const on = !dioramaPref(); setDioramaPref(on); this.r.setPixel(on); this.root.classList.toggle('diorama', on); dioBtn!.classList.toggle('off', !on); } }, '▦') : null;
+    stage.append(h('div', { id: 'rotbtns' }, fogBtn, dioBtn, h('button', { class: 'dbtn', title: 'Girar la cámara a la izquierda (Q)', onClick: () => this.r.rotate(-1) }, '⟲'), h('button', { class: 'dbtn', title: 'Girar la cámara a la derecha (R)', onClick: () => this.r.rotate(1) }, '⟳')));
     stage.append(dBtns); this.coach = new Coach(stage); const help = h('button', { class: 'dbtn', title: 'Guía rápida', onClick: () => this.coach?.open() }, '?'); dBtns.append(help);
     this.root.append(this.left, stage, this.right, this.bar, this.tip);
     this.root.id = 'battle'; this.root.className = 'screen';
-    this.r = new Renderer(this.canvas); this.r.setBattle(b, map);
+    this.r = new Renderer(this.canvas); this.r.setBattle(b, map); this.root.classList.toggle('diorama', this.r.pixel);
     window.addEventListener('resize', this.onResize); setTimeout(() => this.r.resize(), 30);
     this.bindInput();
     this.addLog(intro, 'sys');
     return new Promise(res => { this.finished = res; this.loop(); });
   }
   onResize = () => this.r?.resize();
-  destroy() { this.stopped = true; this.r?.destroy(); window.removeEventListener('resize', this.onResize); if (this.keyH) window.removeEventListener('keydown', this.keyH); this.root.id = ''; }
+  destroy() { this.root.classList.remove('diorama'); this.stopped = true; this.r?.destroy(); window.removeEventListener('resize', this.onResize); if (this.keyH) window.removeEventListener('keydown', this.keyH); this.root.id = ''; }
 
   // ---------- bucle ----------
   async flush() {
