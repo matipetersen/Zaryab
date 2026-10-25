@@ -1,12 +1,12 @@
 // Guiones de encuentro: reglas especiales que se ejecutan al inicio y cada ronda.
 import type { Battle } from './battle';
 import { cheb } from './grid';
-import { roll } from './dice';
+import { roll, rand } from './dice';
 import { cubeInit, cubeRound } from './cube';
 
 function fireballTelegraph(b: Battle, round: number, warnRound: number, dc: number, chance: number) {
   const c = b.flags['fbTarget'] as { x: number; y: number } | undefined;
-  if (round === warnRound && Math.random() < chance) {
+  if (round === warnRound && rand() < chance) {
     const pcs = b.units.filter(u => u.pcId && !u.dead && !u.down); if (!pcs.length) return;
     const back = [...pcs].sort((a, z) => z.y - a.y)[0]; b.flags['fbTarget'] = { x: back.x, y: back.y };
     b.log('Kethras alza una mano: un círculo ardiente se dibuja en el suelo. ¡Salgan del área!', 'sys'); b.emit({ t: 'fx', kind: 'burst', x: back.x, y: back.y });

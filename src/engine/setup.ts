@@ -25,7 +25,7 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
   const sc = pw ? { hp: (sc0?.hp ?? 1) * (1 + 0.15 * pw), atk: (sc0?.atk ?? 0) + Math.floor(pw / 3), dmg: (sc0?.dmg ?? 0) + Math.floor(pw / 2) } : sc0;
   const scaleFoe = (fu: Unit) => { if (!sc) return; if (sc.hp !== 1) { fu.maxHp = Math.round(fu.maxHp * sc.hp); fu.hp = fu.maxHp; } if (sc.atk) for (const a of fu.actions) if (a.toHit != null) a.toHit += sc.atk; if (sc.dmg) for (const a of fu.actions) if (a.dmg?.length) a.dmg = [{ ...a.dmg[0], dice: addFlat(a.dmg[0].dice, sc.dmg) }, ...a.dmg.slice(1)]; };
   for (const f of opts.foes ?? enc.foes) { const p = grid.spawns.foe[f.slot]; if (!p) throw new Error(`Slot ${f.slot} inexistente en ${map.id}`); const fu = makeFoe(f.id, p.x, p.y, f.suffix ?? ''); scaleFoe(fu); units.push(fu); }
-  for (const a of enc.ally ?? []) { const p = grid.spawns.ally[a.slot]; units.push(makeFoe(a.id, p.x, p.y, '', 'pc')); }
+  for (const a of enc.ally ?? []) { const p = grid.spawns.ally[a.slot]; const al = makeFoe(a.id, p.x, p.y, '', 'pc'); al.traits.push('encAlly'); units.push(al); }
   const taken = new Set(units.map(u => u.x + ',' + u.y));
   for (const id of opts.allies ?? []) { // aliados extra: casilla libre junto a la compañía
     const base = grid.spawns.pc[Math.min(1, grid.spawns.pc.length - 1)]; let placed = false;
@@ -39,10 +39,12 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
   if (enc.waves?.length || enc.script || b.scripts.length) b.onRound = (bb, round) => {
     bb.runScripts(round);
     if (!enc.waves) return;
+    const R = round - bb.waveDelay; // la fase de inteligencia puede retrasar las oleadas
     for (const w of enc.waves!) {
+      const round = R;
       if (round < w.round || (w.until && round > w.until) || (w.every ? (round - w.round) % w.every !== 0 : round !== w.round)) continue;
       if (w.note) bb.log(w.note, 'sys');
-      w.foes.forEach((id, i) => { const spots = grid.spawns.wave.filter(p => !bb.unitAt(p.x, p.y)); const p = spots[(i + round) % Math.max(1, spots.length)]; if (p) { const wf = makeFoe(id, p.x, p.y); if (enc.scaleWaves) scaleFoe(wf); bb.reinforce(wf, p); } });
+      w.foes.forEach((id, i) => { const spots = grid.spawns.wave.filter(p => !bb.unitAt(p.x, p.y)); const p = spots[(i + round) % Math.max(1, spots.length)]; if (p) { const wf = makeFoe(id, p.x, p.y); scaleFoe(wf); bb.reinforce(wf, p); } });
     }
   };
   return b;

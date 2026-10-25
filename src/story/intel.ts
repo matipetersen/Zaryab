@@ -160,6 +160,6 @@ export function applyIntel(b: Battle, c: Campaign, enc: string): string[] {
   if (f('of_muerto')) lines.push('☠ El cautivo murió sin hablar.');
   // 4) refuerzos
   const delay = (hasWaves ? (f('of_ref') ? 2 : 0) + (n >= 2 ? 1 : 0) : 0);
-  if (delay) { const orig = b.onRound; b.onRound = (bb, r) => { if (r - delay >= 1) orig?.(bb, r - delay); }; lines.push(`⏳ Saben cuándo llegan los refuerzos: se retrasan ${delay} ${delay === 1 ? 'ronda' : 'rondas'}.`); }
+  if (delay) { b.waveDelay = delay; lines.push(`⏳ Saben cuándo llegan los refuerzos: se retrasan ${delay} ${delay === 1 ? 'ronda' : 'rondas'}.`); }
   return lines;
 }

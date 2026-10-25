@@ -58,13 +58,13 @@ export class Battle {
     this.destroyTile(x, y, type, src); return true;
   }
   destroyTile(x: number, y: number, type: DmgType, src?: Unit) {
-    const t = this.grid.at(x, y); if (!t) return; this.tilesBroken++; const name = t.ch === 'o' ? 'El barril' : t.kind === 'wall' ? 'El muro' : 'La cobertura';
+    const t = this.grid.at(x, y); if (!t) return; if (src?.side === 'pc') this.tilesBroken++; const name = t.ch === 'o' ? 'El barril' : t.kind === 'wall' ? 'El muro' : 'La cobertura';
     const boom = t.boom, flam = t.flam;
     if (boom) { this.log(`${name} estalla en una bola de fuego.`, 'dmg'); this.emit({ t: 'tile', kind: 'boom', x, y }); }
     else this.log(`${name} se hace pedazos.`, 'sys');
     if (flam && (type === 'fire' || boom)) { this.grid.setTile(x, y, 'f', 3); this.emit({ t: 'tile', kind: 'ignite', x, y }); } else { this.grid.setTile(x, y, ','); this.emit({ t: 'tile', kind: 'break', x, y }); }
     if (boom) {
-      for (const v of this.units.filter(u => !u.dead && cheb(u, { x, y }) <= 1)) { const ok = this.save(v, 'dex', 12, '(explosión)'); const r = roll('3d6').total; this.damage(v, ok ? Math.floor(r / 2) : r, 'fire', src); }
+      const hm = this.hazMode; this.hazMode = true; for (const v of this.units.filter(u => !u.dead && cheb(u, { x, y }) <= 1)) { const ok = this.save(v, 'dex', 12, '(explosión)'); const r = roll('3d6').total; this.damage(v, ok ? Math.floor(r / 2) : r, 'fire', src); } this.hazMode = hm;
       for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) if ((dx || dy) && this.destructible(x + dx, y + dy)) this.damageTile(x + dx, y + dy, 8, 'fire', src);
     }
   }
@@ -131,6 +131,7 @@ export class Battle {
   /** ¿La compañía ve a esta unidad? (los aliados siempre se ven). */
   isSeen(u: Unit) { return !this.fogOn || u.side === 'pc' || this.visibleTiles().has(u.x + ',' + u.y); }
   openDoor(x: number, y: number, u?: Unit) { const t = this.grid.at(x, y); if (!t || t.ch !== 'D') return; this.grid.setTile(x, y, 'd'); this.emit({ t: 'tile', kind: 'door', x, y }); this.log(`${u ? u.name + ' abre' : 'Se abre'} la puerta.`, 'sys'); }
+  /** Rondas de retraso de las oleadas de refuerzos (fase de inteligencia). */ waveDelay = 0;
   mods = { stormFrom: 0, stormUntil: 0 }; hazardKills = 0; hazMode = false; tilesBroken = 0; everDown = new Set<string>(); killRound: Record<string, number> = {}; allyUids: number[] = []; watchers: ((b: Battle) => void)[] = [];
   /** Rondas que cada par pasó a ≤ 2 casillas (para subir su relación al terminar). */
   together: Record<string, number> = {}; roundsSeen = 0;
@@ -393,7 +394,7 @@ export class Battle {
     passiveNotice(this, u);
     const tile = this.grid.at(u.x, u.y);
     if (tile?.kind === 'hazard' && !u.fly) { const rr = roll('1d6'); this.log(`${u.name} pisa terreno peligroso (${rr.total}).`, 'dmg'); this.damage(u, rr.total, 'fire', undefined); }
-    if (this.cube) stepTrap(this, u);
+    if (this.cube && u.side === 'pc') stepTrap(this, u);
     if (this.goal && u.pcId && !u.dead && u.x === this.goal.x && u.y === this.goal.y) this.win(this.goalMsg || 'Alcanzan la salida.');
     return { ok: true };
   }
@@ -498,7 +499,7 @@ export class Battle {
         this.breakConc(t);
         this.checkEnd();
       } else this.kill(t, src);
-    } else if (t.traits.includes('flees50') && t.hp <= t.maxHp / 2) { this.flee(t); }
+    } else if (t.traits.includes('flees50') && t.hp <= t.maxHp / 2) { for (const w of this.watchers) w(this); this.flee(t); } // los giros «al 50 %» se disparan antes de que huya
     else if (t.conc && dealt > 0 && before > 0) { // una prueba por impacto, contando el daño absorbido por PG temporales
       const dc = Math.max(10, Math.floor(dealt / 2));
       let n = d20(); if (t.traits.includes('warCaster')) n = Math.max(n, d20()); n += t.saves.con; if (this.has(t, 'bless')) n += Math.floor(rand() * 4) + 1;
@@ -509,7 +510,7 @@ export class Battle {
   }
   kill(t: Unit, src?: Unit) {
     if (t.dead) return;
-    if (this.hazMode && t.side === 'foe') this.hazardKills++; if (t.pcId) this.everDown.add(t.pcId);
+    if ((this.hazMode || (!src && t.side === 'foe')) && t.side === 'foe') this.hazardKills++; if (t.pcId) this.everDown.add(t.pcId);
     t.dead = true; t.hp = 0; t.down = false; if (t.side === 'foe' && !this.units.some(u => u !== t && u.id === t.id && !u.dead)) this.killRound[t.id] ??= this.round;
     this.emit({ t: 'death', uid: t.uid });
     this.log(`${t.name} cae${t.side === 'pc' ? ' y muere' : ''}.`, 'dmg');
@@ -530,12 +531,12 @@ export class Battle {
     this.checkEnd();
   }
   flee(t: Unit, msg = 'huye herido hacia el oeste, hacia la Iglesia del Simurg.') {
-    if (t.dead) return; t.dead = true; t.fled = true; t.hp = 0; this.emit({ t: 'death', uid: t.uid });
+    if (t.dead) return; t.dead = true; t.fled = true; t.hp = 0; if (t.side === 'foe' && !this.units.some(u => u !== t && u.id === t.id && !u.dead)) this.killRound[t.id] ??= this.round; this.emit({ t: 'death', uid: t.uid });
     this.log(`${t.name} ${msg}`, 'sys'); this.flags['fled_' + t.id] = true; this.checkEnd();
   }
   heal(t: Unit, amt: number, src?: Unit, quiet = false): number {
     if (t.dead || amt <= 0) return 0;
-    if (t.undead) return 0;
+    if (t.undead && !src?.undead) return 0;
     if (this.has(t, 'noHeal')) { if (!quiet) this.log(`${t.name} no puede curarse (Maldición de Herida).`, 'sys'); return 0; }
     const before = t.down ? 0 : t.hp;
     if (t.down) { t.down = false; t.stable = false; t.death = { succ: 0, fail: 0 }; t.hp = Math.min(t.maxHp, amt); this.log(`${t.name} recupera el conocimiento.`, 'heal'); }
@@ -550,7 +551,7 @@ export class Battle {
     const bosses = this.units.filter(u => u.traits.includes('boss'));
     const foes = bosses.length ? bosses.filter(u => !u.dead) : this.units.filter(u => u.side === 'foe' && !u.dead && !u.summoned && u.sprite !== 'wall' && !u.traits.includes('objective-ignore'));
     const pcs = this.units.filter(u => !!u.pcId && !u.dead && !u.down);
-    if (!foes.length && !this.goalOnly) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
+    if (!foes.length && !this.goalOnly && !this.surviveRounds) { this.over = true; this.result = 'victory'; this.emit({ t: 'end', result: 'victory' }); }
     else if (!pcs.length) { this.over = true; this.result = 'defeat'; this.emit({ t: 'end', result: 'defeat' }); }
   }
 

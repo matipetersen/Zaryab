@@ -12,7 +12,7 @@ export const DESIGN_LVL: Record<string, number> = {
   varreth: 8, d4_defensa: 8, marid: 9, al_mazhar: 10, gusano: 11, huida_mina: 11, razul_final: 13, eclipse: 14,
 };
 /** Combates que no se miden por victoria (duelo perdido, objetivos, huida): no se calibran. */
-export const NO_CAL = new Set(['torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
+export const NO_CAL = new Set(['gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
 export const CALIBRATED = CAL as Record<string, number>;
 
 /** «Potencia» calibrada p (1 = sin cambio): PG ×p^0,6, ataque +1,2·ln p y daño +1,5·ln p. Así los enemigos no son sólo esponjas de PG. */

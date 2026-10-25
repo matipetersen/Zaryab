@@ -25,8 +25,10 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
     const engaged = a.kind === 'ranged' && b.foesOf(u).some(f => f.sprite !== 'wall' && !b.incapacitated(f) && cheb(f, from) <= 1); // desventaja a distancia en melé
     if (a.aoe) {
       const c: P = a.aoeSelf ? from : t;
-      for (const v of fs) if (cheb(v, c) <= a.aoe) s += b.expectedDamage(u, a, v) * (v.down ? 0.3 : 1);
-      for (const v of b.alliesOf(u)) if (v !== u && cheb(v, c) <= a.aoe) s -= b.expectedDamage(u, a, v) * 1.2;
+      for (const v of fs) if (cheb(v, c) <= a.aoe) {
+        s += b.expectedDamage(u, a, v) * (v.down ? 0.3 : 1);
+        const cond = a.save?.cond; if (cond && !v.down && !v.condImmune.includes(cond) && !b.has(v, cond)) s += a.dmg ? 1.5 : 3; // control: cuenta aunque no haga daño
+      } // el motor no daña aliados con áreas: no hay penalización por ellos
       if (a.aoeSelf && cheb(from, t) > a.aoe) return -1;
       if (s <= 0) return -1;
     } else {
@@ -41,7 +43,7 @@ function scoreAction(b: Battle, u: Unit, a: MAction, from: P, t: Unit, fs: Unit[
     if (u.hp < u.maxHp * 0.8 && b.zones.some(z => z.x === from.x && z.y === from.y)) s += 2;
     if (a.recharge) s *= 1.15;
     const dmgEst = b.expectedDamage(u, a, t); if (!t.down && dmgEst >= t.hp) s += 12;
-    s += (1 - t.hp / t.maxHp) * 3;
+    if (!t.down) s += (1 - t.hp / t.maxHp) * 3;
     if (t.mods.wis >= 3 && t.abilities.some(x => x === 'cure_wounds')) s += 1.5; // curanderos
     if (bias) s += bias(t);
     return s;
@@ -58,7 +60,7 @@ function bestOption(b: Battle, u: Unit, acts: MAction[], tiles: P[], bias?: Bias
       const trav = cheb(tile, u) * 0.01; const here = tile.x === u.x && tile.y === u.y ? 0.05 : 0;
       // Salir del alcance de enemigos con reacción provoca ataques de oportunidad: cuesta PG, así que se evita si no compensa.
       const opp = here ? 0 : b.opportunityCount(u, b.pathTo(rm, tile.x, tile.y));
-      const total = sc - trav + here - opp * 3;
+      const total = sc - trav + here - opp * 6;
       if (!best || total > best.score) best = { score: total, tile, action: a, target: a.aoe && !a.aoeSelf ? { x: t.x, y: t.y } : t, why: a.name };
     }
   }
@@ -79,11 +81,11 @@ function fleeTile(b: Battle, u: Unit, src: Unit | undefined): P | undefined {
 export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bias): Promise<void> {
   if (u.dead || u.down) return;
   if (u.traits.includes('inert')) return;
-  if (b.has(u, 'grappled')) { if (b.tryEscape(u)) { /* libre: sigue el turno */ } else { u.moveLeft = 0; } }
+  if (b.has(u, 'grappled')) { const ok = b.tryEscape(u); u.actionUsed = true; if (!ok) u.moveLeft = 0; } // zafarse gasta la acción
   if (u.traits.includes('dormant') && !b.flags['w' + u.uid]) return;
-  if (u.side === 'foe' && b.cube && b.cube.alert < 1 && (u.traits.includes('guard') || u.traits.includes('zombieFort')) && !candidateTargets(b, u).some(t => cheb(u, t) <= 6 && b.canSee(u, t).visible)) return;
+  if (u.side === 'foe' && b.cube && b.cube.alert < 1 && u.hp >= u.maxHp && (u.traits.includes('guard') || u.traits.includes('zombieFort')) && !candidateTargets(b, u).some(t => cheb(u, t) <= 6 && b.canSee(u, t).visible)) return;
   if (u.side === 'foe' && b.cube && (b.cube.alert < 2) && u.actions.some(a => a.note === 'alarma') && candidateTargets(b, u).some(t => b.canSee(u, t).visible)) { const a = u.actions.find(a => a.note === 'alarma')!; if (!u.actionUsed) { b.monsterAct(u, a, u); u.actionUsed = true; return; } }
-  if (u.side === 'pc' && !u.pcId && await allyHeal(b, u, pause)) return;
+  if (!u.pcId && await allyHeal(b, u, pause)) return;
   if (b.has(u, 'frightened')) {
     const s = b.status(u, 'frightened')!; const src = s.src ? b.byUid(s.src) : undefined;
     const t = fleeTile(b, u, src); if (t) await doMove(b, u, t, pause); b.log(`${u.name} huye aterrado.`, 'sys'); return;
@@ -98,18 +100,19 @@ export async function runAI(b: Battle, u: Unit, pause: Pause = sleep0, bias?: Bi
     const acts = u.actions.filter(a => !u.actionUsed || (seq.length && seq.includes(a)));
     if (u.actionUsed && !(seq.length && u.attacksMade > 0 && u.attacksMade < seq.length)) break;
     // opciones con la acción principal (o la siguiente del multiataque)
-    const pool = seq.length && u.attacksMade > 0 ? [seq[u.attacksMade]] : (seq.length ? [...u.actions.filter(a => !seq.includes(a)), seq[0]] : u.actions);
+    const pool = seq.length && u.attacksMade > 0 ? [seq[u.attacksMade]] : (seq.length ? [...u.actions.filter(a => !seq.includes(a)), seq[0], ...seq.filter((a, i) => i > 0 && a.kind === 'ranged')] : u.actions);
     void acts;
     const opt = bestOption(b, u, pool, seq.length && u.attacksMade > 0 ? [{ x: u.x, y: u.y }] : tiles, bias);
     if (!opt) break;
     await doMove(b, u, opt.tile, pause);
+    if (u.dead || u.down || b.over || u.x !== opt.tile.x || u.y !== opt.tile.y || b.incapacitated(u)) break; // lo frenó un ataque de oportunidad, una trampa o murió
     if (!opt.action || !opt.target) break;
     let a = opt.action;
     if (seq.length && a === seq[0] && u.attacksMade === 0) {
       // ejecuta todo el multiataque contra el mejor objetivo disponible
       for (let i = 0; i < seq.length && !b.over; i++) {
         const tg = i === 0 ? opt.target as Unit : pickTarget(b, u, seq[i]) ?? (opt.target as Unit);
-        if (!tg || (tg as Unit).dead) break;
+        if (!tg || (tg as Unit).dead || u.dead || u.down || b.incapacitated(u)) break;
         if (cheb(u, tg as P) > seq[i].reach && !(seq[i].aoe)) break;
         b.monsterAct(u, seq[i], tg); await pause(520);
       }
@@ -141,7 +144,7 @@ void key; void avg;
 /** Aliados curanderos (Seraphel): se acercan al aliado más herido y lo curan. */
 async function allyHeal(b: Battle, u: Unit, pause: Pause): Promise<boolean> {
   const a = u.actions.find(x => x.kind === 'heal' && (!x.recharge || u.rechargeReady[x.id])); if (!a || u.actionUsed) return false;
-  const hurt = b.alliesOf(u).filter(x => !x.dead && !x.down && x.sprite !== 'wall' && x.hp < x.maxHp * 0.6).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (!hurt) return false;
+  const hurt = b.alliesOf(u).filter(x => !x.dead && x.sprite !== 'wall' && (x.down || x.hp < x.maxHp * 0.6) && (!x.undead || u.undead)).sort((p, q) => Number(q.down) - Number(p.down) || p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (!hurt) return false;
   if (cheb(u, hurt) > a.reach) { const tiles = [...b.reach(u).values()].filter(v => !v.occ && cheb(v, hurt) <= a.reach).sort((p, q) => p.cost - q.cost); if (!tiles.length) return false; await doMove(b, u, { x: tiles[0].x, y: tiles[0].y }, pause); }
   b.monsterAct(u, a, hurt); u.actionUsed = true; return true;
 }

@@ -2,7 +2,7 @@
 import type { Battle } from './battle';
 import type { Unit } from './types';
 import { cheb } from './grid';
-import { roll, addFlat } from './dice';
+import { roll, addFlat, rand } from './dice';
 import { makeFoe } from '../data/monsters';
 
 export type HazardKind = 'collapse' | 'spikes' | 'fire' | 'flood' | 'storm';
@@ -44,7 +44,7 @@ const living = (b: Battle) => b.units.filter(u => !u.dead && u.sprite !== 'wall'
 
 function target(b: Battle, kind: HazardKind): { x: number; y: number }[] {
   const us = living(b); if (!us.length) return [];
-  const c = us[Math.floor(Math.random() * us.length)]; const out: { x: number; y: number }[] = [];
+  const c = us[Math.floor(rand() * us.length)]; const out: { x: number; y: number }[] = [];
   if (kind === 'spikes') { for (let dx = -3; dx <= 3; dx++) if (free(b, c.x + dx, c.y)) out.push({ x: c.x + dx, y: c.y }); return out; }
   if (kind === 'flood') { for (let dy = 0; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) { const t = b.grid.at(c.x + dx, c.y + dy); if (t && t.kind === 'floor') out.push({ x: c.x + dx, y: c.y + dy }); } return out; }
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (free(b, c.x + dx, c.y + dy)) out.push({ x: c.x + dx, y: c.y + dy });
@@ -59,7 +59,9 @@ function resolve(b: Battle, round: number) {
   const due = b.telegraphs.filter(t => t.due <= round); if (!due.length) return; b.telegraphs = b.telegraphs.filter(t => t.due > round);
   const dc = 12 + Math.floor((b.level - 1) / 4), dice = b.level >= 11 ? '4d6' : b.level >= 7 ? '3d6' : '2d6'; b.hazMode = true;
   for (const t of due) {
-    if (t.kind === 'flood') { b.revert.push({ x: t.x, y: t.y, ch: b.grid.at(t.x, t.y)!.ch, round: round + 3 }); b.grid.setTile(t.x, t.y, '~'); b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); continue; }
+    if (t.kind === 'flood') { b.revert.push({ x: t.x, y: t.y, ch: b.grid.at(t.x, t.y)!.ch, round: round + 3 }); b.grid.setTile(t.x, t.y, '~'); b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y });
+      const w = b.unitAt(t.x, t.y); if (w && !w.dead && !w.fly) { const ok = b.save(w, 'str', dc, '(la corriente)'); const d = roll(dice).total; b.damage(w, ok ? Math.floor(d / 2) : d, 'bludgeoning', undefined); if (!ok && !w.dead) b.addStatus(w, { id: 'prone', turns: -1 }); } // la corriente arrastra y golpea
+      continue; }
     const v = b.unitAt(t.x, t.y);
     if (t.kind === 'collapse') { b.emit({ t: 'tile', kind: 'boom', x: t.x, y: t.y }); b.grid.setTile(t.x, t.y, ','); }
     if (t.kind === 'fire') { b.grid.setTile(t.x, t.y, 'f', 3); b.emit({ t: 'tile', kind: 'ignite', x: t.x, y: t.y }); }
@@ -83,7 +85,7 @@ function run(b: Battle, d: Do, ev: EvDef) {
   else if ('hazard' in d) telegraph(b, d.hazard, b.round);
   else if ('rout' in d) { for (const f of b.units.filter(u => u.side === 'foe' && !u.dead && u.sprite !== 'wall' && !u.summoned)) { f.dead = true; f.hp = 0; b.emit({ t: 'death', uid: f.uid }); b.log(`${f.name} suelta el arma y huye despavorido.`, 'sys'); } b.checkEnd(); }
   else if ('win' in d) b.win(d.win);
-  else if ('enrage' in d) for (const u of matching(b, d.enrage)) enrage(b, u);
+  else if ('enrage' in d) { for (const u of matching(b, d.enrage)) if (!u.traits.includes('enrage')) enrage(b, u); } // sin furia doble: el rasgo ya la da
   else if ('heal' in d) for (const u of matching(b, d.heal)) b.heal(u, Math.round(u.maxHp * d.pct), u, true);
   else if ('bless' in d) for (const u of b.units.filter(x => x.pcId && !x.dead)) b.addStatus(u, { id: 'bless', turns: 3 });
   void ev;
@@ -124,7 +126,7 @@ export function installTwists(b: Battle, encId: string, mapId: string, level: nu
   if (!def) return;
   b.twist = { name: def.name, text: def.text };
   if (def.bonus) b.objectives.push({ text: def.bonus.text, state: 'open', reward: def.bonus.reward, def: def.bonus });
-  b.allyUids = b.units.filter(u => u.side === 'pc' && !u.pcId && u.sprite !== 'wall').map(u => u.uid);
+  const encAl = b.units.filter(u => u.traits.includes('encAlly')); b.allyUids = (encAl.length ? encAl : b.units.filter(u => u.side === 'pc' && !u.pcId && u.sprite !== 'wall')).map(u => u.uid); // «que no caigan» = los aliados del encuentro, no el golem o el tigre de la campaña
   const fired = new Set<number>(); const evs = def.events ?? [];
   const tick = (bb: Battle, round: number) => {
     evs.forEach((ev, i) => {

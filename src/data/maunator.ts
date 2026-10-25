@@ -83,7 +83,7 @@ export const MAUNATOR_MONSTERS: Record<string, MonsterDef> = {
   },
   black_pudding: {
     id: 'black_pudding', name: 'Pudin Negro (sirviente de El Que Acecha)', type: 'cieno', cr: '4', hp: 85, ac: 7, speed: 20, mods: m(3, -3, 3, -5, -2, -5), prof: 2, size: 2,
-    immune: ['acid', 'cold', 'lightning'], condImmune: ['blinded', 'charmed', 'deafened' as any, 'frightened', 'prone', 'paralyzed', 'stunned'] as any, traits: ['acidBody', 'corrosion', 'split'],
+    immune: ['acid', 'cold', 'lightning'], condImmune: ['blinded', 'charmed', 'frightened', 'prone', 'paralyzed', 'stunned'] as any, traits: ['acidBody', 'corrosion', 'split'],
     actions: [{ id: 'seudopodo', name: 'Seudópodo', kind: 'melee', toHit: 5, reach: 1, dmg: [{ dice: '1d6+3', type: 'bludgeoning' }, { dice: '4d8', type: 'acid' }] }], xp: 1100, color: '#2a2a3a', glyph: 'P', sprite: 'beast',
     lore: 'Corroe las armas, se parte al cortarlo y devuelve ácido a quien lo golpea. No distingue bandos: avanza hacia el movimiento y la luz.',
   },
