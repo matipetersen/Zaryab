@@ -5,7 +5,7 @@ import { PARTY_BY_ID, makePC } from '../data/party';
 import { makeFoe } from '../data/monsters';
 import type { Unit } from './types';
 import type { Grant } from '../state';
-import { foeScaleFor } from '../data/difficulty';
+import { foeScaleFor, DESIGN_LVL, NO_CAL, EDGE_HP, HP_RATIO } from '../data/difficulty';
 import { addFlat } from './dice';
 import { initScript } from './scripts';
 import { installTwists } from './twists';
@@ -23,8 +23,15 @@ export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts =
   });
   const sc0 = foeScaleFor(encId, enc, opts.level ?? 3, opts.edge ?? 0); const pw = opts.powerup ?? 0;
   const sc = pw ? { hp: (sc0?.hp ?? 1) * (1 + 0.15 * pw), atk: (sc0?.atk ?? 0) + Math.floor(pw / 3), dmg: (sc0?.dmg ?? 0) + Math.floor(pw / 2) } : sc0;
-  const scaleFoe = (fu: Unit) => { if (!sc) return; if (sc.hp !== 1) { fu.maxHp = Math.round(fu.maxHp * sc.hp); fu.hp = fu.maxHp; } if (sc.atk) for (const a of fu.actions) if (a.toHit != null) a.toHit += sc.atk; if (sc.dmg) for (const a of fu.actions) if (a.dmg?.length) a.dmg = [{ ...a.dmg[0], dice: addFlat(a.dmg[0].dice, sc.dmg) }, ...a.dmg.slice(1)]; };
+  let hpCut = 1; // tope de vida total del bando enemigo (ver abajo)
+  const scaleFoe = (fu: Unit) => { if (!sc && hpCut === 1) return; const hm = (sc?.hp ?? 1) * hpCut; if (hm !== 1) { fu.maxHp = Math.max(1, Math.round(fu.maxHp * hm)); fu.hp = fu.maxHp; } if (!sc) return; if (sc.atk) for (const a of fu.actions) if (a.toHit != null) a.toHit += sc.atk; if (sc.dmg) for (const a of fu.actions) if (a.dmg?.length) a.dmg = [{ ...a.dmg[0], dice: addFlat(a.dmg[0].dice, sc.dmg) }, ...a.dmg.slice(1)]; };
   for (const f of opts.foes ?? enc.foes) { const p = grid.spawns.foe[f.slot]; if (!p) throw new Error(`Slot ${f.slot} inexistente en ${map.id}`); const fu = makeFoe(f.id, p.x, p.y, f.suffix ?? ''); scaleFoe(fu); units.push(fu); }
+  // Sin esponjas de vida: la vida total enemiga no pasa de HP_RATIO × la vida de la compañía (las ventajas de campaña se respetan aparte).
+  if (DESIGN_LVL[encId] != null && !NO_CAL.has(encId) && !enc.duel && !enc.soft) {
+    const foeHp = units.filter(u => u.side === 'foe').reduce((t, u) => t + u.maxHp, 0), pcHp = units.filter(u => u.pcId).reduce((t, u) => t + u.maxHp, 0);
+    const e = 1 / (1 + EDGE_HP * (opts.edge ?? 0)), cut = pcHp && foeHp ? Math.min(1, HP_RATIO * e * pcHp / foeHp) : 1;
+    if (cut < 1) { hpCut = cut; for (const u of units) if (u.side === 'foe') { u.maxHp = Math.max(1, Math.round(u.maxHp * cut)); u.hp = u.maxHp; } }
+  }
   for (const a of enc.ally ?? []) { const p = grid.spawns.ally[a.slot]; const al = makeFoe(a.id, p.x, p.y, '', 'pc'); al.traits.push('encAlly'); units.push(al); }
   const taken = new Set(units.map(u => u.x + ',' + u.y));
   for (const id of opts.allies ?? []) { // aliados extra: casilla libre junto a la compañía

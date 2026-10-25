@@ -42,10 +42,17 @@ export class StoryUI {
   }
   /** Quiénes aparecen en escena: la escuadra elegida o toda la compañía viva. */
   cast(): string[] { const c = this.camp; const alive = c.party.filter(id => !c.dead.includes(id)); return c.squad?.length ? c.squad.filter(id => alive.includes(id)) : alive; }
-  setBg(id: string) {
+  /** Enemigos de un nodo 'stage' que aún no se mostraron: aparecen con la siguiente línea (la que los presenta). */
+  private pendingFoes?: string[];
+  /** Cambia el fondo. Si el fondo corresponde a un mapa, la escena pasa a ese mapa SIN enemigos; si es el mismo mapa,
+   *  nadie se mueve ni se repite la entrada. `scene`: empieza una escena nueva (capítulo) → se van también los interlocutores.
+   *  `mapLater`: el próximo nodo es un 'stage' que elige el mapa, así que acá solo se cambia el fondo pintado y la música. */
+  setBg(id: string, scene = false, mapLater = false) {
+    this.pendingFoes = undefined;
     const MOOD: Record<string, Mood> = { dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
     const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
-    const m = art ? undefined : BG_MAP[id]; if (m && this.stage) { this.stage.set(m, this.cast()); setTimeout(() => this.stage?.r.resize(), 30); } else this.stage?.show(false);
+    if (mapLater) return;
+    const m = art ? undefined : BG_MAP[id]; if (m && this.stage) { void this.stage.set(m, this.cast(), []); if (scene) this.stage.clear(true); } else { this.stage?.clear(true); this.stage?.show(false); }
   }
 
   // ---------- esperar avance ----------
@@ -78,27 +85,30 @@ export class StoryUI {
     await this.type(txt, text);
   }
   async pause() { await this.advance(); }
+  private revealFoes() { const f = this.pendingFoes; if (!f) return; this.pendingFoes = undefined; this.stage?.setFoes(f); }
 
   // ---------- reproducción ----------
   async play(nodes: Node[], top = false): Promise<void> {
     for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i]; await this.node(n);
+      const n = nodes[i]; await this.node(n, nodes[i + 1]);
       if (top) this.onTop?.(i + 1);
     }
   }
-  async node(n: Node): Promise<void> {
+  async node(n: Node, next?: Node): Promise<void> {
     switch (n.t) {
       case 'chapter': {
-        this.dlg.classList.add('hidden'); if (n.bg) this.setBg(n.bg);
+        this.dlg.classList.add('hidden'); if (n.bg) this.setBg(n.bg, true, next?.t === 'stage');
         const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.sub)); this.el.append(t); await sleep((window as any).__fast ? 50 : 500); await Promise.race([this.advance(), sleep((window as any).__fast ? 100 : 5500)]); t.remove(); return; }
       case 'bg': this.setBg(n.id); return;
-      case 'stage': this.bg.style.background = BG.limbo; await this.stage?.set(n.map, this.cast(), n.foes ?? []); setTimeout(() => this.stage?.r.resize(), 30); return;
-      case 'narr': await this.show(null, n.text); await this.pause(); return;
-      case 'say': await this.show(n.who, n.text, n.tone); await this.pause(); return;
+      // El mapa y la compañía aparecen ya; los enemigos pedidos, con la línea siguiente (la que los presenta).
+      case 'stage': this.bg.style.background = BG.limbo; await this.stage?.set(n.map, this.cast(), []); this.stage?.clear(true); this.pendingFoes = n.foes?.length ? n.foes : undefined; return;
+      case 'narr': this.revealFoes(); await this.show(null, n.text); await this.pause(); return;
+      case 'say': this.revealFoes(); await this.show(n.who, n.text, n.tone); await this.pause(); return;
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }
       case 'if': { const ok = has(this.camp, n.flag); await this.play(ok ? n.then : n.else ?? []); return; }
       case 'choice': return this.choice(n.prompt, n.options);
-      case 'battle': { let won = false; while (!won) { won = await this.battle(n.enc, n.foeCount); if (n.soft) break; } return; }
+      // al volver del combate, los enemigos de la escena previa (briefing) ya no están en el mapa
+      case 'battle': { let won = false; while (!won) { won = await this.battle(n.enc, n.foeCount); if (n.soft) break; } this.pendingFoes = undefined; this.stage?.clear(); return; }
       case 'puzzle': return this.marksPuzzle();
       case 'squad': return this.squadPick(n.n, n.label);
       case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); const b = h('button', { class: 'btn', style: { position: 'absolute', bottom: '14%', left: '50%', transform: 'translateX(-50%)' } }, 'Volver al mapa de Zaryab'); this.el.append(b); await new Promise<void>(r => b.addEventListener('click', () => r())); t.remove(); b.remove(); } return;
@@ -153,7 +163,7 @@ export class StoryUI {
     const names = wrong.map(id => PARTY_BY_ID[id].name);
     await this.show(null, `La sala se traga el reflejo de ${names.join(', ')} y lo sustituye por una copia hostil: tiene su cara, sus gestos… y ninguna de sus dudas.`); await this.pause();
     const foes = wrong.slice(0, 3).map((id, i) => ({ id: 'reflejo', slot: i, suffix: ' de ' + PARTY_BY_ID[id].name.split(' ')[0] }));
-    let won = false; while (!won) won = await this.battle('cubo', undefined, foes);
+    let won = false; while (!won) won = await this.battle('cubo', undefined, foes); this.pendingFoes = undefined; this.stage?.clear();
     await this.show(null, 'Los reflejos estallan en vidrios flotantes que susurran. Quienes los rompieron sienten un instante de parálisis y una visión: un secreto sobre sí mismos que preferirían no conocer.'); await this.pause();
   }
 }

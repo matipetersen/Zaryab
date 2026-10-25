@@ -15,10 +15,10 @@ export const DESIGN_LVL: Record<string, number> = {
 export const NO_CAL = new Set(['gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
 export const CALIBRATED = CAL as Record<string, number>;
 
-/** «Potencia» calibrada p (1 = sin cambio): PG ×min(1,2; p^0,6), ataque +1,6·ln p y daño +2,5·ln p. Así los enemigos no son esponjas de PG. */
+/** «Potencia» calibrada p (1 = sin cambio): PG ×p^0,6 (con tope total HP_RATIO), ataque +1,2·ln p y daño +1,5·ln p. */
 const ENV = (globalThis as any).process?.env ?? {};
-// la calibración ya no infla la vida (tope ×1,2): la dificultad sale del ataque y el daño, para que los combates duren ~4–8 rondas
-const PHP = +(ENV.PHP ?? 0.6), PHPCAP = +(ENV.PHPCAP ?? 1.2), PATK = +(ENV.PATK ?? 1.6), PDMG = +(ENV.PDMG ?? 2.5);
+// la vida total enemiga tiene tope (HP_RATIO, en setup.ts): pasado ese punto la calibración sube ataque y daño
+const PHP = +(ENV.PHP ?? 0.6), PHPCAP = +(ENV.PHPCAP ?? 99), PATK = +(ENV.PATK ?? 1.2), PDMG = +(ENV.PDMG ?? 1.5);
 export const powerScale = (p: number) => ({ hp: Math.min(PHPCAP, Math.pow(p, PHP)), atk: Math.round(PATK * Math.log(p)), dmg: Math.trunc(PDMG * Math.log(p)) });
 /** Escala de los enemigos: calibrada para ≈ 50 % al nivel de diseño; `edge` (ventajas de campaña) los debilita. */
 export function foeScaleFor(encId: string, enc: Encounter, level: number, edge = 0): { hp: number; atk: number; dmg: number } | undefined {
@@ -30,6 +30,8 @@ export function foeScaleFor(encId: string, enc: Encounter, level: number, edge =
   return { hp: base.hp / (1 + EDGE_HP * edge), atk: base.atk - Math.floor(edge / 20), dmg: base.dmg };
 }
 export const EDGE_HP = 0.013;
+/** Vida total enemiga máxima respecto de la de la compañía (al nivel de diseño ≈ combates de 4–7 rondas). */
+export const HP_RATIO = +(ENV.HPRATIO ?? 1.3);
 /** Probabilidad estimada de victoria (logística centrada en el 50 % base). `delta` = niveles sobre el nivel de diseño. */
 export const K_EDGE = 0.07;
 export const winChance = (edge: number, delta = 0) => Math.round(100 / (1 + Math.exp(-K_EDGE * (edge + 4 * delta))));
