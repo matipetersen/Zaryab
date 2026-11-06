@@ -1,4 +1,6 @@
 import { portraitUrl, slug } from './portraits';
+import { pixPortrait } from './pixPortraits';
+import { dioramaPref } from './diorama';
 import { h, sleep, avatar } from './dom';
 import type { Node, Opt } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
@@ -79,7 +81,10 @@ export class StoryUI {
     const txt = h('div', { class: `txt ${who ? '' : 'narr'}` });
     const body = h('div', { style: { flex: '1', minWidth: '0' } }, who ? h('div', { class: 'who' }, who) : null, tone ? h('div', { class: 'tone' }, `(${tone})`) : null, txt);
     const row = h('div', { class: 'row' });
-    if (sp) { const url = portraitUrl(sp.img ?? slug(who!)); const p = h('div', { class: 'portrait', style: { background: url ? `url(${url}) center/cover` : sp.color } }, url ? '' : sp.glyph); row.append(p); }
+    // modo diorama: retrato en pixel art con la expresión que sugiere el tono; si no hay, el retrato/emblema de siempre
+    const pix = who && dioramaPref() ? pixPortrait(who, tone) : null;
+    if (pix) row.append(h('div', { class: 'portrait', style: { background: `url(${pix}) center/cover`, imageRendering: 'pixelated' } }));
+    else if (sp) { const url = portraitUrl(sp.img ?? slug(who!)); const p = h('div', { class: 'portrait', style: { background: url ? `url(${url}) center/cover` : sp.color } }, url ? '' : sp.glyph); row.append(p); }
     row.append(body); this.dlg.append(row); if (extra) this.dlg.append(extra);
     const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'tocá para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
     await this.type(txt, text);

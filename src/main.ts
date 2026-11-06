@@ -31,6 +31,7 @@ import { audio } from './ui/audio';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
+import { campfire } from './story/campfire';
 import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
@@ -93,6 +94,7 @@ class App {
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
     if (id.startsWith('cut:')) return NOVEL[id.slice(4)] ?? [];
     if (id.startsWith('arq:')) return ARQ[id.slice(4)] ?? [];
+    if (id.startsWith('fogata:')) return campfire(this.camp, id.slice(7)) ?? []; // retomar una fogata a medias al cargar
     if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
     if (id.startsWith('inc:')) { const [ph, i] = id.slice(4).split('_').map(Number); return INCIDENTS[ph].scenes[i]; }
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
@@ -148,6 +150,7 @@ class App {
   }
   async novel(qid: string) {
     await this.cutscene(qid); await this.arq(qid);
+    const fg = campfire(this.camp, qid); if (fg) { await this.runScript('fogata:' + qid, 0, fg); saveGame(this.camp); }
     if (qid === 'm_cap5') await this.cutscene('acto2');
     if (qid === 'm_cap10') await this.cutscene('acto3');
   }

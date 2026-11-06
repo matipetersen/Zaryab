@@ -11,6 +11,7 @@ let battles = new Set(), shots = 0, lastText = '', stuck = 0, steps = 0, hubStep
 const t0 = Date.now();
 for (let i = 0; i < 12000; i++) {
   steps++;
+  if (maxMin && Date.now() - t0 > maxMin * 60000) { console.log('TIEMPO; estado:', await page.evaluate(() => ({ batalla: !!window.__b && !window.__b.over, ronda: window.__b?.round, enc: window.__ui?.mapId, texto: document.querySelector('.dlg, #dlg')?.innerText?.slice(0, 120) }))); await page.screenshot({ path: `${dir}/story_timeout.png` }); break; }
   const st = await page.evaluate(() => {
     const vis = id => { const el = document.querySelector(id); return el && !el.classList.contains('hidden'); };
     const overlay = document.querySelector('.overlay .btn');
@@ -27,7 +28,7 @@ for (let i = 0; i < 12000; i++) {
   }
   if (st.squad) { await page.click('.puzzle .box > .btn'); await page.waitForTimeout(200); continue; }
   if (st.puzzle) { await page.evaluate((wrong) => { const ans = ['balanza', 'espejo', 'senda', 'fuego', 'cuchilla', 'eco']; const sels = [...document.querySelectorAll('.puzzle select')]; const order = ['romain', 'pact', 'rabb', 'joren', 'zyrthar', 'panchi']; const A = { romain: 'balanza', zyrthar: 'cuchilla', rabb: 'espejo', joren: 'senda', pact: 'fuego', panchi: 'eco' }; sels.forEach((s, i) => { s.value = A[order[i]]; }); if (wrong) { sels[1].value = 'eco'; sels[5].value = 'fuego'; } }, pick === 'wrong'); await page.click('.puzzle .btn'); await page.waitForTimeout(300); continue; }
-  if (st.choices) { const n = st.choices; const idx = pick === 'last' ? n - 1 : Math.min(+pick || 0, n - 1); const btn = (await page.$$('.choice:not([disabled])'))[idx]; await btn.click(); await page.waitForTimeout(120); continue; }
+  if (st.choices) { const n = st.choices; const idx = pick === 'last' ? n - 1 : Math.min(+pick || 0, n - 1); const btn = (await page.$$('.choice:not([disabled])'))[idx]; await btn.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(120); continue; }
   if (st.hub) {
     hubSteps++;
     const act = await page.evaluate(() => { const app = window.__app, Q = window.__quests, hub = app.hub, c = app.camp; const av = Q.filter(q => hub.questStatus(q) === 'available'); const order = { main: 0, personal: 1, side: 2, faction: 3 }; av.sort((a, b) => order[a.kind] - order[b.kind]);

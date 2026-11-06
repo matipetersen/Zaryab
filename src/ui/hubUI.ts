@@ -8,6 +8,8 @@ import type { InvUI } from './invUI';
 import { LevelUI } from './levelUI';
 import { ambient, POIS, POI_BY_ID, PHASE, PHASE_ICON, poiState, FRONT_LABEL, FRONT_COLOR, FRONT_DISTRICTS, closedByFront } from '../world/pois';
 import { openHubGuide, hubGuideSeen } from './hubGuide';
+import { openCodex } from './codexUI';
+import { codexNew } from '../world/codex';
 import { BOND_NAME } from '../world/bonds';
 import { PARTY_BY_ID } from '../data/party';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
@@ -90,6 +92,7 @@ export class HubUI {
       h('button', { class: `act ${pendingLevel(c) ? 'on' : ''}`, onClick: () => this.openLevel() }, pendingLevel(c) ? `⬆ Subir a nivel ${pendingLevel(c)}` : `⭐ Nivel ${c.lvl}`),
       h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
+      h('button', { class: 'act', title: 'Códice: dioses, facciones, lugares y personas', onClick: () => { this.closeModal(); openCodex(this.root, c, { onRead: () => this.onChange?.(), onClose: () => this.render() }); } }, '📚 Códice', codexNew(c).length ? h('span', { class: 'cx-badge' }, String(codexNew(c).length)) : null),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
       h('button', { class: 'act', title: 'Guía del mapa', onClick: () => openHubGuide(this.root) }, '?'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),

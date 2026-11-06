@@ -330,3 +330,54 @@ body { font-weight: 400; }
 .bar.hp i { background: var(--hp) !important; }
 h1, h2, h3, h4, .stage-title h1 { font-family: var(--f-head); letter-spacing: .04em; text-shadow: 3px 3px 0 #000; }
 canvas#board, .stage-cv { image-rendering: pixelated; }
+
+/* ---------- Códice (src/ui/codexUI.ts) ---------- */
+.act .cx-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--hp); color: #fff; font-family: var(--f-num); font-size: 11px; line-height: 1; box-shadow: 1px 1px 0 #000; }
+.overlay .card.cx-card { width: min(980px, 96vw); height: min(720px, 90vh); max-height: none; display: flex; flex-direction: column; overflow: hidden; padding: 18px 20px; }
+.cx-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.cx-head h2 { margin: 0; font-size: 28px; }
+.cx-head .small { flex: 1; }
+.cx-x { background: transparent; border: 1px solid var(--line); color: var(--secondary); border-radius: 8px; width: 34px; height: 34px; font-size: 16px; flex: none; align-self: center; }
+.cx-x:hover { border-color: var(--secondary); }
+.cx-tabs { flex: none; }
+.cx-tabs .tabbtn { display: inline-flex; align-items: center; gap: 5px; }
+.cx-n { font-family: var(--f-num); font-size: 11px; color: #a99bbd; }
+.cx-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--pf); box-shadow: 0 0 6px var(--pf); flex: none; }
+.cx-dot.off { background: transparent; box-shadow: none; }
+.cx-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(200px, 280px) 1fr; gap: 14px; }
+.cx-list { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; border-right: 1px solid var(--line); }
+.cx-item { display: flex; align-items: center; gap: 8px; text-align: left; background: var(--panel2); border: 1px solid transparent; color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 13.5px; min-height: 40px; }
+.cx-item:hover { border-color: var(--line); }
+.cx-item.on { border-color: var(--secondary); background: #1f1726; }
+.cx-item.new .cx-t { color: #fff; font-weight: 600; }
+.cx-t { flex: 1; }
+.cx-more { font-family: var(--f-num); color: var(--pf); font-size: 13px; }
+.cx-left { margin: 8px 4px; font-style: italic; }
+.cx-read { overflow-y: auto; padding: 4px 10px 12px 2px; }
+.cx-read .cx-back { display: none; margin-bottom: 8px; }
+.cx-cat { font-family: var(--f-head); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #a99bbd; }
+.cx-h { font-family: var(--f-head); color: var(--secondary); font-size: 22px; margin: 4px 0 12px; }
+.cx-p { font-size: 15px; line-height: 1.7; margin: 0 0 12px; color: var(--text); }
+.cx-p.more { padding-left: 12px; border-left: 2px solid var(--line); color: #d8cdb8; font-style: italic; }
+.cx-p.fresh { border-left-color: var(--pf); }
+.cx-p.fresh::before { content: 'nuevo · '; font-style: normal; font-family: var(--f-num); font-size: 11px; color: var(--pf); }
+.cx-empty, .cx-hint { padding: 12px 4px; }
+@media (max-width: 640px) {
+  .overlay .card.cx-card { width: 100vw; height: 100%; border-radius: 0; padding: 12px; border-left: 0; border-right: 0; background: #0b0810; }
+  .cx-head h2 { font-size: 22px; }
+  .cx-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .cx-tabs::-webkit-scrollbar { display: none; }
+  .cx-tabs .tabbtn { flex: none; white-space: nowrap; min-height: 38px; }
+  .cx-body { grid-template-columns: 1fr; }
+  .cx-list { border-right: 0; padding-right: 0; }
+  .cx-body .cx-read { display: none; }
+  .cx-body.reading .cx-list { display: none; }
+  .cx-body.reading .cx-read { display: block; }
+  .cx-read .cx-back { display: inline-block; }
+  .cx-p { font-size: 15.5px; }
+}
+
+/* barks: frases de la compañía en el registro de combate */
+#log .bark { color: #f3e6c4; font-family: Georgia, serif; font-style: italic; border-left: 2px solid rgba(232,200,114,.6); padding-left: 6px; margin: 2px 0; }
+/* elecciones largas: el cuadro de diálogo no se sale de la pantalla; las opciones se desplazan dentro */
+.dialog { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
