@@ -190,7 +190,7 @@ const D: Record<string, Def> = {
       'kVwwvvvwwvvw',
       'kvwvvvwwvvww',
       'kvvvvwwvvwww',
-    ], { w: 'A', v: 'V', b: 'f', f: 'f', V: 'V' }, { 10: { r: 'r', f: 'f' } })]],
+    ], { w: 'b', v: 'V', b: 'f', f: 'f', V: 'V' }, { 10: { r: 'r', f: 'f' } })]],
     ex: {
       enojo: [[6, 9, 'kk...'], [7, 10, 'kk'], [16, 10, 'kk'], [13, 9, '...kk'], [8, 10, 'rf'], [14, 10, 'fr'], [10, 15, 'krrk'], [11, 16, 'kk']],
       tristeza: [[6, 9, '...kk'], [13, 9, 'kk...'], [8, 10, 'Vv'], [14, 10, 'vV'], [8, 11, 'VV'], [14, 11, 'VV'], [8, 12, 'r'], [8, 13, 'r']],
@@ -238,11 +238,11 @@ const D: Record<string, Def> = {
     theme: 'ruins', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'D', Q: 'd', O: 'f' }, face: FACE,
     layers: [
       body(), head(), ...EARS,
-      [6, 3, ['..kkkkkkkk..', '.kddddddddk.', 'kdDDDDDDDddk', 'kdXYYYYYYZdk', 'kdXYYYYYYZdk', 'kdYYYYYYYZdk']],
-      [7, 15, ['k.kkkk.k..', 'kdddddddk.', '.kdddddk..', '..kdddk...', '...kdk....']],
+      [6, 1, ['.kf..ff..fk.', '.kfk.ff.kfk.', '.kfffffffak.', '.kfrffffrak.', 'kkkkkkkkkkkk', 'keDDDDDDDddk', 'keXYYYYYYZdk', 'kdXYYYYYYZdk']],
+      [7, 15, ['k.kkkk.k..', 'keDDDDDdk.', '.keDDDdk..', '..keDdk...', '...kdk....']],
       [10, 15, ['kk']],
-      [0, 2, ['.kkk...', 'kgggk..', 'kgrgGk.', 'kgggGk.', '.kGGk.r', '..kgGkr', '..kgGk.', '...kgGk', '...kgGk', '..kggGk', '..kgGk.', '.kggk..', '.kgGk..', '.kgGk..', '..kgGk.', '...kgGk', '....kgk']],
-      [17, 2, ['...kkk.', '..kgggk', '.kGgrgk', '.kGgggk', 'r.kGGk.', 'rkGgk..', '.kGgk..', 'kGgk...', 'kGgk...', 'kGggk..', '.kGgk..', '..kggk.', '..kGgk.', '..kGgk.', '.kGgk..', 'kGgk...', 'kgk....']],
+      [0, 2, ['.kkk...', 'kgggk..', 'kgrgGk.', 'kgggGk.', '.kGGk..', '..kgGk.', '..kgGk.', '...kgGk', '...kgGk', '..kggGk', '..kgGk.', '.kggk..', '.kgGk..', '.kgGk..', '..kgGk.', '...kgGk', '....kgk']],
+      [17, 2, ['...kkk.', '..kgggk', '.kGgrgk', '.kGgggk', '..kGGk.', '.kGgk..', '.kGgk..', 'kGgk...', 'kGgk...', 'kGggk..', '.kGgk..', '..kggk.', '..kGgk.', '..kGgk.', '.kGgk..', 'kGgk...', 'kgk....']],
     ],
   },
   // Aisha — pañuelo ciruela, ojeras de no dormir.

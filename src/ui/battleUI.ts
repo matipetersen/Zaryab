@@ -21,6 +21,7 @@ export interface BattleResult { chem?: Record<string, number>; result: 'victory'
 
 import { audio } from './audio';
 import { objectiveStatus, type Reward } from '../engine/twists';
+import { bark, BarkGate, shortBark, type BarkEv } from '../story/barks';
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
 
@@ -33,7 +34,7 @@ export class BattleUI {
   constructor(root: HTMLElement) { this.root = root; }
 
   async run(b: Battle, mapId: string, intro: string): Promise<BattleResult> {
-    this.b = b; this.stopped = false; this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
+    this.b = b; this.stopped = false; this.gate = new BarkGate(); this.lowSaid = new Set(); this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
     this.mapId = mapId; audio.setMood(b.units.some(u => u.traits.includes('boss')) ? 'boss' : 'battle'); const map = MAPS[mapId];
     this.canvas = h('canvas', { id: 'board' }); this.left = h('aside', { id: 'left', class: 'side' }); this.right = h('aside', { id: 'right', class: 'side' });
     this.bar = h('div', { id: 'actionbar' }); this.logEl = h('div', { id: 'log' }); this.tracker = h('div', { id: 'tracker' }); this.tip = h('div', { id: 'tooltip', class: 'hidden' });
@@ -61,10 +62,33 @@ export class BattleUI {
   async flush() {
     const ev = this.b.takeEvents();
     for (const e of ev) if (e.t === 'log') this.addLog(e.text, e.cls);
-    this.r.play(ev);
+    this.r.play(ev); this.barkEvents(ev);
     this.renderPanels();
     let guard = 0; while (this.r.busy() && guard++ < 400) await sleep(30);
     return ev;
+  }
+  // ───── barks: los personajes hablan en combate (sólo interfaz) ─────
+  gate = new BarkGate(); lowSaid = new Set<number>();
+  /** Un PC vivo y consciente cerca de `u` (o el más cercano), que no sea `not`. */
+  nearPC(u: Unit, not?: Unit) { const ps = this.b.units.filter(p => p.pcId && p !== not && !p.dead && !p.down); ps.sort((a, c) => cheb(a, u) - cheb(c, u)); return ps[0]; }
+  say(u: Unit | undefined, ev: BarkEv, other?: string) {
+    if (!u?.pcId || u.dead || u.down || !this.gate.allow(ev, this.b.round)) return; const line = bark(u.pcId, ev, { other }); if (!line) return;
+    this.addLog(`${PARTY_BY_ID[u.pcId]?.name ?? u.name}: «${line}»`, 'bark'); this.r.speech(u.uid, line, shortBark(line));
+  }
+  barkEvents(ev: BEvent[]) {
+    const b = this.b, cur = b.cur, pcCur = cur?.pcId && !cur.down && !cur.dead ? cur : undefined;
+    for (const e of ev) {
+      if (e.t === 'turn') this.gate.tick();
+      else if (e.t === 'death') { const u = b.byUid(e.uid); if (!u || u.side !== 'foe' || u.sprite === 'wall') continue; this.say(pcCur ?? this.nearPC(u), u.traits.includes('boss') ? 'bossKilled' : 'foeKilled'); }
+      else if (e.t === 'float') {
+        const u = b.byUid(e.uid); if (!u) continue;
+        if (e.text === '¡Caído!' && u.pcId) this.say(this.nearPC(u, u), 'allyDown', u.pcId);
+        else if (e.cls === 'crit' && /^\d+$/.test(e.text) && u.side === 'foe') this.say(pcCur, 'crit');
+        else if (e.cls === 'miss' && e.text === 'Falla' && u.side === 'foe') this.say(pcCur, 'miss');
+        else if (e.cls === 'heal' && e.text.startsWith('+') && u.pcId && pcCur && pcCur !== u) this.say(u, 'healed', pcCur.pcId);
+      }
+    }
+    for (const p of b.units) if (p.pcId && !p.dead && !p.down && p.hp > 0 && p.hp <= p.maxHp * .3 && !this.lowSaid.has(p.uid)) { this.lowSaid.add(p.uid); this.say(p, 'lowHp'); break; }
   }
   addLog(t: string, cls = '') { const d = h('div', { class: cls }, t); this.logEl.append(d); this.logEl.scrollTop = this.logEl.scrollHeight; }
   // ───── despliegue previo (Tactics Ogre): se elige dónde empieza cada personaje ─────
@@ -125,6 +149,7 @@ export class BattleUI {
     await this.deployPhase();
     if (this.coach && !this.coach.el.classList.contains('hidden') && this.coach.i === 0) this.coach.open(1);
     const b = this.b; b.start(); await this.flush();
+    { const ps = b.units.filter(p => p.pcId && !p.dead); this.say(ps[Math.floor(Math.random() * ps.length)], 'start'); }
     while (!b.over && !this.stopped) {
       const u = b.cur; if (!u) break;
       this.r.activeUid = u.uid; this.selUid = u.uid; this.r.selUid = u.uid; this.renderAll();
