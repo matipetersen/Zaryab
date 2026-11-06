@@ -1,4 +1,4 @@
-import type { Node } from '../story/types';
+import type { Node, Opt } from '../story/types';
 import type { Campaign, Effect } from '../state';
 import { has } from '../state';
 import type { QuestDef } from './quests';
@@ -36,6 +36,18 @@ export const ECOS: Record<string, Node[]> = {
   eco_tributo: [T('Ellos Vuelven', 'El eco del impuesto', 'bajo'), N('El Inquisidor al que convencieron vuelve. Esta vez trae a doce guardias y una lista de nombres. «El Conclave no olvida las deudas, solo las aplaza.»'), FX({ alert: 2, rep: { conclave: -1 } }, 'La Alerta sube. Esto no ha terminado.')],
 };
 
+/** Opciones que se vuelven a ofrecer si una prueba previa falla. */
+const INQ_OPTS: Opt[] = [
+    { label: 'Aceptarlo en el culto', hint: 'Arriesgado: puede ser una trampa.', e: { follow: ['Inquisidor Desertor'], d: -1, flags: ['inq_aceptado'], echo: [{ id: 'eco_inquisidor_aceptado', in: 3 }, { id: 'eco_inquisidor_traicion', in: 9 }] }, result: ['Los seguidores se apartan cuando entra al santuario.'] },
+    { label: 'Matarlo aquí y ahora', hint: 'La justicia que nadie le dio a sus víctimas.', e: { c: 3, rep: { inquisidores: -1 }, huella: 'Mataron a un Inquisidor desarmado que pedía clemencia.' }, result: ['No se resiste. Eso es lo peor.'] },
+    { label: 'Entregarlo a Samira', hint: 'Ella decidirá.', e: { d: 1, rep: { conclave: 1 }, flags: ['inq_samira'], echo: [{ id: 'eco_inquisidor_entregado', in: 4 }] }, result: ['Samira no dice nada cuando lo recibe. Asiente una sola vez.'] },
+];
+const DJINN_OPTS: Opt[] = [
+    { label: 'Liberarlo a la fuerza', hint: 'Altercado en el Zoco.', e: { pf: 5, alert: 1, rep: { mercaderes: -1, hijos: 1 }, follow: ['Djinn Liberado'], flags: ['djinn_liberado'] }, result: ['La lámpara se rompe contra el suelo. El humo gris se arremolina, bendice a Romain por tres segundos y se une al santuario.'] },
+    { label: 'Comprarlo', hint: 'Cuesta 250 PO.', disabled: undefined, e: { gold: -250, d: 1, follow: ['Djinn Liberado'], flags: ['djinn_comprado'] }, result: ['El comerciante cuenta las monedas con una sonrisa. Ustedes, sin embargo, ya no piensan en él.'] },
+    { label: 'Usarlo: su fuerza alimenta el cristal', hint: '+10 PF, +3 Corrupción. Irreversible.', e: { pf: 10, c: 3, flags: ['djinn_usado'], huella: 'Exprimieron a un djinn esclavizado para alimentar el cristal de Zahir.' }, result: ['El djinn grita, pero no hacia ustedes. Zahir bebe. El humo gris se hace ceniza.'] },
+];
+
 // ═══════════════ MISIONES MORALES (21–26) ═══════════════
 const M_NINO: Node[] = [
   T('El Niño y el Escorpión', 'Bajo Zaryab · una picadura', 'bajo'),
@@ -64,9 +76,8 @@ const M_DJINN: Node[] = [
   N('En el tenderete de un comerciante gordo cuelga una lámpara de mercurio. Dentro, un djinn pequeño de humo gris trabaja moliendo especias que nadie ha comprado. Cuando los ve, sus ojos se llenan de agua.'),
   S('Djinn', 'Por favor. Han pasado ocho años. Ocho años. Rómpanme si tienen que hacerlo, pero no me dejen aquí.', 'una voz de humo'),
   { t: 'choice', prompt: 'El comerciante sonríe: «Es mío. Está pagado.»', options: [
-    { label: 'Liberarlo a la fuerza', hint: 'Altercado en el Zoco.', e: { pf: 5, alert: 1, rep: { mercaderes: -1, hijos: 1 }, follow: ['Djinn Liberado'], flags: ['djinn_liberado'] }, result: ['La lámpara se rompe contra el suelo. El humo gris se arremolina, bendice a Romain por tres segundos y se une al santuario.'] },
-    { label: 'Comprarlo', hint: 'Cuesta 250 PO.', disabled: undefined, e: { gold: -250, d: 1, follow: ['Djinn Liberado'], flags: ['djinn_comprado'] }, result: ['El comerciante cuenta las monedas con una sonrisa. Ustedes, sin embargo, ya no piensan en él.'] },
-    { label: 'Usarlo: su fuerza alimenta el cristal', hint: '+10 PF, +3 Corrupción. Irreversible.', e: { pf: 10, c: 3, flags: ['djinn_usado'], huella: 'Exprimieron a un djinn esclavizado para alimentar el cristal de Zahir.' }, result: ['El djinn grita, pero no hacia ustedes. Zahir bebe. El humo gris se hace ceniza.'] },
+    { label: 'Leer el contrato grabado en la lámpara y buscarle la cláusula rota (Arcanos)', hint: 'Todo pacto de lámpara tiene una salida para el que sepa leerla. Si se equivocan, la lámpara se cierra más.', check: { skill: 'arcanos', dc: 14 }, e: { d: 1, pf: 3, follow: ['Djinn Liberado'], flags: ['djinn_liberado'] }, result: ['El contrato está grabado en el asa, en letra de pulga, y tiene una cláusula de los tiempos en que todavía se escribía con decencia: «hasta que alguien pregunte su nombre». Se lo preguntan. El djinn lo dice llorando, la lámpara se raja sola y el comerciante no puede reclamar nada sin admitir que nunca lo preguntó.'], fail: { e: { c: 1, alert: 1 }, result: ['Leen mal una runa y la tocan. La lámpara se calienta, el djinn grita y el humo gris se encoge hasta la mitad. El comerciante silba a la guardia del Zoco. Ahora hay que decidir rápido.'], then: [{ t: 'choice', prompt: 'El djinn se encogió en su lámpara. El comerciante ya llamó a la guardia.', options: DJINN_OPTS }] } },
+    ...DJINN_OPTS,
   ] },
   FX({ flags: ['q_m_djinn'] }, 'Misión cumplida: El Djinn Esclavizado.'),
 ];
@@ -75,9 +86,8 @@ const M_INQ: Node[] = [
   N('Un hombre con la túnica del Conclave, sin armas y sin escolta, los espera en un banco de la plaza, sentado como quien aguarda el verdugo.'),
   S('Inquisidor', 'He quemado a ciento tres personas. Las conté. Quiero desertar. Les puedo dar la distribución de la Ciudadela… y mi vida, si la quieren.', 'sin parpadear'),
   { t: 'choice', prompt: 'No saben si miente. Pero las manos de ese hombre no tiemblan.', options: [
-    { label: 'Aceptarlo en el culto', hint: 'Arriesgado: puede ser una trampa.', e: { follow: ['Inquisidor Desertor'], d: -1, flags: ['inq_aceptado'], echo: [{ id: 'eco_inquisidor_aceptado', in: 3 }, { id: 'eco_inquisidor_traicion', in: 9 }] }, result: ['Los seguidores se apartan cuando entra al santuario.'] },
-    { label: 'Matarlo aquí y ahora', hint: 'La justicia que nadie le dio a sus víctimas.', e: { c: 3, rep: { inquisidores: -1 }, huella: 'Mataron a un Inquisidor desarmado que pedía clemencia.' }, result: ['No se resiste. Eso es lo peor.'] },
-    { label: 'Entregarlo a Samira', hint: 'Ella decidirá.', e: { d: 1, rep: { conclave: 1 }, flags: ['inq_samira'], echo: [{ id: 'eco_inquisidor_entregado', in: 4 }] }, result: ['Samira no dice nada cuando lo recibe. Asiente una sola vez.'] },
+    { label: 'Leerle las manos y la voz al Inquisidor (Percepción)', hint: 'Quien mejor mire. Si aciertan, sabrán qué esconde antes de decidir.', check: { skill: 'percepcion', dc: 14 }, e: { d: 1, follow: ['Inquisidor Desertor'], flags: ['inq_aceptado'], echo: [{ id: 'eco_inquisidor_aceptado', in: 3 }] }, result: ['Las manos no tiemblan, pero se le van al cuello cada vez que dice «Ciudadela». Ahí, bajo la túnica, lleva un relicario con el retrato de una chica. «Mi hermana sigue adentro», confiesa cuando se lo señalan. «Me prometieron soltarla si les vendía a ustedes.»', 'Lo aceptan igual, sabiéndolo. Shib manda esa misma noche a dos de los suyos a buscar a la hermana. El Inquisidor llora sobre el relicario y no vuelve a mentirles.'], fail: { e: {}, result: ['No logran leerlo. El hombre es una pared encalada: ciento tres muertos y ni un gesto de más. Tendrán que decidir a ciegas.'], then: [{ t: 'choice', prompt: 'No saben si miente.', options: INQ_OPTS }] } },
+    ...INQ_OPTS,
   ] },
   FX({ flags: ['q_m_inq'] }, 'Misión cumplida: El Inquisidor Arrepentido.'),
 ];
@@ -88,6 +98,7 @@ const M_MARID: Node[] = [
   { t: 'choice', prompt: 'El Marid no miente. Los marids nunca mienten: sólo cobran.', options: [
     { label: 'Aceptar: entregar un recuerdo', hint: '+1 fragmento, +3 Corrupción. Irreversible.', e: { c: 3, flags: ['fragmento_marid', 'marid_pacto'], echo: [{ id: 'eco_marid', in: 2 }] }, result: ['Romain ofrece el nombre de una persona. El agua lo toma sin ruido y le devuelve un fragmento de hierro negro que pulsa.'] },
     { label: 'Rechazar con firmeza', hint: '+2 Devoción, pero el Marid será enemigo.', e: { d: 2, flags: ['marid_enemigo'], echo: [{ id: 'eco_marid_enemigo', in: 5 }] }, result: ['«Entonces el agua recordará esto», dice el Marid, y se hunde.'] },
+    { label: 'Ofrecerle una oración por el río que fue, en vez de un recuerdo (Religión)', hint: 'Un rito de difuntos para un río muerto. Si el Marid no lo acepta, cobra igual.', check: { skill: 'religion', dc: 15 }, e: { d: 1, flags: ['fragmento_marid'], rep: { hijos: 1 } }, result: ['Le rezan al río como se le reza a alguien que se fue: se dice su nombre de antes, se cuentan las piedras que le tiraban los niños, se pide que el agua lo recuerde aunque ya no corra. El rostro de espuma se queda inmóvil mucho tiempo.', '«Nadie me había enterrado nunca», dice al fin. El fragmento sube solo a la orilla.'], fail: { e: { c: 2, flags: ['fragmento_marid', 'marid_pacto'], echo: [{ id: 'eco_marid', in: 2 }] }, result: ['El Marid escucha la oración hasta el final y después niega con la espuma. «Bonito. Pero eso no se guarda.» Antes de que puedan retroceder, el agua les moja la cara, y alguien de la compañía siente cómo se le va un nombre querido, limpio, sin dolor. El fragmento queda en la orilla.'] } },
     { label: 'Negociar un trato justo', hint: 'Persuasión CD 18', check: { skill: 'persuasion', dc: 18 }, e: { flags: ['fragmento_marid'], rep: { hijos: 1 }, huella: 'Negociaron con un Marid sin ceder nada. Sólo una persona podría haberlo logrado.' }, result: ['Tras una hora de hablar de ríos y deudas, el Marid ríe como una cascada. «Les doy el fragmento. A cambio, no olviden que ha habido un río.»'], fail: { e: { c: 1, flags: ['marid_enemigo'], echo: [{ id: 'eco_marid_enemigo', in: 5 }] }, result: ['El Marid se ofende. «Han regateado con la memoria.» Se hunde sin responder.'] } },
   ] },
   FX({ flags: ['q_m_marid'] }, 'Misión cumplida: El Pacto con el Marid.'),
@@ -133,6 +144,7 @@ const F_IMPUESTO: Node[] = [
   S('Aisha', 'Por favor… no tenemos qué ofrecerles. Ayúdennos.', 'agarrando su manga'),
   { t: 'choice', prompt: 'Un barrio entero contiene la respiración.', options: [
     { label: 'Matar al recaudador', hint: '+3 Corrupción, +5 PF; el barrio se une al culto.', e: { c: 3, pf: 5, recruits: 3, alert: 2, rep: { conclave: -2 }, flags: ['impuesto_matado'], huella: 'Mataron a un recaudador del Conclave delante de todo el barrio.' }, result: ['Las espadas salen de las vainas. El barrio mira.'], then: [{ t: 'battle', enc: 'recaudador' }] },
+    { label: 'Pact: plantarse con las alas abiertas delante del carro (Intimidar)', hint: 'Que el recaudador vea lo que el Vizir llama impostor. Si no se asusta, pelean ahí mismo.', check: { skill: 'intimidar', dc: 15, pc: 'pact' }, e: { d: 1, alert: 1, rep: { conclave: -1, hijos: 1 }, echo: [{ id: 'eco_tributo', in: 6 }], flags: ['impuesto_negociado'] }, result: ['Pact se pone delante de las ruedas de bronce y deja salir las alas, pálidas, enormes en la plaza chica. No dice nada. El recaudador enrolla el pergamino despacio, como si se le hubiera terminado la tinta, y le ordena al cochero dar la vuelta.', '«El Conclave no olvida», dice antes de irse. Pact asiente. Él tampoco.'], fail: { e: { c: 1, alert: 2 }, result: ['El recaudador mira las alas sin parpadear. «Plumas», dice. «Agréguenlo al expediente.» Los cuatro guardias desenvainan.'], then: [{ t: 'battle', enc: 'recaudador' }] } },
     { label: 'Pagar el impuesto', hint: '500 PO. +1 Devoción.', e: { gold: -500, d: 1, rep: { conclave: 1 }, flags: ['impuesto_pagado'] }, result: ['Pagan. Los niños se quedan. El carro se va con un crujido de bronce.'] },
     { label: 'Negociar', hint: 'Persuasión CD 18. Vuelve con más hombres.', check: { skill: 'persuasion', dc: 18 }, e: { rep: { conclave: 0 }, echo: [{ id: 'eco_tributo', in: 6 }], flags: ['impuesto_negociado'] }, result: ['El recaudador cede, de mala gana. «Volveremos», dice. Y lo dice en serio.'], fail: { e: { c: 1, alert: 1 }, result: ['«Han insultado al Vizir.» Dos guardias se llevan a un niño.'] } },
   ] },

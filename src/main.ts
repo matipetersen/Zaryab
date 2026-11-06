@@ -94,6 +94,7 @@ class App {
     if (id.startsWith('ev:')) return EVENTS[id.slice(3)];
     if (id.startsWith('cut:')) return NOVEL[id.slice(4)] ?? [];
     if (id.startsWith('arq:')) return ARQ[id.slice(4)] ?? [];
+    if (id.startsWith('fogata:')) return campfire(this.camp, id.slice(7)) ?? []; // retomar una fogata a medias al cargar
     if (id.startsWith('poi:')) { const p = POI_BY_ID[id.slice(4)]; return VARIANTS[p.id]?.[this.camp.phase] ?? p.script; }
     if (id.startsWith('inc:')) { const [ph, i] = id.slice(4).split('_').map(Number); return INCIDENTS[ph].scenes[i]; }
     if (id.startsWith('oracle:')) { const n = +id.slice(7); const e = [...D100, ...Object.values(ZONES).flat()].find(x => x.n === n)!; return eventScript(this.camp, { ev: e, omen: 'Nada ocurrirá hoy.', zone: '' }); }
