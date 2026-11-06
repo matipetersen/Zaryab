@@ -92,7 +92,7 @@ export class HubUI {
       h('button', { class: `act ${pendingLevel(c) ? 'on' : ''}`, onClick: () => this.openLevel() }, pendingLevel(c) ? `⬆ Subir a nivel ${pendingLevel(c)}` : `⭐ Nivel ${c.lvl}`),
       h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
-      h('button', { class: 'act', title: 'Códice: dioses, facciones, lugares y personas', onClick: () => { this.closeModal(); openCodex(this.root, c, { onRead: () => this.onChange?.(), onClose: () => this.render() }); } }, '📜 Códice', codexNew(c).length ? h('span', { class: 'cx-badge' }, String(codexNew(c).length)) : null),
+      h('button', { class: 'act', title: 'Códice: dioses, facciones, lugares y personas', onClick: () => { this.closeModal(); openCodex(this.root, c, { onRead: () => this.onChange?.(), onClose: () => this.render() }); } }, '📚 Códice', codexNew(c).length ? h('span', { class: 'cx-badge' }, String(codexNew(c).length)) : null),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
       h('button', { class: 'act', title: 'Guía del mapa', onClick: () => openHubGuide(this.root) }, '?'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),

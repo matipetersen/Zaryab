@@ -379,3 +379,5 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 
 /* barks: frases de la compañía en el registro de combate */
 #log .bark { color: #f3e6c4; font-family: Georgia, serif; font-style: italic; border-left: 2px solid rgba(232,200,114,.6); padding-left: 6px; margin: 2px 0; }
+/* elecciones largas: el cuadro de diálogo no se sale de la pantalla; las opciones se desplazan dentro */
+.dialog { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
