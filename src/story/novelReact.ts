@@ -2,6 +2,7 @@ import type { Node } from './types';
 import type { Campaign } from '../state';
 import { has } from '../state';
 import { FACTIONS } from '../state';
+import { ECHO_FRAGS } from './novelEchoes';
 
 const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
@@ -109,7 +110,7 @@ export function recap(c: Campaign): Node[] {
 /** Fragmentos que tocan a esta clave: los `must` siempre; los de ambiente, de uno a tres, de mayor a menor prioridad y sólo una vez. */
 export function reactive(c: Campaign, key: string): { nodes: Node[]; used: string[] } {
   const ok = (x: Frag) => (!x.at || x.at.includes(key)) && !has(c, `nov_f_${x.id}`) && x.when(c);
-  const must = FRAGS.filter(x => x.must && ok(x)); const amb = FRAGS.filter(x => !x.must && ok(x)).sort((a, b) => (b.pri ?? 0) - (a.pri ?? 0)).slice(0, depth(c));
+  const ALL = [...FRAGS, ...ECHO_FRAGS]; const must = ALL.filter(x => x.must && ok(x)); const amb = ALL.filter(x => !x.must && ok(x)).sort((a, b) => (b.pri ?? 0) - (a.pri ?? 0)).slice(0, depth(c));
   const pick = [...must, ...amb]; const nodes: Node[] = [];
   if (key === 'acto2' || key === 'acto3') nodes.push(...recap(c));
   pick.forEach((x, i) => { nodes.push(...x.nodes); if (i < pick.length - 1) nodes.push(N('·')); });

@@ -31,6 +31,7 @@ import { audio } from './ui/audio';
 import { MAPS } from './data/maps';
 import { ARQ } from './story/arquetipos';
 import { reactive } from './story/novelReact';
+import { campfire } from './story/campfire';
 import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
 import { worldDay, ensureFronts } from './world/world';
 import type { Node } from './story/types';
@@ -148,6 +149,7 @@ class App {
   }
   async novel(qid: string) {
     await this.cutscene(qid); await this.arq(qid);
+    const fg = campfire(this.camp, qid); if (fg) { await this.runScript('fogata:' + qid, 0, fg); saveGame(this.camp); }
     if (qid === 'm_cap5') await this.cutscene('acto2');
     if (qid === 'm_cap10') await this.cutscene('acto3');
   }

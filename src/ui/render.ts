@@ -27,7 +27,7 @@ const shade = (hex: string, f: number) => {
 };
 
 interface Vis { x: number; y: number; path: P[]; flash: number; shake: number; alpha: number; bounce: number; dead: number; wobble: number; /** Embestida al atacar (dirección en pantalla y avance 0→1). */ lunge?: { dx: number; dy: number; t: number } }
-interface Float { x: number; y: number; text: string; cls: string; t: number; dx: number }
+interface Float { x: number; y: number; text: string; cls: string; t: number; dx: number; life?: number; short?: string }
 interface Part { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number; grav: number; streak?: boolean }
 interface Flash { x: number; y: number; color: string; t: number; r: number }
 interface Proj { x1: number; y1: number; x2: number; y2: number; t: number; kind: string }
@@ -197,7 +197,20 @@ export class Renderer {
       c.setLineDash([6 * s, 5 * s]); c.lineDashOffset = -this.time * 14; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(z.x, z.y); c.stroke(); c.restore();
     }
   }
-  busy() { for (const v of this.vis.values()) if (v.path.length || (v.dead > 0 && v.dead < 1)) return true; return this.projs.length > 0 || this.floats.some(f => f.t < .35); }
+  /** Globo de diálogo: sube apenas y se desvanece al final de su vida; en diorama, texto pixelado corto. */
+  drawSpeech(f: Float, p: P, s: number) {
+    const c = this.ctx, life = f.life ?? 3, a = Math.max(0, Math.min(1, f.t / .15, (life - f.t) / .5)); if (a <= 0) return;
+    const y = p.y - 26 * s - Math.min(f.t, .3) * 20 * s; c.save(); c.globalAlpha = a;
+    if (this.pixel) { if (a > .35 && f.short) drawPixText(c, f.short, p.x * this.dpr, (y - 8 * s) * this.dpr, 1, this.pix.f); c.restore(); return; }
+    c.font = `italic ${Math.round(12 * Math.max(.85, s))}px Georgia, serif`; const words = f.text.split(' '), lines: string[] = []; let cur = '';
+    for (const w of words) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > 170 && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
+    const lh = Math.round(14 * Math.max(.85, s)), wd = Math.max(...lines.map(l => c.measureText(l).width)) + 14, ht = lines.length * lh + 8, x0 = p.x - wd / 2, y0 = y - ht;
+    c.fillStyle = 'rgba(20,14,28,.86)'; c.strokeStyle = 'rgba(232,200,114,.7)'; c.lineWidth = 1; c.beginPath(); c.rect(x0, y0, wd, ht); c.moveTo(p.x - 5, y0 + ht); c.lineTo(p.x, y0 + ht + 6); c.lineTo(p.x + 5, y0 + ht); c.fill(); c.stroke();
+    c.fillStyle = '#f3e6c4'; c.textAlign = 'center'; lines.forEach((l, i) => c.fillText(l, p.x, y0 + 4 + lh * (i + 1) - 3)); c.restore();
+  }
+  busy() { for (const v of this.vis.values()) if (v.path.length || (v.dead > 0 && v.dead < 1)) return true; return this.projs.length > 0 || this.floats.some(f => f.t < .35 && f.cls !== 'speech'); }
+  /** Frase de un personaje sobre su cabeza (barks). En diorama sólo se dibuja `short`. */
+  speech(uid: number, text: string, short: string) { const v = this.vis.get(uid); if (!v) return; this.floats = this.floats.filter(f => !(f.cls === 'speech' && f.x === v.x && f.y === v.y)); this.floats.push({ x: v.x, y: v.y, text, cls: 'speech', t: 0, dx: 0, life: 3.2, short }); }
   // ---------- update ----------
   update(dt: number) {
     if (!this.b) return;
@@ -214,7 +227,7 @@ export class Renderer {
       v.wobble += dt;
     }
     for (const v of this.vis.values()) if (v.lunge) { v.lunge.t += dt * 3.2; if (v.lunge.t >= 1) v.lunge = undefined; }
-    for (const f of this.floats) f.t += dt; this.floats = this.floats.filter(f => f.t < 1.4);
+    for (const f of this.floats) f.t += dt; this.floats = this.floats.filter(f => f.t < (f.life ?? 1.4));
     for (const p of this.parts) { p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; } this.parts = this.parts.filter(p => p.life < p.max);
     for (const p of this.projs) p.t += dt * 4.5; this.projs = this.projs.filter(p => p.t < 1);
     for (const r of this.rings) r.t += dt * 2.2; this.rings = this.rings.filter(r => r.t < 1);
@@ -286,7 +299,7 @@ export class Renderer {
     this.drawCompass();
     // textos flotantes
     c.textAlign = 'center'; c.font = `bold ${Math.round(18 * Math.max(.8, s) * (this.pixel ? 1.9 : 1))}px "Roboto Mono", monospace`;
-    for (const f of this.floats) { const p = this.center(f.x, f.y, 44); const yy = p.y - f.t * 38 * s; c.globalAlpha = Math.max(0, 1 - Math.max(0, f.t - .8) / .6);
+    for (const f of this.floats) { const p = this.center(f.x, f.y, 44); if (f.cls === 'speech') { this.drawSpeech(f, p, s); continue; } const yy = p.y - f.t * 38 * s; c.globalAlpha = Math.max(0, 1 - Math.max(0, f.t - .8) / .6);
       const col = f.cls === 'heal' ? '#5be37d' : f.cls === 'crit' ? '#ffd23f' : f.cls === 'miss' ? '#b8b8c8' : f.cls === 'status' ? '#d9b6ff' : '#ff6b5e';
       if (this.pixel) { if (c.globalAlpha > .35) drawPixText(c, f.text, (p.x + f.dx) * this.dpr, yy * this.dpr, f.cls === 'crit' ? 2 : 1, f.cls === 'heal' ? this.pix.g : f.cls === 'crit' ? this.pix.f : f.cls === 'miss' ? this.pix.A : f.cls === 'status' ? this.pix.v : this.pix.r); continue; }
       c.lineWidth = 4; c.strokeStyle = 'rgba(0,0,0,.8)'; c.strokeText(f.text, p.x + f.dx, yy); c.fillStyle = col; c.fillText(f.text, p.x + f.dx, yy); } c.globalAlpha = 1;

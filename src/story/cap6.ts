@@ -1,10 +1,17 @@
-import type { Node } from './types';
+import type { Node, Opt } from './types';
 import type { Effect } from '../state';
 
 const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
 const FX = (e: Effect, note?: string): Node => ({ t: 'fx', e, note });
 const IF = (flag: string, then: Node[], els?: Node[]): Node => ({ t: 'if', flag, then, else: els });
+
+/** Las tres maneras de recibir al muerto que respira (se repiten si Joren no logra leerlo). */
+const JOREN_OPTS: Opt[] = [
+    { label: 'Dejar que Joren hable con él a solas', hint: 'Sólo le pertenece a Joren.', e: { d: 1, flags: ['joren_perdon_ruta'] }, result: ['Se alejan. Cuando vuelven a mirar, Joren está sentado en el suelo y el hombre vendado le sirve agua. Ninguno habla. Es la conversación más larga que le han visto.'] },
+    { label: 'Interrogarlo ustedes: ¿quién lo vendió?', hint: 'Intimidar CD 14: respuestas rápidas, sin consuelo.', check: { skill: 'intimidar', dc: 14 }, e: { c: 1, flags: ['joren_culpable_pista'] }, result: ['«Fue el Vizir. Fue Razul. Me dieron por muerto para usarme como moneda», confiesa. Joren no dice nada. Su arco baja un dedo.'], fail: { e: { d: -1 }, result: ['El hombre vendado calla, y su silencio los acusa a ustedes. Joren se aparta de todos.'] } },
+    { label: 'Matarlo: es una amenaza para el culto', hint: 'Lo que sabe puede hundirnos a todos.', e: { c: 3, flags: ['joren_traicionado'], huella: 'Mataron a un hombre que Joren creía muerto y que sólo quería ver a su amigo.' }, result: ['Nadie lo detiene. Joren no les dirige la palabra durante tres días.'] },
+];
 
 /** Acto II · Capítulo VI — La Guerra Civil: Medinat al-Rih. Tres entradas según la Postura del Cap. V. */
 export const CAP6: Node[] = [
@@ -31,6 +38,7 @@ export const CAP6: Node[] = [
     { label: 'Interponerse entre los Qilaat y los vecinos', hint: 'Pueblo: Medinat les abrirá sus puertas, los Qilaat no.', if: 'postura_pueblo', e: { d: 1, ruta: { pueblo: 2 }, rep: { qilaat: -1, hijos: 1, nomadas: 1 } }, result: ['«Protocolo de contención», repite el Qilaat. La plaza se llena de refugiados. El vapor sube en columnas.'], then: [{ t: 'battle', enc: 'revuelta_pueblo' }] },
     { label: 'Dejar que la plaza se desangre y ofrecer sus servicios al que gane', hint: 'Sombra: mercenarios de Dahhak midiéndose con ustedes.', if: 'postura_sombra', e: { c: 1, ruta: { sombra: 2 }, rep: { dahhak: 1 } }, result: ['Los mercenarios salen de entre el humo con cuchillos de mercurio.'], then: [{ t: 'battle', enc: 'revuelta_sombra' }] },
     { label: 'Hacer lo que haría la Postura contraria', hint: 'Cambiar de bando a mitad de camino. Tendrá un precio.', e: { c: 1, d: -1, alert: 1 }, result: ['Nadie sabe de qué lado están. Los dos bandos se vuelven contra ustedes a la vez.'], then: [{ t: 'battle', enc: 'revuelta_sombra' }] },
+    { label: 'Pact: subirse a la barricada y hacerse oír por los dos bandos (Intimidar)', hint: 'Una voz de juicio, como las que usaba Azuran. Si no se impone, los dos bandos se le echan encima.', check: { skill: 'intimidar', dc: 15, pc: 'pact' }, e: { d: 1, ruta: { pueblo: 1 }, rep: { nomadas: 1 } }, result: ['Pact trepa a la barricada y abre las alas, pálidas, sucias de hollín. No grita: habla, y la voz le sale doble, la suya y otra más vieja. «Basta.» Los Qilaat bajan las lanzas un palmo. Los Nasnas, otro. Nadie sabe quién empezó a bajarlas primero, y eso alcanza.', 'La plaza no se salva entera, pero nadie más muere en ella esta tarde.'], fail: { e: { c: 1, alert: 1 }, result: ['A Pact se le quiebra la voz en la segunda palabra. Un Nasnas le tira una piedra; un Qilaat lo apunta. De pronto los dos bandos tienen un enemigo en común, y es él.'], then: [{ t: 'battle', enc: 'revuelta_sombra' }] } },
   ] },
   N('El humo se levanta. La barricada es una ruina. Los vecinos de Medinat salen de sus casas con paso corto, mirando lo que queda.'),
   { t: 'choice', prompt: 'El Líder Nasnas les pregunta qué quieren a cambio.', options: [
@@ -44,10 +52,13 @@ export const CAP6: Node[] = [
   N('Al caer la tarde, en un callejón de Medinat, Joren se detiene tan de golpe que Rabb choca contra su espalda. Una figura envuelta en vendas grises sale de una puerta sin quicio, con un cubo de agua en cada mano. Camina como quien lleva demasiado tiempo caminando.'),
   S('El Muerto que Respira', 'Joren… Joren Hell. Te dije que no volvieras. Te dije que lo dejaras estar.', 'sin soltar los cubos'),
   S('Joren Hell', 'Te enterré. Yo mismo te enterré.', 'la voz le tiembla, por primera vez en toda la campaña'),
+  IF('marca_contrasena', [
+    S('Joren Hell', 'Diente partido, agua en la mano.', 'la contraseña de La Marca, en voz baja'),
+    S('El Muerto que Respira', '…y sangre en el papel. Todavía te la acordás.', 'y, por primera vez, deja los cubos en el suelo'),
+  ]),
   { t: 'choice', prompt: 'Joren tiene el arco cargado y no sabe a quién apunta.', options: [
-    { label: 'Dejar que Joren hable con él a solas', hint: 'Sólo le pertenece a Joren.', e: { d: 1, flags: ['joren_perdon_ruta'] }, result: ['Se alejan. Cuando vuelven a mirar, Joren está sentado en el suelo y el hombre vendado le sirve agua. Ninguno habla. Es la conversación más larga que le han visto.'] },
-    { label: 'Interrogarlo ustedes: ¿quién lo vendió?', hint: 'Intimidar CD 14: respuestas rápidas, sin consuelo.', check: { skill: 'intimidar', dc: 14 }, e: { c: 1, flags: ['joren_culpable_pista'] }, result: ['«Fue el Vizir. Fue Razul. Me dieron por muerto para usarme como moneda», confiesa. Joren no dice nada. Su arco baja un dedo.'], fail: { e: { d: -1 }, result: ['El hombre vendado calla, y su silencio los acusa a ustedes. Joren se aparta de todos.'] } },
-    { label: 'Matarlo: es una amenaza para el culto', hint: 'Lo que sabe puede hundirnos a todos.', e: { c: 3, flags: ['joren_traicionado'], huella: 'Mataron a un hombre que Joren creía muerto y que sólo quería ver a su amigo.' }, result: ['Nadie lo detiene. Joren no les dirige la palabra durante tres días.'] },
+    { label: 'Joren: buscar bajo las vendas lo que el hombre esconde (Percepción)', hint: 'Joren conoce cada cicatriz de La Marca; si no está, mira otro. Si falla, el hombre casi se le escapa.', check: { skill: 'percepcion', dc: 14, pc: 'joren' }, e: { d: 1, flags: ['joren_perdon_ruta', 'joren_culpable_pista'] }, result: ['Joren no mira la cara: mira la muñeca. Debajo de la venda, donde los de La Marca se tatuaban el diente partido, hay otra cosa encima: un sello del Conclave, quemado a hierro. «No te vendiste», dice Joren. «Te compraron.»', 'El hombre vendado deja los cubos en el suelo, por fin. «Fue Razul. Me dieron por muerto para usarme como moneda.» Joren baja el arco y se sienta a su lado sin pedir permiso.'], fail: { e: { d: -1 }, result: ['Joren se acerca demasiado rápido y el hombre retrocede hasta la pared, con los cubos derramándose. «No me mires así. Así me miraban ellos.» Por un momento parece que va a huir por la puerta sin quicio.'], then: [{ t: 'choice', prompt: 'El hombre vendado no se fue. Todavía.', options: JOREN_OPTS }] } },
+    ...JOREN_OPTS,
   ] },
 
   // ───── Torneo ─────
@@ -57,6 +68,7 @@ export const CAP6: Node[] = [
   { t: 'choice', prompt: 'Panchi no necesita permiso para pelear. Pero ustedes pueden hacer algo más que mirar.', options: [
     { label: 'Apostar por Panchi', hint: 'Cuesta 60 PO. Si pierde, no lo recuperan.', e: { gold: -60, flags: ['apostaste_panchi'] }, result: ['El corredor de apuestas se ríe, pero no devuelve la moneda.'] },
     { label: 'Sabotear la arena', hint: 'Sigilo CD 15. Una trampa menos en la jaula.', check: { skill: 'sigilo', dc: 15 }, e: { flags: ['arena_saboteada'], c: 1 }, result: ['Aflojan una cuerda. Cuando Panchi pisa la jaula, algo cruje: un viejo mecanismo, desmontado.'], fail: { e: { alert: 1 }, result: ['Un guardia los ve. No dice nada, pero toma nota.'] } },
+    { label: 'Panchi: calentar con las katas del monasterio y estudiar la guardia de Sifra (Atletismo)', hint: 'Es su pelea. Si sale bien, entra a la jaula entero y con un plan.', check: { skill: 'atletismo', dc: 15, pc: 'panchi' }, e: { d: 1, flags: ['torneo_digno'] }, result: ['Panchi hace las cuarenta katas de la mañana en un rincón de la arena, despacio, como le enseñaron, mientras mira calentar a Sifra. Ella apoya siempre el peso en el pie izquierdo antes de girar. Una costumbre. Una puerta.', 'Cuando entra en la jaula, Panchi ya sabe que va a perder. Pero sabe también dónde le va a doler a ella.'], fail: { e: { d: -1 }, result: ['A la mitad de las katas se le sube la rabia y las hace demasiado rápido. Algo cruje en el hombro. Panchi se lo venda él mismo, apretando los dientes, y entra en la jaula con un brazo que no termina de cerrarse.'] } },
     { label: 'Sólo mirar', hint: 'Respetar el combate.', e: { d: 1 }, result: ['Se sientan en la grada con el resto del barrio.'] },
   ] },
   { t: 'say', who: 'Sifra', text: '…', tone: 'sin palabras; se quita la capucha con una sola mano' },
