@@ -101,5 +101,5 @@ export class BarkGate {
   }
 }
 
-/** Versión corta para el modo diorama (texto pixelado): las dos primeras palabras, sin signos. */
-export const shortBark = (line: string) => line.replace(/[¿?¡!.,…«»"]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).join(' ').slice(0, 12);
+/** Versión corta para el modo diorama (texto pixelado): las primeras palabras que entran en 12 letras, sin signos. */
+export const shortBark = (line: string) => line.replace(/[¿?¡!.,…«»"]/g, '').split(/\s+/).filter(Boolean).reduce((acc, w) => !acc ? w.slice(0, 12) : (acc + ' ' + w).length <= 12 ? acc + ' ' + w : acc, '');

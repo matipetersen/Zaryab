@@ -363,7 +363,7 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 .cx-p.fresh::before { content: 'nuevo · '; font-style: normal; font-family: var(--f-num); font-size: 11px; color: var(--pf); }
 .cx-empty, .cx-hint { padding: 12px 4px; }
 @media (max-width: 640px) {
-  .overlay .card.cx-card { width: 100vw; height: 100%; border-radius: 0; padding: 12px; border-left: 0; border-right: 0; }
+  .overlay .card.cx-card { width: 100vw; height: 100%; border-radius: 0; padding: 12px; border-left: 0; border-right: 0; background: #0b0810; }
   .cx-head h2 { font-size: 22px; }
   .cx-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
   .cx-tabs::-webkit-scrollbar { display: none; }

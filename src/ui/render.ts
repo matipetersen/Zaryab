@@ -201,12 +201,12 @@ export class Renderer {
   drawSpeech(f: Float, p: P, s: number) {
     const c = this.ctx, life = f.life ?? 3, a = Math.max(0, Math.min(1, f.t / .15, (life - f.t) / .5)); if (a <= 0) return;
     const y = p.y - 26 * s - Math.min(f.t, .3) * 20 * s; c.save(); c.globalAlpha = a;
-    if (this.pixel) { if (a > .35 && f.short) drawPixText(c, f.short, p.x * this.dpr, (y - 8 * s) * this.dpr, 1, this.pix.f); c.restore(); return; }
+    if (this.pixel) { if (a > .35 && f.short) drawPixText(c, f.short, p.x * this.dpr, (y - 22 * s) * this.dpr, 1, this.pix.f); c.restore(); return; }
     c.font = `italic ${Math.round(12 * Math.max(.85, s))}px Georgia, serif`; const words = f.text.split(' '), lines: string[] = []; let cur = '';
     for (const w of words) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > 170 && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
     const lh = Math.round(14 * Math.max(.85, s)), wd = Math.max(...lines.map(l => c.measureText(l).width)) + 14, ht = lines.length * lh + 8, x0 = p.x - wd / 2, y0 = y - ht;
     c.fillStyle = 'rgba(20,14,28,.86)'; c.strokeStyle = 'rgba(232,200,114,.7)'; c.lineWidth = 1; c.beginPath(); c.rect(x0, y0, wd, ht); c.moveTo(p.x - 5, y0 + ht); c.lineTo(p.x, y0 + ht + 6); c.lineTo(p.x + 5, y0 + ht); c.fill(); c.stroke();
-    c.fillStyle = '#f3e6c4'; c.textAlign = 'center'; lines.forEach((l, i) => c.fillText(l, p.x, y0 + 4 + lh * (i + 1) - 3)); c.restore();
+    c.fillStyle = '#f3e6c4'; c.textAlign = 'center'; c.textBaseline = 'middle'; lines.forEach((l, i) => c.fillText(l, p.x, y0 + 4 + lh * i + lh / 2)); c.restore();
   }
   busy() { for (const v of this.vis.values()) if (v.path.length || (v.dead > 0 && v.dead < 1)) return true; return this.projs.length > 0 || this.floats.some(f => f.t < .35 && f.cls !== 'speech'); }
   /** Frase de un personaje sobre su cabeza (barks). En diorama sólo se dibuja `short`. */

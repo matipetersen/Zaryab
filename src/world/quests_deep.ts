@@ -32,6 +32,10 @@ const P_ROMAIN: Node[] = [
   S(`Romain`, `¿Cuántos había adentro?`),
   S(`Inquisidor`, `Veintiuno. Los conté al barrer. Había una nena que todavía tenía puesto el delantal del pan.`),
   N(`Romain no se mueve. En la mano libre aprieta, sin darse cuenta, el platillo que no tiene. El Inquisidor lo mira y entiende que nadie lo va a interrumpir.`),
+  { t: 'choice', prompt: `Veintiuno, dijo el Inquisidor. Romain todavía no rezó por ninguno.`, options: [
+    { label: `Romain: decir la oración de Kelemvor por los veintiuno (Religión)`, hint: `La primera desde el incendio. Si no le sale, el templo se queda sin despedida.`, check: { skill: 'religion', dc: 13, pc: 'romain' }, e: { d: 1, flags: ['romain_rito_21'] }, result: [`Romain se arrodilla donde estaba el altar y dice la oración de difuntos veintiuna veces, una por cada uno, sin saber sus nombres: «el del escalón», «la del delantal del pan». A la vigésima ya no le tiembla la voz. A la vigesimoprimera, Panchi la dice con él.`], fail: { e: { c: 1 }, result: [`Empieza la oración y se queda en la primera línea. Las palabras están, pero no salen: hace seis años que no las dice en este lugar. Se levanta con las rodillas negras de hollín y no vuelve a intentarlo.`] } },
+    { label: `Ahora no`, result: [`Romain mira las cenizas y no dice nada. Hay cosas que esperan.`] },
+  ] },
   { t: 'choice', prompt: `Un Inquisidor herido se arrastra entre las cenizas. Romain lo mira. Tiene su templo a los pies.`, options: [
     { label: `Buscar venganza contra los Inquisidores`, hint: `Garras del Efrit. El precio es suyo.`, e: { c: 3, alert: 1, grant: { romain: { weapons: [{ id: 'garras', name: 'Garras del Efrit', range: 1, toHit: 5, dmg: [{ dice: '1d6+1', type: 'slashing' }, { dice: '1d6', type: 'fire' }] }] } }, flags: ['romain_venganza'] }, result: [
       `Romain deja caer la maza. Sus manos se cubren de brasas, y el cristal de Zahir late dentro del pecho de todos, satisfecho.`,
@@ -108,6 +112,10 @@ const P_RABB: Node[] = [
   S(`Rabb Locke`, `Sutil. Siempre soñé con que me explicaran mi vida con una frase negativa.`),
   S(`Zyr'thar`, `Una sola cosa más: el Oráculo miente, la espada no. Si la hoja quiere que te despiertes, es porque alguien la hizo para eso.`),
   N(`La hoja se calla de golpe, a mitad de una sílaba. En el silencio, Rabb siente algo que le sube por el brazo: no es dolor, es la memoria de un dolor.`),
+  { t: 'choice', prompt: `La hoja se calló a mitad de una sílaba.`, options: [
+    { label: `Rabb: obligar a la hoja a terminar la frase (Intimidar)`, hint: `Su espada, su pelea. Si pierde la pulseada, la hoja le cobra con sangre.`, check: { skill: 'intimidar', dc: 13, pc: 'rabb' }, e: { flags: ['rabb_silaba'] }, result: [`Rabb clava la hoja en la mesa hasta el mango. «Terminala.» La espada vibra, ofendida, y escupe una sílaba: una sola, áspera, que no se parece a nada que Rabb haya oído. Pero cuando la repite, le suena a casa.`, `Zyr'thar la anota en su cuaderno, sin vocales, para que nadie más la pueda leer.`], fail: { e: { c: 1 }, result: [`La hoja no termina la frase. Se le da vuelta en la mano y le abre la palma de un lado al otro, limpio, como una firma. Romain lo venda en silencio. La sangre sobre la mesa forma, por un segundo, una letra que no es de ningún alfabeto.`] } },
+    { label: `Esperar a que siga sola`, result: [`La hoja no sigue. Rabb la mira largo rato.`] },
+  ] },
   { t: 'choice', prompt: `«Tu nombre es…» El susurro se corta.`, options: [
     { label: `Investigar su pasado`, hint: `Un fragmento de memoria. Dolerá.`, e: { d: 1, flags: ['rabb_memoria'] }, result: [
       `Un destello: una mesa, una mano que no es la suya firmando con sangre, una voz que dice «olvidar». Rabb se tambalea.`,
@@ -159,6 +167,10 @@ const P_JOREN: Node[] = [
   S(`Joren Hell`, `¿Viva?`),
   S(`Voz`, `La entregaron viva. A Medinat. Pagaron en sangre, de eso sí me acuerdo.`),
   N(`Cierra los ojos. Joren le baja los párpados con dos dedos, tal como hacía, años atrás, con los suyos.`),
+  { t: 'choice', prompt: `El hombre de la cicatriz todavía mueve los labios.`, options: [
+    { label: `Joren: reconocer el santo y seña de La Marca en lo que balbucea (Percepción)`, hint: `Sólo los siete lo sabían. Si Joren lo entiende, sabrá a quién preguntarle en Medinat.`, check: { skill: 'percepcion', dc: 13, pc: 'joren' }, e: { d: 1, flags: ['marca_contrasena'] }, result: [`«…diente partido… agua en la mano…» No es delirio: es la contraseña de La Marca, la primera mitad. Joren se la completa al oído, «…y sangre en el papel», y el hombre sonríe con lo que le queda de boca. «Entonces sos vos. Él la va a reconocer.» No dice quién. No le da tiempo.`], fail: { e: {}, result: [`Joren se inclina demasiado tarde. Lo que el hombre balbucea se pierde en un gorgoteo, y se lleva con él la mitad de una frase que Joren, años después, todavía va a intentar completar.`] } },
+    { label: `Dejarlo ir en paz`, result: [`Joren le sostiene la mano hasta que deja de apretar.`] },
+  ] },
   { t: 'choice', prompt: `Un mercenario moribundo balbucea: «La mercancía… era una persona.»`, options: [
     { label: `Ir a Medinat al-Rih sin perder tiempo`, hint: `El pasado de Joren se acerca.`, e: { c: 1, flags: ['joren_medinat'] }, result: [
       `Joren recarga el arco. «Tengo que verlo con mis propios ojos.»`,
@@ -194,6 +206,10 @@ const P_ZYR: Node[] = [
   S(`Zyr'thar`, `La esfera. Si hablamos, escucha la mayor.`, `por lo bajo, a los demás`),
   S(`Joren Hell`, `Rompela.`),
   S(`Zyr'thar`, `No. Todavía no. Que oiga lo que quiera. Me toca decidir qué.`),
+  { t: 'choice', prompt: `La esfera late en la mano de la espía. Del otro lado escucha la matriarca.`, options: [
+    { label: `Zyr'thar: hablarle a la esfera con la voz de la matriarca (Engaño)`, hint: `Zyr'thar creció imitando a su madre para no recibir castigos. Si la voz le sale mal, la Casa sabrá exactamente dónde está.`, check: { skill: 'engano', dc: 14, pc: 'zyrthar' }, e: { alert: -1, flags: ['velshara_enganada'] }, result: [`Zyr'thar se acerca la esfera a la boca y habla con una voz que los demás no le conocían: más grave, más lenta, de quien nunca tuvo que repetir una orden. «Retirate. Es asunto mío.» La espía se pone pálida. Del otro lado de la esfera, alguien tarda en contestar, confundido.`, `La chica ataca igual, por miedo. Pero la Casa, por un tiempo, va a buscar a Zyr'thar en el lugar equivocado.`], fail: { e: { alert: 1, flags: ['velshara_aviso'] }, result: [`A la tercera palabra la voz se le quiebra, y lo que sale es la de ella, la de verdad, con el acento de la Casa. La esfera brilla de golpe. Del otro lado, alguien se ríe bajito: ya saben dónde está y con quién.`] } },
+    { label: `Dejar que la esfera oiga lo que quiera`, result: [`Zyr'thar no dice nada. Que la escuchen pelear.`] },
+  ] },
   { t: 'battle', enc: 'zyr' },
   N(`La espía queda de rodillas sobre las baldosas, sin arma, con el brazo sangrando bajo la manga. La esfera rueda por el suelo y se detiene contra el zapato de Panchi, que la pisa sin querer. Todavía brilla.`),
   S(`Espía de Vel'Shara`, `Hacelo. Es lo que se hace. Si volvés sin tu cuchillo, no volvés.`, `mirando el suelo`),
@@ -240,6 +256,10 @@ const P_PANCHI: Node[] = [
   N(`El golem vuelve a golpear la pared, una vez, suave, como quien llama a una puerta que sabe cerrada. Panchi lo mira largo rato, con la mandíbula tensa.`),
   S(`Panchi`, `Vos... vos sos como yo. Roto. Enojado. Solo. Vení. Luchemos. O seamos amigos. O ambas.`, `con los puños apretados`),
   { t: 'choice', prompt: `¿Qué hacen con el golem?`, options: [
+    { label: `Panchi: recitar la letanía de reparación del monasterio (Religión)`, hint: `Las runas son de su maestro; la oración que las calma, también. Si se equivoca, el golem lo toma por enemigo.`, check: { skill: 'religion', dc: 14, pc: 'panchi' }, e: { d: 2, flags: ['golem_prestado'] }, result: [`Panchi se arrodilla frente al golem y recita, en enano viejo, la letanía que su maestro decía cada mañana antes de darle cuerda a los guardianes. No le sale entera. Le sale suficiente. Las runas violetas bajan de intensidad hasta quedar del color de una brasa dormida.`, `«Alumno», dice el golem. Y por primera vez no golpea la pared. Se sienta en el escalón, al lado de Panchi, y espera.`], fail: { e: { pf: 3, flags: ['nucleo_golem'] }, result: [`A la mitad de la letanía Panchi cambia una palabra, la que su maestro pronunciaba distinto. El golem lo oye. «Puerta. Intruso.» Y se le viene encima.`], then: [
+      { t: 'battle', enc: 'panchi' },
+      N(`Cuando el golem cae, Panchi saca el núcleo de entre la arcilla rota y se queda con él en las manos un largo rato. «Era una palabra», dice. «Una sola palabra.»`),
+    ] } },
     { label: `Desmantelarlo y extraer su núcleo`, hint: `Combate. Un núcleo de energía.`, e: { pf: 3, flags: ['nucleo_golem'] }, result: [`Panchi se lanza sin pensar.`], then: [
       { t: 'battle', enc: 'panchi' },
       N(`Cuando el golem cae, ya no golpea ninguna pared. Panchi se arrodilla entre los trozos de arcilla y mete las manos hasta encontrar el núcleo: una esfera de cobre del tamaño de un puño, todavía caliente.`),
@@ -276,6 +296,7 @@ const S_LAGO: Node[] = [
     { label: `Curar a Shib con magia`, hint: `Gastan tiempo y fuerzas, pero un aliado vive.`, e: { d: 1, rep: { hijos: 1 }, flags: ['shib_curado'] }, result: [
       `Shib tose, escupe arena y sonríe: «Alguien con una luz de verdad.» Les cuenta de las criaturas de las cuevas y de por qué nadie baja aquí.`,
       `Romain le limpia las heridas con agua de su cantimplora mientras Shib habla sin parar, como si el miedo le hubiera abierto una canilla. Cuando termina, camina solo hasta la salida del túnel, se sacude el polvo de la túnica y los guía.`] },
+    { label: `Coserle el pecho sin gastar magia (Medicina)`, hint: `Aguja, hilo y pulso firme. Si fallan, Shib se desangra a medias y nadie lo olvida.`, check: { skill: 'medicina', dc: 13 }, e: { d: 1, rep: { hijos: 1 }, flags: ['shib_curado'] }, result: [`Le cosen once puntos a la luz de una lámpara, con el hilo encerado de la mochila de Joren. Shib no grita: cuenta los puntos en voz alta y a la mitad se pone a contar otra cosa, las criaturas que vio, los túneles que conoce. Cuando terminan, se levanta solo.`], fail: { e: { rep: { hijos: -1 } }, result: [`La herida es más honda de lo que parecía. Los puntos no aguantan y Shib se desmaya. Lo dejan recostado contra la pared con una manta, prometiéndole volver. Cuando vuelvan, ya no va a estar ahí: se habrá arrastrado solo.`] } },
     { label: `Dejarlo: la misión es lo primero`, e: { c: 1, rep: { hijos: -1 } }, result: [
       `Pasan de largo. Detrás, un hilo de voz: «…no… me dejen…»`,
       `Nadie dice nada hasta el siguiente recodo, donde Romain se detiene un segundo, con la mano en la pared. Zyr'thar le pone una mano en el hombro y lo empuja suave hacia adelante. Del túnel sigue viniendo el eco, cada vez más tenue.`] },
@@ -291,6 +312,7 @@ const S_LAGO: Node[] = [
     { label: `Arrancar la rama y purificar el agua`, hint: `El Lago dejará de envenenar.`, e: { d: 1, pf: 4, rep: { hijos: 1 }, flags: ['lago_purificado', 'remedio_veneno'] }, result: [
       `La rama grita sin voz. El agua se aclara. Aprenden a preparar un remedio contra el veneno del Pozo.`,
       `Cuando las raíces de cobre se aflojan, el cielo reflejado en el lago se endereza, y por primera vez se ve el agua tal cual es: poco profunda, tibia, con peces ciegos. Panchi se agacha a tocarla con un dedo. «Es agua», dice, casi decepcionado.`] },
+    { label: `Exorcizar la Lengua Muerta antes de arrancarla (Religión)`, hint: `Una rama que marca almas se saca con oración, no sólo con fuerza. Si fallan, la rama se lleva el remedio consigo.`, check: { skill: 'religion', dc: 14 }, e: { d: 2, pf: 4, rep: { hijos: 1 }, flags: ['lago_purificado', 'remedio_veneno'] }, result: [`Le rezan a la rama como a un difunto: se le dice su nombre, se le dice lo que hizo, se le dice que ya puede irse. Las raíces de cobre se aflojan solas. El agua se aclara, y en la corteza, donde estaba el sello del Conclave, queda escrita la receta del remedio, como una confesión.`], fail: { e: { c: 1, flags: ['lago_purificado'] }, result: [`La oración no la convence. La rama grita sin voz y, al arrancarla, se deshace entre los dedos con todo lo que sabía: el agua queda limpia, pero el secreto del remedio se va al fondo con ella.`] } },
     { label: `Quemarla: que el Conclave sepa que hemos estado aquí`, hint: `Humo visible a leguas.`, e: { c: 1, alert: 1, flags: ['lago_quemado'] }, result: [
       `El humo violeta se ve desde el Bajo Zaryab. Las campanas del Conclave no tardan en sonar.`,
       `La rama arde con un olor a medicina vieja. Joren se queda mirando cómo se enrosca el humo contra el techo de cristal. «Lo van a oler hasta la Ciudadela», dice. «Eso es lo que querés.» No es una pregunta, y nadie la contesta.`] },
@@ -380,6 +402,7 @@ const M_JUICIO: Node[] = [
     { label: `Salvarlo`, hint: `+2 Devoción, el barrio desconfía.`, e: { d: 2, rep: { hijos: -1 }, flags: ['juicio_salvado'], echo: [{ id: 'eco_juicio_salvado', in: 3 }] }, result: [
       `Cortan la soga. La vecina escupe en el suelo y se va sin mirar atrás.`,
       `Joren lo sostiene antes de que caiga y Pact le desata las manos. El guardia llora sin ruido, y por primera vez en tres años alguien le dice «gracias» sin entenderlo. Los vecinos retroceden, uno por uno, y esa noche en la puerta de la biblioteca aparece una pintada con una palabra que nadie lee en voz alta.`] },
+    { label: `Invocar ante el barrio el juicio de los muertos (Religión)`, hint: `Un rito de Kelemvor: que hablen los nombres, no la soga. Si el barrio no lo acepta, lo cuelgan igual.`, check: { skill: 'religion', dc: 14 }, e: { d: 2, rep: { hijos: 1 }, flags: ['juicio_salvado'], echo: [{ id: 'eco_juicio_salvado', in: 3 }] }, result: [`Se pide silencio y se dice la fórmula de los juicios de difuntos: cada vecino nombra a su muerto, y el acusado tiene que repetir cada nombre en voz alta. Tarek repite catorce. Al decimoquinto, que es Yusuf, se le quiebra la voz.`, `La vecina lo mira un largo rato. «Que viva con eso», dice. Nadie corta la soga: la desatan, despacio, como se desata a alguien que ya pagó una parte.`], fail: { e: { c: 1, flags: ['juicio_ejecutado'], echo: [{ id: 'eco_juicio_ejecutado', in: 4 }] }, result: [`La fórmula es vieja y el barrio está apurado. A la tercera línea, alguien grita «¡Recen después!» y patea el cajón. La oración termina sola, sobre un hombre que ya no la oye.`] } },
     { label: `Juzgarlo con justicia`, hint: `Intimidar CD 14 para imponer el juicio. +1 Devoción, +1 Corrupción.`, check: { skill: 'intimidar', dc: 14 }, e: { d: 1, c: 1, rep: { hijos: 1 }, recruits: 1, flags: ['juicio_justo'], huella: 'Presidieron el juicio del guardia: ni soga ni indulto, sino verdad.' }, result: [
       `Cada vecino declara. El guardia confiesa catorce nombres. Lo entregan al Conclave con la lista. El barrio respeta el método, aunque no el resultado.`,
       `Cuando termina, la vecina se acerca al guardia, le mira la cara de cerca y dice un nombre: «Yusuf». El guardia asiente. Es la única justicia que le va a tocar. Aisha, desde el fondo, se desata el delantal y empieza a repartir pan.`], fail: { e: { c: 1 }, result: [
@@ -407,6 +430,10 @@ const S_NINOS: Node[] = [
   S(`Guardia`, `Pídaselo al Vizir. Yo sólo cobro. Y los que se meten en un cobro pagan también.`, `sin dejar de mirar la tablilla`),
   N(`Un escorpión del tamaño de un puño trepa por la manga del niño y se queda mirando a los guardias con la cola alzada. Panchi se pone entre los guardias y la pared sin darse cuenta de que lo hace.`),
   { t: 'choice', prompt: `¿Qué hacen?`, options: [
+    { label: `Denunciar el cobro sin sello con voz de funcionaria (Engaño)`, hint: `Quien mejor mienta: «inspección del Vizir». Si no se lo creen, habrá pelea igual.`, check: { skill: 'engano', dc: 13 }, e: { d: 1, rep: { hijos: 1 } }, result: [`«Inspección de cobros», dice alguien de la compañía, con la voz aburrida de quien hace esto todos los días, y le pide la tablilla al guardia. Le da vuelta. Busca el sello. Chasquea la lengua. «Esto va al Vizir.» Los guardias se miran, se acuerdan de algo urgente en otra calle y se van sin cobrar.`, `Doña Rosa, en su caja, deja de raspar.`], fail: { e: { alert: 1, flags: ['ninos_defendidos'] }, result: [`El guardia mira la tablilla, mira a quien le habla y se ríe. «¿Inspección? Si ustedes son los herejes del cartel.» Saca el garrote. Los escorpiones se erizan todos a la vez.`], then: [
+      { t: 'battle', enc: 'ninos' },
+      N(`Los guardias salen corriendo por el callejón. Detrás, los niños gritan y aplauden, y alguien tira flores desde una ventana sin saber muy bien por qué.`),
+    ] } },
     { label: `Pagar a los guardias para que se vayan`, hint: `−3 PF`, e: { pf: -3, alert: 0 }, result: [
       `Los guardias cuentan las monedas y se van riendo. Los niños no los miran.`,
       `Cuando el último guardia desaparece al fondo del callejón, los escorpiones bajan los aguijones. El niño del hombro guarda su bicho en el bolsillo y mira a Panchi, que se ha puesto muy interesado en una grieta de la pared. Nadie dice «gracias». Pero esa tarde, alguien deja un platito de dátiles en la puerta de la biblioteca.`] },

@@ -1,7 +1,7 @@
 // Retratos en pixel art (busto de 24×24 celdas) para el modo diorama, con la misma paleta cerrada que las figuras.
 // Cada retrato se arma con capas dibujadas a mano: «X Y Z» = piel (luz, medio, sombra), «P Q O» = ropa (luz, sombra,
 // acento). Esas letras se traducen a la paleta del juego por retrato; el resto son las letras de diorama.ts
-// (k d D e b w r R v V f g W p + la rampa del tema s S t a A). «G» = verde oscuro (rampa del jardín).
+// (k d D e b w r R v V f g W p + la rampa del tema s S t a A). «G» = verde oscuro (rampa del jardín), «M N L» = metal (rampa de la mina).
 // Las expresiones son parches sobre cejas, ojos y boca, no copias enteras. La luz viene siempre de arriba a la izquierda.
 import { pixFor } from './diorama';
 
@@ -269,12 +269,12 @@ const D: Record<string, Def> = {
   },
   // Farid — niño enfermo, piel translúcida, ojos grandes y ojerosos.
   farid: {
-    theme: 'mirror', bg: 'd', glow: 'D', map: { X: 'w', Y: 'b', Z: 'A', P: 'a', Q: 't', O: 't' }, face: { ...FACE, my: 15, mx: 10 },
+    theme: 'mirror', bg: 'd', glow: 'D', map: { X: 'w', Y: 'b', Z: 'A', P: 'a', Q: 't', O: 't' }, face: { ...FACE, y: 12, my: 16 },
     layers: [
-      body(BODY_N), [5, 5, HEAD_F.slice(0, 15)],
-      [3, 11, ['.k', 'kX', 'kY', '.k']], [17, 11, ['k.', 'Zk', 'Zk', 'k.']],
-      [5, 3, ['...k.kk.k...', '..kdkddkdk..', '.kdddddddddk', 'kddDDddddddk', 'kdDdXYdDYdDk', 'kdXYYYYYYZdk']],
-      [8, 9, ['....', '.kk.']], [8, 12, ['.aa.']], [13, 12, ['aa']],
+      body(BODY_N), [6, 5, HEAD_F],
+      [4, 11, ['.k', 'kX', 'kY', '.k']], [18, 11, ['k.', 'Zk', 'Zk', 'k.']],
+      [6, 4, ['...k.kk.k...', '..kekeekdk..', '.keeeeeeeddk', 'keeDDeeeeddk', 'keDdXYdDYdDk', 'kdXYYYYYYZdk']],
+      [9, 13, ['aa']], [13, 13, ['aa']],
     ],
   },
   // Sifra (Ellie) — guerrera alta de hombros anchos, venda en la frente, quemaduras del cuello a la oreja.
@@ -296,7 +296,7 @@ const D: Record<string, Def> = {
       [2, 9, ['kk..', 'kXk.', '.kYk', '..kk']], [18, 9, ['..kk', '.kZk', 'kZk.', 'kk..']],
       [5, 1, ['......kkk.......', '....kkgggkk.....', '...kggggggGk....', '..kgggggggGGk...', '.kkkkkkkkkkkkk..', 'kgWWkggggkWWkGk.', 'kgWwkGGGGkWwkGGk', 'kkkkkkkkkkkkkkkk']],
       [16, 1, ['r', 'r', '.']],
-      [9, 10, ['bb..bb']], [9, 11, ['wk']], [13, 11, ['wk']],
+      [9, 9, ['bb..bb']], [9, 11, ['wk']], [13, 11, ['wk']],
       [10, 12, ['.kk.', 'kApk', 'kppk']], [9, 15, ['SSSSSS']], [8, 15, ['k']], [15, 15, ['k']], [9, 16, ['S....S']],
     ],
   },
@@ -316,11 +316,10 @@ const D: Record<string, Def> = {
   samira: {
     theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'a', Y: 't', Z: 'S', P: 'f', Q: 'a', O: 'R' }, face: FACE,
     layers: [
-      [16, 4, ['.kk.', 'kddk', 'kdk.', 'kdk.', '.kdk', '.kdk', '.kdk', 'kdk.']],
+      [16, 4, ['.kk.', 'kedk', 'kek.', 'kdk.', '.kek', '.kdk', '.kek', 'kdk.', 'kRk.', '.k..']],
       body(['.....kkkkkkYZkkkkkk.....', '.kkkkkRRRkkkkkkRRRkkkkk.', 'kffffkRRRRkkkkRRRRkaaaak', 'kffffakRRRRRRRRRRkaaaaak', '.kfaakkRRfRRRRfRRkkaaak.', 'kkkkkRRRRRRRRRRRRRRkkkkk']),
       head(HEAD_F), ...EARS,
-      [6, 3, ['..kkkkkkkk..', '.kdDDDDDddk.', 'kdDDDDDDdddk', 'kDXYYYYYYZdk', 'kdXYYYYYYZdk']],
-      [12, 16, ['p']],
+      [6, 3, ['..kkkkkkkk..', '.keeeeeDDdk.', 'keeeDDDDDDdk', 'keXYYYYYYZdk', 'kDXYYYYYYZdk']],
     ],
   },
   // Lady Nafisa — noble madura: peinado alto con joyas, aros y collar.
@@ -335,7 +334,7 @@ const D: Record<string, Def> = {
   },
   // genéricos: guardia (casco con nasal y penacho), gente del Bajo (pañuelo), acólito (capucha y máscara blanca).
   guardia: {
-    theme: 'mine', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 's', Q: 'S', O: 'r' }, face: { ...FACE, x1: 9, x2: 13 },
+    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', A: 'M', a: 'N', t: 'L', s: 'L', S: 'e', O: 'r' }, face: { ...FACE, x1: 9, x2: 13 },
     layers: [
       [10, 0, ['.kk.', 'krrk', 'krRk', '.kk.']],
       body(['.....kkkkkkYZkkkkkk.....', '...kkAAaaakkkktttssskk...', '..kAAaaaaaaakkttttssssk..', '.kAaakkkkkkkkkkkkkkssssk.', '.kaaaaaaaaaaaattttssssk.', 'kaaaaaaaaaaattttttssssk']),
@@ -363,7 +362,7 @@ const D: Record<string, Def> = {
       [8, 9, ['bkkbbkkb', 'bkkbbkkb']], [11, 12, ['A']], [10, 14, ['kkkk']], [11, 4, ['r', 'r']], [10, 5, ['....']],
       [10, 20, ['rr', 'kr']],
     ],
-    ex: { enojo: [[9, 10, 'r'], [14, 10, 'r']], sorpresa: [[9, 10, 'w'], [14, 10, 'w']] },
+    ex: { enojo: [[9, 10, 'r'], [14, 10, 'r']], tristeza: [[9, 11, 'r'], [9, 12, 'r'], [14, 9, 'k']], sorpresa: [[9, 10, 'w'], [14, 10, 'w']] },
   },
 };
 
@@ -418,6 +417,8 @@ function withExpr(id: string, e: Expr): string[][] {
   }
   return g;
 }
+/** Letras extra: colores de la rampa de otro tema (verde del jardín, metal de la mina). */
+const EXTRA: Record<string, [string, string]> = { G: ['garden', 'S'], M: ['mine', 'A'], N: ['mine', 'a'], L: ['mine', 't'] };
 const urlCache = new Map<string, string>();
 /** Data URL del retrato `id` con la expresión `e` (cacheado). Null si no existe o no hay DOM. */
 export function pixPortraitUrl(id: string, e: Expr = 'neutral'): string | null {
@@ -427,7 +428,7 @@ export function pixPortraitUrl(id: string, e: Expr = 'neutral'): string | null {
   const c = document.createElement('canvas'); c.width = c.height = N * SCALE;
   const ctx = c.getContext('2d'); if (!ctx) return null; ctx.imageSmoothingEnabled = false;
   const d = defOf(id); const P = pixFor(d.theme ?? 'alley');
-  const col = (ch: string) => P[ch] ?? (ch === 'G' ? pixFor('garden').S : P.k);
+  const col = (ch: string) => { const x = EXTRA[ch]; return x ? pixFor(x[0])[x[1]] : P[ch] ?? P.k; };
   // fondo: color liso y un halo tramado detrás de la cabeza
   ctx.fillStyle = col(d.bg ?? 'd'); ctx.fillRect(0, 0, c.width, c.height);
   if (d.glow) { ctx.fillStyle = col(d.glow); for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
