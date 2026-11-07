@@ -110,4 +110,5 @@ export const TWISTS: Record<string, TwistDef> = {
     bonus: { kind: 'noDown', text: 'Que nadie caiga', reward: pf(2) },
     events: [{ when: { hp: 'varreth', below: 0.5 }, note: 'Varreth se enfurece.', do: [{ enrage: 'varreth' }] }] },
 };
-export const NO_LAND = new Set(['cubo', 'pact', 'cubo_maunator', 'd4_defensa', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa', 'torneo', 'gusano_caza']);
+/** El Cubo ya tiene su propia dinámica (salas que rotan): no se le suma terreno vivo. */
+export const NO_LAND = new Set(['cubo', 'pact', 'cubo_maunator']);

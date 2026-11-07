@@ -5,7 +5,7 @@ import { cheb } from './grid';
 import { roll, addFlat, rand } from './dice';
 import { makeFoe } from '../data/monsters';
 
-export type HazardKind = 'collapse' | 'spikes' | 'fire' | 'flood' | 'storm';
+export type HazardKind = 'collapse' | 'spikes' | 'fire' | 'flood' | 'storm' | 'gas' | 'shelves' | 'graves';
 export interface Reward { pf?: number; gold?: number; chem?: boolean; label: string }
 export type BonusDef =
   | { kind: 'noDown' | 'keep'; text: string; reward: Reward }
@@ -30,13 +30,18 @@ export const LAND: Record<string, LandDef[]> = {
   acueducto: [{ kind: 'flood', from: 2, every: 3 }], pozo: [{ kind: 'flood', from: 3, every: 4 }],
   plaza: [{ kind: 'fire', from: 3, every: 3 }], medinat: [{ kind: 'fire', from: 3, every: 4 }], iglesia: [{ kind: 'fire', from: 3, every: 3 }], eclipse: [{ kind: 'fire', from: 2, every: 3 }],
   arena: [{ kind: 'spikes', from: 2, every: 3 }], ciudadela: [{ kind: 'spikes', from: 3, every: 3 }],
+  jardin: [{ kind: 'gas', from: 2, every: 3 }], tuneles_a: [{ kind: 'gas', from: 2, every: 3 }], tuneles_b: [{ kind: 'gas', from: 2, every: 3 }],
+  santuario: [{ kind: 'shelves', from: 2, every: 3 }], cementerio: [{ kind: 'graves', from: 2, every: 3 }],
+  templo: [{ kind: 'graves', from: 2, every: 4 }, { kind: 'collapse', from: 4, every: 4 }], d4_salida: [{ kind: 'collapse', from: 1, every: 2 }],
 };
 /** Mapas con un altar que cura a quien lo ocupa (aliado de quien lo conquiste). */
 export const ALTARS = new Set(['pozo', 'iglesia', 'cementerio', 'jardin', 'templo', 'santuario', 'plaza', 'medinat']);
-const ICON: Record<HazardKind, string> = { collapse: '🪨', spikes: '▲', fire: '🔥', flood: '💧', storm: '🌪' };
+const ICON: Record<HazardKind, string> = { collapse: '🪨', spikes: '▲', fire: '🔥', flood: '💧', storm: '🌪', gas: '☁', shelves: '📚', graves: '✋' };
 const WARN: Record<HazardKind, string> = {
   collapse: 'El techo cruje: se va a desprender en las casillas marcadas.', spikes: 'Se oyen engranajes: saldrán pinches en las casillas marcadas.',
   fire: 'Un brasero se vuelca: el fuego va a prender en las casillas marcadas.', flood: 'Una compuerta cede: el agua va a inundar las casillas marcadas.', storm: 'Se levanta viento: en la próxima ronda una tormenta de arena va a cegar las puntas.',
+  gas: 'Algo burbujea bajo el suelo: una nube venenosa va a brotar en las casillas marcadas.', shelves: 'Una estantería se inclina: va a caer sobre las casillas marcadas y dejar una barricada de libros.',
+  graves: 'La tierra se agrieta: manos de muertos van a salir en las casillas marcadas.',
 };
 
 const free = (b: Battle, x: number, y: number) => { const t = b.grid.at(x, y); return !!t && !t.blocked && t.kind !== 'wall'; };
@@ -46,6 +51,7 @@ function target(b: Battle, kind: HazardKind): { x: number; y: number }[] {
   const us = living(b); if (!us.length) return [];
   const c = us[Math.floor(rand() * us.length)]; const out: { x: number; y: number }[] = [];
   if (kind === 'spikes') { for (let dx = -3; dx <= 3; dx++) if (free(b, c.x + dx, c.y)) out.push({ x: c.x + dx, y: c.y }); return out; }
+  if (kind === 'shelves') { const hz = rand() < 0.5; for (let k = -1; k <= 1; k++) { const x = c.x + (hz ? k : 0), y = c.y + (hz ? 0 : k); if (free(b, x, y)) out.push({ x, y }); } return out; }
   if (kind === 'flood') { for (let dy = 0; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) { const t = b.grid.at(c.x + dx, c.y + dy); if (t && t.kind === 'floor') out.push({ x: c.x + dx, y: c.y + dy }); } return out; }
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (free(b, c.x + dx, c.y + dy)) out.push({ x: c.x + dx, y: c.y + dy });
   return out;
@@ -63,6 +69,11 @@ function resolve(b: Battle, round: number) {
       const w = b.unitAt(t.x, t.y); if (w && !w.dead && !w.fly) { const ok = b.save(w, 'str', dc, '(la corriente)'); const d = roll(dice).total; b.damage(w, ok ? Math.floor(d / 2) : d, 'bludgeoning', undefined); if (!ok && !w.dead) b.addStatus(w, { id: 'prone', turns: -1 }); } // la corriente arrastra y golpea
       continue; }
     const v = b.unitAt(t.x, t.y);
+    if (t.kind === 'gas') { b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y }); if (v && !v.dead) { const ok = b.save(v, 'con', dc, '(el gas)'); const d = roll(dice).total; b.damage(v, ok ? Math.floor(d / 2) : d, 'poison', undefined); if (!ok && !v.dead) b.addStatus(v, { id: 'poisoned', turns: 1 }); } continue; }
+    if (t.kind === 'graves') { b.grid.setTile(t.x, t.y, ','); b.emit({ t: 'tile', kind: 'break', x: t.x, y: t.y });
+      if (v && !v.dead && !v.fly) { const ok = b.save(v, 'str', dc, '(las manos)'); const d = roll(dice).total; b.damage(v, Math.floor(d / 2), 'necrotic', undefined); if (!ok && !v.dead) b.addStatus(v, { id: 'restrained', turns: 2, save: { ab: 'str', dc } }); } continue; }
+    if (t.kind === 'shelves') { if (v && !v.dead) { b.grid.setTile(t.x, t.y, ','); b.emit({ t: 'tile', kind: 'break', x: t.x, y: t.y }); const ok = b.save(v, 'dex', dc, '(la estantería)'); const d = roll(dice).total; b.damage(v, ok ? Math.floor(d / 2) : d, 'bludgeoning', undefined); if (!ok && !v.dead) b.addStatus(v, { id: 'prone', turns: -1 }); }
+      else { b.grid.setTile(t.x, t.y, 'c'); b.emit({ t: 'tile', kind: 'build', x: t.x, y: t.y }); } continue; }
     if (t.kind === 'collapse') { b.emit({ t: 'tile', kind: 'boom', x: t.x, y: t.y }); b.grid.setTile(t.x, t.y, ','); }
     if (t.kind === 'fire') { b.grid.setTile(t.x, t.y, 'f', 3); b.emit({ t: 'tile', kind: 'ignite', x: t.x, y: t.y }); }
     if (t.kind === 'spikes') b.emit({ t: 'fx', kind: 'burst', x: t.x, y: t.y });

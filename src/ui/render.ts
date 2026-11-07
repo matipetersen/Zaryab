@@ -425,7 +425,7 @@ export class Renderer {
   /** Zonas de peligro avisadas (derrumbe, pinches, fuego, inundación) y altares de curación. */
   drawField(s: number) {
     const b = this.b!, c = this.ctx; const pulse = .5 + .5 * Math.sin(this.time * 6);
-    const COL: Record<string, [string, string]> = { collapse: ['rgba(214,160,80,A)', '🪨'], spikes: ['rgba(255,70,70,A)', '▲'], fire: ['rgba(255,130,30,A)', '🔥'], flood: ['rgba(70,150,255,A)', '💧'] };
+    const COL: Record<string, [string, string]> = { collapse: ['rgba(214,160,80,A)', '🪨'], spikes: ['rgba(255,70,70,A)', '▲'], fire: ['rgba(255,130,30,A)', '🔥'], flood: ['rgba(70,150,255,A)', '💧'], gas: ['rgba(140,220,90,A)', '☁'], shelves: ['rgba(190,140,90,A)', '📚'], graves: ['rgba(170,120,220,A)', '✋'] };
     for (const t of b.telegraphs) { const [col, ic] = COL[t.kind] ?? COL.fire; const hgt = b.grid.at(t.x, t.y)?.kind === 'high' ? ELEV : 0; const p = this.proj(t.x, t.y, hgt); this.diamond(p.x, p.y, s, col.replace('A', String(.22 + .25 * pulse)), col.replace('A', '.9'));
       const q = this.center(t.x, t.y, hgt); c.font = `${Math.round(13 * s)}px sans-serif`; c.textAlign = 'center'; c.globalAlpha = .85; c.fillText(ic, q.x, q.y + 4 * s); c.globalAlpha = 1; }
     for (const tr of b.traps) { if (tr.hidden || !tr.armed || this.fogA[tr.y * b.grid.w + tr.x] > .5) continue; const q = this.center(tr.x, tr.y); const p0 = this.proj(tr.x, tr.y, 0); this.diamond(p0.x, p0.y, s, `rgba(255,70,50,${.22 + .2 * pulse})`, 'rgba(255,150,110,1)'); c.font = `${Math.round(24 * s)}px sans-serif`; c.textAlign = 'center'; c.fillStyle = '#fff'; c.fillText(TRAP_ICON[tr.kind], q.x, q.y + 5 * s); }

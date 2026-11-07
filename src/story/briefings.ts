@@ -137,7 +137,7 @@ export function briefing(encId: string, enc: Encounter, map: MapDef, party: stri
   }
   if (map.objective) nodes.push(N(`Objetivo: ${map.objective}`));
   const L = NO_LAND.has(encId) ? undefined : LAND[map.id]; const TW = TWISTS[encId];
-  const LTXT: Record<string, string> = { storm: 'tormentas de arena que ciegan a los arqueros', collapse: 'derrumbes', fire: 'brasas que prenden fuego', flood: 'compuertas que inundan', spikes: 'trampas de pinches' };
+  const LTXT: Record<string, string> = { storm: 'tormentas de arena que ciegan a los arqueros', collapse: 'derrumbes', fire: 'brasas que prenden fuego', flood: 'compuertas que inundan', spikes: 'trampas de pinches', gas: 'nubes venenosas que brotan del suelo', shelves: 'estanterías que se desploman y dejan barricadas', graves: 'manos de muertos que atrapan a quien pise la tierra removida' };
   if (L || (!NO_LAND.has(encId) && ALTARS.has(map.id))) nodes.push(N(`El terreno juega su partido: ${[...(L ?? []).map(l => LTXT[l.kind]), ...(ALTARS.has(map.id) ? ['un altar que cura a quien lo ocupe'] : [])].join(' y ')}. Las casillas marcadas avisan una ronda antes: el escenario golpea a ambos bandos.`));
   if (TW?.bonus) nodes.push(N(`Objetivo opcional: ${TW.bonus.text} (${TW.bonus.reward.label}).`));
   nodes.push(N(`Pista táctica: ${tip(map, foeIds)}`));
