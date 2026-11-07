@@ -25,6 +25,8 @@ interface Def {
   exprs?: Expr[];
   /** Variante: recolorea otro retrato y le suma capas. */
   from?: string; recolor?: Record<string, string>;
+  /** Rasgos (ojos, cejas, nariz, boca…) que se pintan sobre la plantilla de cabeza, antes de pelo y tocados. */
+  look?: Look;
 }
 
 // ───── piezas comunes ─────
@@ -62,6 +64,82 @@ const HEAD_F: string[] = [ // cara más fina (mujeres, niño): mandíbula angost
   '...kXYYZk...',
   '....kkkk....',
 ];
+const HEAD_R: string[] = [ // cara redonda y ancha (enanos, gente del Bajo): pómulos llenos, mentón corto
+  '..kkkkkkkk..',
+  '.kXYYYYYYZk.',
+  'kXYYYYYYYYZk',
+  'kXYYYYYYYYZk',
+  'kXYYYYYYYYZk',
+  'kXYkkYYkkZZk',
+  'kXYYYYYYYYZk',
+  'kXYwkYYwkZZk',
+  'kXYYYYYYYZZk',
+  'kXYYYXZYYZZk',
+  'kXYYYYYYYZZk',
+  'kXYYYkkYYZZk',
+  'kXYYYYYYYZZk',
+  '.kXYYYYYYZk.',
+  '..kkkkkkkk..',
+];
+const HEAD_G: string[] = [ // cara larga y enjuta: sienes angostas, pómulos marcados, mentón en punta
+  '...kkkkkk...',
+  '..kXYYYYZk..',
+  '.kXYYYYYYZk.',
+  '.kXYYYYYYZk.',
+  'kXYYYYYYYYZk',
+  'kXYkkYYkkZZk',
+  'kXYYYYYYYYZk',
+  'kXYwkYYwkZZk',
+  'kXZYYYYYYZZk',
+  '.kZYYXZYYZk.',
+  '.kXYYYYYYZk.',
+  '..kXYkkYZk..',
+  '..kXYYYYZk..',
+  '...kXYYZk...',
+  '....kZZk....',
+];
+/** Rasgos de la cara por personaje: lo que más distingue a un retrato de otro cuando la ropa se parece. */
+interface Look {
+  eyes?: 'white' | 'dark' | 'almond' | 'narrow' | 'big' | 'tired' | 'lash' | 'glow' | 'iris'; eyeC?: string;
+  brows?: 'thin' | 'thick' | 'arched' | 'raised' | 'angled' | 'heavy' | 'none'; browC?: string;
+  nose?: 'small' | 'button' | 'long' | 'broad' | 'hook';
+  mouth?: 'plain' | 'wide' | 'small' | 'full' | 'smirk' | 'frown' | 'tight';
+  extra?: ('wrinkles' | 'lines' | 'gaunt' | 'blush' | 'freckles' | 'stubble' | 'mole' | 'cleft')[];
+}
+function lookPatches(l: Look): Patch[] {
+  const e = l.eyeC ?? 'f', b = l.browC ?? 'k'; const B = (t: string) => t.replace(/k/g, b);
+  const out: Patch[] = [[9, 8, '__'], [13, 8, '__'], [9, 10, '__'], [13, 10, '__'], [11, 12, '__'], [11, 14, '__']]; // borra los rasgos de la plantilla
+  const eyes: Record<string, Patch[]> = {
+    white: [[9, 10, 'wk'], [13, 10, 'wk']], dark: [[9, 10, 'kk'], [13, 10, 'kk']],
+    almond: [[8, 10, 'Zwk'], [13, 10, 'wkZ'], [9, 9, 'kk'], [13, 9, 'kk']],
+    narrow: [[9, 10, 'kk'], [13, 10, 'kk'], [9, 9, 'ZZ'], [13, 9, 'ZZ']],
+    big: [[9, 9, 'wk'], [13, 9, 'wk'], [9, 10, 'kk'], [13, 10, 'kk']],
+    tired: [[9, 10, 'wk'], [13, 10, 'wk'], [9, 11, 'ZZ'], [13, 11, 'ZZ']],
+    lash: [[8, 9, 'kkk'], [13, 9, 'kkk'], [9, 10, 'w' + e], [13, 10, e + 'w']],
+    glow: [[9, 10, e + e], [13, 10, e + e]], iris: [[9, 10, 'w' + e], [13, 10, e + 'w']],
+  };
+  const brows: Record<string, Patch[]> = {
+    thin: [[9, 8, 'kk'], [13, 8, 'kk']], thick: [[8, 8, 'kkk'], [13, 8, 'kkk']],
+    arched: [[9, 7, '.k'], [8, 8, 'k'], [13, 7, 'k.'], [15, 8, 'k']], raised: [[9, 8, 'kk'], [13, 7, 'kk']],
+    angled: [[9, 8, 'k'], [10, 9, 'k'], [14, 8, 'k'], [13, 9, 'k']], heavy: [[8, 8, 'kkkk'], [12, 8, 'kkkk'], [8, 9, 'k'], [15, 9, 'k']], none: [],
+  };
+  const nose: Record<string, Patch[]> = {
+    small: [[11, 12, 'XZ']], button: [[12, 12, 'Z']], long: [[12, 10, 'Z'], [12, 11, 'Z'], [11, 12, 'XZ'], [11, 13, 'kk']],
+    broad: [[10, 12, 'XYZZ'], [10, 13, 'k..k']], hook: [[12, 10, 'Z'], [12, 11, 'Z'], [12, 12, 'ZZ'], [12, 13, 'k']],
+  };
+  const mouth: Record<string, Patch[]> = {
+    plain: [[11, 14, 'kk']], wide: [[10, 14, 'kkkk']], small: [[11, 14, 'k']], full: [[11, 14, 'RR'], [11, 15, 'Z']],
+    smirk: [[10, 14, 'kkk'], [13, 13, 'k']], frown: [[10, 15, 'k'], [11, 14, 'kk'], [13, 15, 'k']], tight: [[10, 14, 'kkkk'], [11, 15, 'ZZ']],
+  };
+  const extra: Record<string, Patch[]> = {
+    wrinkles: [[9, 6, 'Z.ZZ.Z'], [9, 13, 'Z'], [14, 13, 'Z'], [8, 10, 'Z'], [15, 10, 'Z']], lines: [[9, 13, 'Z'], [14, 13, 'Z']],
+    gaunt: [[8, 12, 'Z'], [8, 13, 'Z'], [15, 12, 'Z'], [15, 13, 'Z']], blush: [[8, 12, 'p'], [15, 12, 'p']],
+    freckles: [[8, 11, 'Z.Z'], [13, 11, 'Z.Z']], stubble: [[9, 15, 't.t.t.'], [10, 16, 't.t.']], mole: [[14, 13, 'k']], cleft: [[11, 16, '.Z']],
+  };
+  out.push(...(eyes[l.eyes ?? 'white'] ?? []), ...(brows[l.brows ?? 'thin'] ?? []).map(([x, y, t]) => [x, y, B(t)] as Patch), ...(nose[l.nose ?? 'small'] ?? []), ...(mouth[l.mouth ?? 'plain'] ?? []));
+  for (const x of l.extra ?? []) out.push(...extra[x]);
+  return out;
+}
 const EARS: Layer[] = [[4, 9, ['.k', 'kX', 'kY', '.k']], [18, 9, ['k.', 'Zk', 'Zk', 'k.']]];
 const BODY: string[] = [
   '.....kkkkkkYZkkkkkk.....',
@@ -80,6 +158,7 @@ const BODY_N: string[] = [ // hombros angostos
   '..kPPPPPPPPOOQQQQQQQQk..',
 ];
 const FACE: Face = { x1: 9, x2: 13, y: 10, mx: 10, my: 14 };
+const HEADS = new Set<string[]>([HEAD, HEAD_F, HEAD_R, HEAD_G]);
 const head = (rows = HEAD): Layer => [6, 3, rows];
 const body = (rows = BODY): Layer => [0, 18, rows];
 
@@ -87,7 +166,8 @@ const body = (rows = BODY): Layer => [0, 18, rows];
 const D: Record<string, Def> = {
   // Pact Risen — aasimar: piel de oro pálido, halo, alas a la espalda, cicatriz en la mejilla.
   pact: {
-    theme: 'market', bg: 'D', glow: 'e', map: { X: 'b', Y: 'A', Z: 'a', P: 'e', Q: 'D', O: 'f' }, face: FACE,
+    look: { eyes: 'iris', eyeC: 'S', brows: 'thin', browC: 't', nose: 'long', mouth: 'tight', extra: ['cleft'] },
+    theme: 'market', bg: 'D', glow: 'W', map: { X: 'b', Y: 'A', Z: 'a', P: 'e', Q: 'D', O: 'f' }, face: FACE,
     layers: [
       [0, 9, ['.....k', '....kw', '...kwb', '..kwbb', '.kwbbA', 'kwbbAk', 'kwbAkw', 'kbAkwb', 'kAkwbA', 'kkwbAk', '.kbAk.']],
       [18, 9, ['k.....', 'ak....', 'Aak...', 'AAak..', 'aAAak.', 'kaAAak', 'akaAak', 'Aakaak', 'aAakak', 'kaAakk', '.kaak.']],
@@ -100,9 +180,10 @@ const D: Record<string, Def> = {
   },
   // Romain — tiefling de piel roja, cuernos, clérigo de la tumba; la balanza en el pecho.
   romain: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'r', Y: 'r', Z: 'R', P: 'D', Q: 'd', O: 'D' }, face: FACE,
+    look: { eyes: 'white', brows: 'angled', nose: 'hook', mouth: 'smirk', extra: ['gaunt'] },
+    theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'r', Y: 'r', Z: 'R', P: 'D', Q: 'd', O: 'D' }, face: FACE,
     layers: [
-      body(), head(), [4, 9, ['.k', 'kr', 'kr', '.k']], [18, 9, ['k.', 'Rk', 'Rk', 'k.']],
+      body(), head(HEAD_G), [4, 9, ['.k', 'kr', 'kr', '.k']], [18, 9, ['k.', 'Rk', 'Rk', 'k.']],
       [6, 3, ['..kkkkkkkk..', '.kdDDDDDddk.', 'kdDDDDDDDddk', 'kDXYYYYYYZdk', 'kdXYYYYYYZdk']],
       [2, 0, ['.kk....', 'kbAk...', 'kbAk...', 'kbAAk..', '.kbAAkk', '..kbAAA', '...kkbA']], [15, 0, ['....kk.', '...kAak', '...kAak', '..kAaak', 'kkAaak.', 'AAaak..', 'Aakk...']],
       [9, 10, ['f']], [13, 10, ['f']],
@@ -111,9 +192,10 @@ const D: Record<string, Def> = {
   },
   // Rabb Locke — brujo encapuchado, violeta, la cara en sombra; la empuñadura de la espada al hombro.
   rabb: {
-    theme: 'sanctum', bg: 'd', glow: 'D', map: { X: 'e', Y: 'D', Z: 'd', P: 'V', Q: 'd', O: 'v' }, face: { ...FACE, brow: 'k' },
+    look: { eyes: 'narrow', brows: 'none', nose: 'long', mouth: 'small' },
+    theme: 'sanctum', bg: 'd', glow: 'G', map: { X: 'e', Y: 'D', Z: 'd', P: 'V', Q: 'd', O: 'v' }, face: { ...FACE, brow: 'k' },
     layers: [
-      body(), head(),
+      body(), head(HEAD_G),
       [4, 1, ['.....kkkkkk.....', '....kvvvvVVk....', '...kvvvVVVVVk...', '..kvvVVVVVVVVk..', '.kvVkkkkkkkkVVk.',
         '.kvVkddddddkVVk.', '.kvVk......kVVk.', '.kvV........VVk.', '.kvV........VVk.', '.kvV........VVk.', '.kvV........VVk.',
         '.kvV........VVk.', '.kvV........VVk.', '.kvVk......kVVk.', '.kvVVk....kVVVk.', '.kvvVVkkkkVVVVk.', 'kvvVVVVVVVVVVVVk']],
@@ -124,7 +206,8 @@ const D: Record<string, Def> = {
   },
   // Joren Hell — capucha verde de explorador, barba de tres días, carcaj al hombro.
   joren: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'S', Q: 's', O: 't' }, face: FACE,
+    look: { eyes: 'narrow', brows: 'thick', nose: 'broad', mouth: 'smirk' },
+    theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', P: 'S', Q: 's', O: 't' }, face: FACE,
     layers: [
       [16, 10, ['...kbk', '..kbrk', '.kbrk.', 'kttk..', 'kstk..', 'kstk..', 'kstk..']],
       body(), head(), ...EARS,
@@ -137,12 +220,13 @@ const D: Record<string, Def> = {
   },
   // Zyr'thar — drow: piel oscura, pelo blanco largo, ojos rojos, orejas en punta.
   zyrthar: {
-    theme: 'crater', bg: 'd', glow: 'S', map: { X: 'a', Y: 't', Z: 'S', P: 'D', Q: 'd', O: 'V' }, face: { ...FACE, brow: 'w' },
+    look: { eyes: 'almond', brows: 'thin', browC: 'w', nose: 'small', mouth: 'small' },
+    theme: 'crater', bg: 'd', glow: 'W', map: { X: 'a', Y: 't', Z: 'S', P: 'D', Q: 'd', O: 'V' }, face: { ...FACE, brow: 'w' },
     layers: [
       body(),
       [3, 5, ['..kwk', '.kwbk', '.kwbk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwAk.', 'kwAk.', 'kwAk.', 'kAk..', 'kk...']],
       [16, 5, ['kAk..', 'kAAk.', 'kAAk.', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', '.kAAk', '.kAAk', '.kAAk', '..kAk', '...kk']],
-      head(),
+      head(HEAD_G),
       [1, 8, ['kk...', 'kak..', '.kaak', '..kkk']], [18, 8, ['...kk', '..kSk', 'kSSk.', 'kkk..']],
       [6, 2, ['..kkkkkkkk..', '.kwwwwwwbbk.', 'kwwwwwwwbbAk', 'kwwbbbwwbAAk', 'kwbXYYYbbAAk', 'kwXYYYYYYAAk', 'kwXYYYYYYZAk']],
       [9, 8, ['ww']], [13, 8, ['ww']], [9, 10, ['rk']], [13, 10, ['rk']],
@@ -151,9 +235,10 @@ const D: Record<string, Def> = {
   },
   // Panchi — enano monje: calvo con vincha roja, barba naranja enorme.
   panchi: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'r', Q: 'R', O: 'k' }, face: { ...FACE, mouth: 'f' },
+    look: { eyes: 'dark', brows: 'heavy', browC: 'R', nose: 'broad', mouth: 'wide' },
+    theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'A', Y: 'a', Z: 't', P: 'r', Q: 'R', O: 'k' }, face: { ...FACE, mouth: 'f' },
     layers: [
-      body(), head(), [3, 9, ['.k', 'kX', 'kY', 'kY', '.k']], [19, 9, ['k.', 'Zk', 'Zk', 'Zk', 'k.']],
+      body(), head(HEAD_R), [3, 9, ['.k', 'kX', 'kY', 'kY', '.k']], [19, 9, ['k.', 'Zk', 'Zk', 'Zk', 'k.']],
       [6, 3, ['...kkkkkk...', '..kbAYYYZk..', '.kXbYYYYYZk.', 'krrrrrrrrRRk', 'kRRRRRRRRRRk']],
       [17, 6, ['krk.', 'kRrk', '.kRk', '..kk']],
       [5, 12, [
@@ -235,9 +320,10 @@ const D: Record<string, Def> = {
   },
   // Dahhak — el hombre de los cuellos: dos serpientes le brotan de los hombros.
   dahhak: {
+    look: { eyes: 'glow', eyeC: 'r', brows: 'angled', nose: 'hook', mouth: 'frown', extra: ['wrinkles'] },
     theme: 'ruins', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'D', Q: 'd', O: 'f' }, face: FACE,
     layers: [
-      body(), head(), ...EARS,
+      body(), head(HEAD_G), ...EARS,
       [6, 1, ['.kf..ff..fk.', '.kfk.ff.kfk.', '.kfffffffak.', '.kfrffffrak.', 'kkkkkkkkkkkk', 'keDDDDDDDddk', 'keXYYYYYYZdk', 'kdXYYYYYYZdk']],
       [7, 15, ['k.kkkk.k..', 'keDDDDDdk.', '.keDDDdk..', '..keDdk...', '...kdk....']],
       [10, 15, ['kk']],
@@ -247,7 +333,8 @@ const D: Record<string, Def> = {
   },
   // Aisha — pañuelo ciruela, ojeras de no dormir.
   aisha: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'S', Q: 's', O: 'p' }, face: FACE,
+    look: { eyes: 'lash', eyeC: 'S', brows: 'arched', nose: 'small', mouth: 'small', extra: ['freckles'] },
+    theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', P: 'S', Q: 's', O: 'p' }, face: FACE,
     layers: [
       body(BODY_N), head(HEAD_F),
       [4, 1, ['.....kkkkkk.....', '....kppVVVVk....', '...kpVVVVVVVk...', '..kpVVVVVVVVVk..', '.kpVkkkkkkkkVVk.', '.kpVkdddddddkVk.',
@@ -258,9 +345,10 @@ const D: Record<string, Def> = {
   },
   // EaNassr — mercader: turbante blanco con gema, bigote fino, aro de oro.
   eanassr: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'a', Y: 't', Z: 'S', P: 'A', Q: 'a', O: 'W' }, face: FACE,
+    look: { eyes: 'white', brows: 'raised', nose: 'hook', mouth: 'smirk', extra: ['mole'] },
+    theme: 'tavern', bg: 'd', glow: 'G', map: { X: 'a', Y: 't', Z: 'S', P: 'A', Q: 'a', O: 'W' }, face: FACE,
     layers: [
-      body(), head(), ...EARS, [4, 12, ['f']],
+      body(), head(HEAD_R), ...EARS, [4, 12, ['f']],
       [5, 0, ['......kkkk......', '....kkbbbAkk....', '...kbbwwbbAAk...', '..kbwwbbbbAAAk..', '.kbwbbbkfkbAAAk.', '.kbbbbAkfkAAAak.', 'kbbbbAAAkAAAAaak', 'kkkkkkkkkkkkkkkk']],
       [6, 7, ['kXYYYYYYYYZk']],
       [8, 13, ['.kkkkkk.', 'k......k']], [11, 15, ['kk', 'kk']],
@@ -269,7 +357,8 @@ const D: Record<string, Def> = {
   },
   // Farid — niño enfermo, piel translúcida, ojos grandes y ojerosos.
   farid: {
-    theme: 'mirror', bg: 'd', glow: 'D', map: { X: 'w', Y: 'b', Z: 'A', P: 'a', Q: 't', O: 't' }, face: { ...FACE, y: 12, my: 16 },
+    look: { eyes: 'big', brows: 'none', nose: 'button', mouth: 'small' },
+    theme: 'mirror', bg: 'd', glow: 'W', map: { X: 'w', Y: 'b', Z: 'A', P: 'a', Q: 't', O: 't' }, face: { ...FACE, y: 12, my: 16 },
     layers: [
       body(BODY_N), [6, 5, HEAD_F],
       [4, 11, ['.k', 'kX', 'kY', '.k']], [18, 11, ['k.', 'Zk', 'Zk', 'k.']],
@@ -279,7 +368,8 @@ const D: Record<string, Def> = {
   },
   // Sifra (Ellie) — guerrera alta de hombros anchos, venda en la frente, quemaduras del cuello a la oreja.
   sifra: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'e', Q: 'D', O: 't' }, face: FACE,
+    look: { eyes: 'narrow', brows: 'thick', nose: 'broad', mouth: 'tight' },
+    theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'A', Y: 'a', Z: 't', P: 'e', Q: 'D', O: 't' }, face: FACE,
     layers: [
       body(['....kkkkkkkYZkkkkkkk....', '.kkeeeeekkkYZkkkDDDDDkk.', 'keeeeeeeeekkkkDDDDDDDDDk', 'keeeeeeeekttttkDDDDDDDDk', 'keeeeeetttkkktttDDDDDDDk', 'keeeeekkk.....kkkDDDDDDk']),
       head(), ...EARS,
@@ -290,7 +380,7 @@ const D: Record<string, Def> = {
   },
   // Nadir — gnomo guía: gorro verde con antiparras, nariz grande, bigote.
   nadir: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'g', Q: 'G', O: 't' }, face: { ...FACE, y: 11, my: 15, mouth: 'S', brow: 'b' },
+    theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', P: 'g', Q: 'G', O: 't' }, face: { ...FACE, y: 11, my: 15, mouth: 'S', brow: 'b' },
     layers: [
       body(BODY_N), [6, 4, HEAD],
       [2, 9, ['kk..', 'kXk.', '.kYk', '..kk']], [18, 9, ['..kk', '.kZk', 'kZk.', 'kk..']],
@@ -302,10 +392,11 @@ const D: Record<string, Def> = {
   },
   // Kethras — el hombre del bastón: túnica rojo oscuro, barba gris, cristal en el bastón.
   kethras: {
-    theme: 'ruins', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'R', Q: 'd', O: 'f' }, face: { ...FACE, mouth: 'A', brow: 'b' },
+    look: { eyes: 'tired', brows: 'heavy', browC: 'b', nose: 'long', mouth: 'plain', extra: ['wrinkles'] },
+    theme: 'ruins', bg: 'd', glow: 'G', map: { X: 'A', Y: 'a', Z: 't', P: 'R', Q: 'd', O: 'f' }, face: { ...FACE, mouth: 'A', brow: 'b' },
     layers: [
       [19, 0, ['.kk.', 'kvwk', 'kvVk', '.kk.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.'].map(r => r.replace(/^\.k(.)\.$/, '.k$1k'))],
-      body(), head(),
+      body(), head(HEAD_G),
       [4, 1, ['.....kkkkkk.....', '....krrRRRRk....', '...krrRRRRRRk...', '..krRRRRRRRRRk..', '.krRkkkkkkkkRRk.', '.krRkXYYYYYZkRk.', '.krRk......kRRk.', '.krR........RRk.', '.krR........RRk.', '.krR........RRk.', '.krR........RRk.']],
       [9, 9, ['bb..bb']],
       [7, 13, ['kA......tk', 'kAAA..AAtk', '.kAAAAAAtk', '.kAAAAAAtk', '..kAAAAtk.', '..kAAAAtk.', '...kAAtk..', '....kkk...']],
@@ -314,7 +405,8 @@ const D: Record<string, Def> = {
   },
   // Capitana Samira — guardia imperial: hombreras doradas, capa roja, pelo negro atado.
   samira: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'a', Y: 't', Z: 'S', P: 'f', Q: 'a', O: 'R' }, face: FACE,
+    look: { eyes: 'almond', brows: 'angled', nose: 'small', mouth: 'tight' },
+    theme: 'tavern', bg: 'd', glow: 'W', map: { X: 'a', Y: 't', Z: 'S', P: 'f', Q: 'a', O: 'R' }, face: FACE,
     layers: [
       [16, 4, ['.kk.', 'kedk', 'kek.', 'kdk.', '.kek', '.kdk', '.kek', 'kdk.', 'kRk.', '.k..']],
       body(['.....kkkkkkYZkkkkkk.....', '.kkkkkRRRkkkkkkRRRkkkkk.', 'kffffkRRRRkkkkRRRRkaaaak', 'kffffakRRRRRRRRRRkaaaaak', '.kfaakkRRfRRRRfRRkkaaak.', 'kkkkkRRRRRRRRRRRRRRkkkkk']),
@@ -324,7 +416,8 @@ const D: Record<string, Def> = {
   },
   // Lady Nafisa — noble madura: peinado alto con joyas, aros y collar.
   nafisa: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'p', Q: 'V', O: 'f' }, face: FACE,
+    look: { eyes: 'lash', eyeC: 'V', brows: 'arched', nose: 'long', mouth: 'full', extra: ['lines'] },
+    theme: 'tavern', bg: 'd', glow: 'G', map: { X: 'A', Y: 'a', Z: 't', P: 'p', Q: 'V', O: 'f' }, face: FACE,
     layers: [
       body(BODY_N), head(HEAD_F), ...EARS, [4, 12, ['f', 'p']], [19, 12, ['f', 'p']],
       [5, 0, ['....kkkkkkkk....', '...kDeeeeeeDk...', '..kDeeefpfeeDk..', '..kDeeeefeeeDk..', '.kDeeeeeeeeeDDk.', '.kDXXYYYYYYZDDk.', 'kDeXYYYYYYYYZDDk']],
@@ -334,7 +427,8 @@ const D: Record<string, Def> = {
   },
   // genéricos: guardia (casco con nasal y penacho), gente del Bajo (pañuelo), acólito (capucha y máscara blanca).
   guardia: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', A: 'M', a: 'N', t: 'L', s: 'L', S: 'e', O: 'r' }, face: { ...FACE, x1: 9, x2: 13 },
+    look: { eyes: 'dark', brows: 'thick', nose: 'broad', mouth: 'tight', extra: ['stubble'] },
+    theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', A: 'M', a: 'N', t: 'L', s: 'L', S: 'e', O: 'r' }, face: { ...FACE, x1: 9, x2: 13 },
     layers: [
       [10, 0, ['.kk.', 'krrk', 'krRk', '.kk.']],
       body(['.....kkkkkkYZkkkkkk.....', '...kkAAaaakkkktttssskk...', '..kAAaaaaaaakkttttssssk..', '.kAaakkkkkkkkkkkkkkssssk.', '.kaaaaaaaaaaaattttssssk.', 'kaaaaaaaaaaattttttssssk']),
@@ -345,9 +439,10 @@ const D: Record<string, Def> = {
     ],
   },
   vecino: {
-    theme: 'tavern', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'a', Q: 't', O: 'S' }, face: FACE,
+    look: { eyes: 'white', brows: 'thin', nose: 'button', mouth: 'wide', extra: ['blush', 'freckles'] },
+    theme: 'tavern', bg: 'd', glow: 'e', map: { X: 'A', Y: 'a', Z: 't', P: 'a', Q: 't', O: 'S' }, face: FACE,
     layers: [
-      body(), head(), ...EARS,
+      body(), head(HEAD_R), ...EARS,
       [5, 2, ['...kkkkkkkk...', '..kAAAAaaattk.', '.kAAaaaaaaattk', 'kAaaaaaaaaattk', 'kkkkkkkkkkkkkk', 'k.dXYYYYYYZd.k'].map(r => r.slice(0, 14))],
       [6, 7, ['kd', 'kd']], [16, 7, ['dk', 'dk']],
       [9, 15, ['t.t.t.']],
@@ -391,14 +486,21 @@ function grid(id: string): string[][] {
   const d = D[id];
   g = d.from ? grid(d.from).map(r => r.map(ch => d.recolor?.[ch] ?? ch)) : Array.from({ length: N }, () => Array<string>(N).fill('.'));
   const map = d.map ?? {};
-  for (const [x, y, rows, flip] of d.layers) rows.forEach((row, j) => {
-    const w = row.length;
-    for (let i = 0; i < w; i++) {
-      const ch = row[flip ? w - 1 - i : i]; if (ch === '.' || ch === ' ') continue;
-      const X = x + i, Y = y + j; if (X < 0 || Y < 0 || X >= N || Y >= N) continue;
-      g![Y][X] = map[ch] ?? ch;
+  for (const [x, y, rows, flip] of d.layers) {
+    rows.forEach((row, j) => {
+      const w = row.length;
+      for (let i = 0; i < w; i++) {
+        const ch = row[flip ? w - 1 - i : i]; if (ch === '.' || ch === ' ') continue;
+        const X = x + i, Y = y + j; if (X < 0 || Y < 0 || X >= N || Y >= N) continue;
+        g![Y][X] = map[ch] ?? ch;
+      }
+    });
+    // rasgos propios sobre la cabeza recién puesta (desplazados si la cabeza no está en su lugar de siempre)
+    if (d.look && HEADS.has(rows)) for (const [px, py, t] of lookPatches(d.look)) for (let i = 0; i < t.length; i++) {
+      const ch = t[i]; if (ch === '.') continue; const X = px + i + x - 6, Y = py + y - 3; if (X < 0 || Y < 0 || X >= N || Y >= N) continue;
+      const c = ch === '_' ? 'Y' : ch; g![Y][X] = map[c] ?? c;
     }
-  });
+  }
   gridCache.set(id, g); return g;
 }
 const defOf = (id: string): Def => { const d = D[id]; return d.from ? { ...D[d.from], ...d, layers: d.layers, ex: { ...D[d.from].ex, ...d.ex } } : d; };

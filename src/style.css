@@ -381,3 +381,9 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 #log .bark { color: #f3e6c4; font-family: Georgia, serif; font-style: italic; border-left: 2px solid rgba(232,200,114,.6); padding-left: 6px; margin: 2px 0; }
 /* elecciones largas: el cuadro de diálogo no se sale de la pantalla; las opciones se desplazan dentro */
 .dialog { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
+
+/* El diálogo tiene scroll (overflow): un retrato que asoma por arriba queda cortado, así que va dentro de la caja.
+   Los retratos en pixel art son bustos cuadrados: esquinas redondeadas en vez de círculo para no recortar hombros ni cuernos. */
+.dialog .portrait { margin-top: 0; }
+.portrait.pix { border-radius: 14px; }
+@media (max-width: 600px) { .dialog .portrait { width: 76px; height: 76px; } .dialog .row { gap: 12px; } }

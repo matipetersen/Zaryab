@@ -83,7 +83,7 @@ export class StoryUI {
     const row = h('div', { class: 'row' });
     // modo diorama: retrato en pixel art con la expresión que sugiere el tono; si no hay, el retrato/emblema de siempre
     const pix = who && dioramaPref() ? pixPortrait(who, tone) : null;
-    if (pix) row.append(h('div', { class: 'portrait', style: { background: `url(${pix}) center/cover`, imageRendering: 'pixelated' } }));
+    if (pix) row.append(h('div', { class: 'portrait pix', style: { background: `url(${pix}) center/cover`, imageRendering: 'pixelated' } }));
     else if (sp) { const url = portraitUrl(sp.img ?? slug(who!)); const p = h('div', { class: 'portrait', style: { background: url ? `url(${url}) center/cover` : sp.color } }, url ? '' : sp.glyph); row.append(p); }
     row.append(body); this.dlg.append(row); if (extra) this.dlg.append(extra);
     const hint = h('div', { class: 'hint' }, (window.matchMedia?.('(hover: none)').matches ? 'tocá para continuar' : 'clic · espacio para continuar')); this.dlg.append(hint);
