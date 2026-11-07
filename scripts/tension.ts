@@ -17,7 +17,7 @@ import { CAMPFIRE_SCENES } from '../src/story/campfire';
 
 const PCS = ['romain', 'pact', 'rabb', 'joren', 'zyrthar', 'panchi'] as const;
 const NAME: Record<string, RegExp> = { romain: /\bRomain\b/, pact: /\bPact\b/, rabb: /\bRabb\b/, joren: /\bJoren\b/, zyrthar: /Zyr'?thar/, panchi: /\bPanchi\b/ };
-const LEX = /\b(muer\w*|muert\w*|mat(a|ar|ó|aron|en)\b|asesin\w*|sangr\w*|grit\w*|llor\w*|lágrim\w*|miedo|terror|aterr\w*|caíd\w*|cae\b|cayó|golpe\w*|ard(e|en|ía)|fuego|llamas|venen\w*|traici\w*|mient\w*|mentir\w*|herid\w*|dolor|duele|sacrific\w*|desesper\w*|rabia|furi\w*|tiembl\w*|cadáver\w*|tumba\w*|ejecut\w*|ahorc\w*|cuchill\w*|ghul\w*|lich|monstruo\w*|perd(er|ió|ido|imos)|huir|huye|grieta|derrumb\w*|eclipse|fiebre|apag(a|ó|an)|niño\w* muert\w*)\b/gi;
+const LEX = /\b(muer(e|en|o|es|a|as|an)\b|muert\w*|mat(a|ar|ó|aron|en)\b|asesin\w*|sangr\w*|grit\w*|llor\w*|lágrim\w*|miedo|terror|aterr\w*|caíd\w*|cae\b|cayó|golpe\w*|ard(e|en|ía)|fuego|llamas|venen\w*|traici\w*|mient(e|o|en|es|a|as|an)\b|mentir\w*|herid\w*|dolor|duele|sacrific\w*|desesper\w*|rabia|furi\w*|tiembl\w*|cadáver\w*|tumba\w*|ejecut\w*|ahorc\w*|cuchill\w*|ghul\w*|lich|monstruo\w*|perd(er|ió|ido|imos)|huir|huye|grieta|derrumb\w*|eclipse|fiebre|apag(a|ó|an)|niño\w* muert\w*)\b/gi;
 
 interface P { who?: string; text: string; boost?: Record<string, number> }
 function flat(ns: Node[] | undefined, out: P[] = []): P[] {
