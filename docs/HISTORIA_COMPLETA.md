@@ -12,18 +12,18 @@ Antes de la ciudad hubo un pájaro. Los viejos del desierto lo llaman Simurg y d
 
 Zaryab se levantó sobre la ausencia: un cuenco de adobe y mármol donde el viento llega por turnos y el agua se reparte con ceremonia. Se llama a sí misma eterna. Es una ciudad que repite una frase para no oír el silencio de debajo.
 
-Seis forasteros se acercan a la ciudad sin saber que ya los están esperando.
+Siete forasteros se acercan a la ciudad sin saber que ya los están esperando: seis compañeros y el gnomo que los guía.
 
 
 ## Capítulo 0
 
 ### Prólogo — Cinco Días de Arena — *El desierto · Camino a Zaryab*
 
-Seis viajeros curtidos por el camino: Pact, Romain, Rabb, Joren, Zyr'thar y Panchi. Llevan semanas cruzando el desierto y hasta ahora no pasó nada grave: algún bandido, alguna bestia que se anima a atacar de noche. Un viaje como cualquier otro.
+Siete viajeros curtidos por el camino: seis compañeros —Pact, Romain, Rabb, Joren, Zyr'thar y Panchi— y Nadir, el gnomo que los guía. Llevan semanas cruzando el desierto y hasta ahora no pasó nada grave: algún bandido, alguna bestia que se anima a atacar de noche. Un viaje como cualquier otro.
 
 **Nadir** *(el gnomo guía, frotándose la nariz)*: Cinco días más y llegamos a Zaryab. Lo calculé dos veces… y las dos me dio lo mismo.
 
-Acampan al reparo de unas rocas negras. La arena está blanca y fría. Alguien se queda de guardia… y alguien más, que no tendría que haberse dormido, se durmió.
+Acampan al reparo de unas rocas blancas. La arena está blanca y fría. Alguien se queda de guardia… y alguien más, que no tendría que haberse dormido, se durmió.
 
 ⚔ **Combate:** `noche`
 
@@ -61,7 +61,7 @@ Todo cambia cuando se levanta el viento. Primero es una brisa, después una vent
 > 
 Por suerte o por oficio, Pact distingue a lo lejos lo que parecen cuatro pilares torcidos, quebrados, golpeados por la arena. Cuando el viento por fin se calma, el lugar se ve completo: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.
 
-Un cielo gris, de eclipse, sin sol ni estrellas, lo baña todo con una luz de ceniza que no deja sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas negras brotan líquenes violetas. El pilar más alto se alza torcido, como un hueso mal soldado; otro está partido a media altura, como si algo enorme lo hubiera golpeado.
+Un cielo gris, de eclipse, sin sol ni estrellas, lo baña todo con una luz de ceniza que no deja sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas brotan líquenes violetas. El pilar más alto se alza torcido, como un hueso mal soldado; otro está partido a media altura, como si algo enorme lo hubiera golpeado.
 
 El aire huele a hierro oxidado y a ozono y, por debajo, a fruta podrida y a incienso viejo que sube de las vetas violetas. Hay un zumbido muy bajo que se siente más en el pecho que en los oídos. El viento silba en las grietas de la piedra como un lamento.
 
@@ -271,6 +271,16 @@ Zahir extiende las manos. Un contrato etéreo aparece ante ustedes: sin palabras
 
 Despiertan en un callejón, con carteles de «SE BUSCAN HEREJES» y el sonido de campanas lejanas. Sus heridas están cerradas. En el reflejo de un charco, por un instante, ven alas oscuras a sus espaldas.
 
+**Panchi** *(tocándose el cuello, donde no queda marca)*: Nos colgaron. A mí. A un monje de Qadir-Kalmah, con soga y todo, delante de una plaza llena. Quiero el nombre del verdugo. No para matarlo. Bueno, un poco para matarlo.
+
+Zyr'thar se queda quieta en la boca del callejón. Su sombra tarda un latido en seguirla, como un perro que se demora oliendo algo. Nadie más lo nota. Ella sí, y por primera vez en años tiene miedo de algo que no puede apuñalar.
+
+**Zyr'thar** *(en voz muy baja, para nadie)*: Mi sombra llegó tarde. Las sombras no llegan tarde.
+
+**Joren Hell** *(contando con los dedos, dos veces)*: Somos seis. Éramos siete en el desierto. ¿Dónde está Nadir?
+
+**Joren Hell** *(sin bajar la mano)*: La última vez que conté y me faltaba uno fue en La Marca. No me gusta este número.
+
 
 ### Entreacto (cap1)
 
@@ -434,6 +444,46 @@ La choza de Aisha es un ataúd de adobe. Farid respira con dificultad en una est
 
 Establecen la biblioteca como base y primera iglesia del Simurg. Aisha y Farid cuidan del santuario. Con sus primeros adeptos, el cristal de Zahir les otorga poderes nuevos.
 
+### La primera noche en el Bajo — *La puerta de la choza de Aisha*
+
+Esa noche nadie duerme. En el Bajo se oye morir a alguien cada tanto, una tos que se apaga detrás de una pared. Romain cuenta las toses. Cuando llega a nueve, deja de contar.
+
+**Romain** *(sentado en el umbral, la balanza vacía sobre las rodillas)*: Kelemvor solía decirme quién se iba. Esta noche no me dice nada. O no me oye, o ya no hablo su idioma.
+
+Rabb tiene la espada apoyada contra la pared. Cada vez que la sombra de Farid se mueve en el jergón, la hoja vibra un poco, como un perro que reconoce un olor. Rabb le pone la mano encima para callarla y la hoja le corta la palma. No mucho. Lo suficiente.
+
+**Rabb Locke** *(chupándose la sangre del corte)*: Conoce algo de ese chico. O de lo que tenía adentro. No me quiere decir qué.
+
+**✦ Elección:** La hoja sigue vibrando cada vez que la sombra de Farid se mueve.
+
+> **1. Rabb: sacar la espada de la choza y dormir afuera con ella**
+> <small>pista: «Que no esté cerca del chico. El frío del Bajo de noche mata.» · Devoción +1 · marca: rabb_aleja_hoja</small>
+> 
+> Rabb duerme en la calle, abrazado a la espada envuelta, con el miedo de despertarse con ella desenvainada. A la madrugada tiene los labios azules y la hoja está tibia, como si lo hubiera cuidado. No sabe qué pensar de eso.
+> 
+> **2. Rabb: apoyar la hoja junto a Farid para ver qué hace**
+> <small>pista: «Saber, aunque cueste.» · Corrupción +1 · marca: rabb_prueba_hoja</small>
+> 
+> La hoja se calla de golpe. La sombra de Farid también. Durante un minuto entero, ni el chico ni la espada respiran. Aisha se despierta gritando, y Rabb retira la hoja con las manos temblando. Nunca le va a contar a nadie lo que sintió en ese minuto: hambre, y no era suya.
+> 
+Pact no puede quedarse quieto: las alas le pican debajo de la piel, como cuando se acerca una tormenta. Joren, en la puerta, ve pasar a dos sacerdotes del Conclave. Marcan con tiza las casas donde hay chicos enfermos. La de Aisha ya tiene una cruz.
+
+**✦ Elección:** Los sacerdotes siguen calle abajo, marcando puertas.
+
+> **1. Joren: seguirlos sin que lo vean (Sigilo)**
+> <small>pista: «Saber adónde llevan a los chicos marcados. Si lo ven, vuelven con guardias.» · 🎲 Sigilo CD 12 (joren) · Devoción +1 · marca: joren_sigue_marcas</small>
+> 
+> Joren los sigue tres calles, pegado a las paredes. Los sacerdotes entran a un pozo seco y salen sin el balde. Esa noche aprende dos cosas: dónde guarda el Conclave el veneno, y que todavía sabe moverse como en La Marca. No sabe cuál de las dos lo asusta más.
+> 
+> **Si falla:** alerta +1
+> 
+> Un sacerdote se da vuelta justo cuando Joren pisa un vidrio. No grita. Sonríe y marca con tiza la pared que está al lado de Joren, a la altura de su cara. Después se va. Joren tarda una hora en volver a la choza.
+> 
+> **2. Borrar la cruz de la puerta de Aisha**
+> <small>pista: «Que no vuelvan por Farid.» · Devoción +1 · marca: cruz_borrada</small>
+> 
+> Pact la borra con la manga. Panchi, sin decir nada, borra las de las tres casas de al lado. A la mañana siguiente, todas las cruces del barrio están borradas. Nadie sabe quién empezó.
+> 
 *[Zaryab se abre ante ustedes. Desde ahora pueden recorrer la ciudad, aceptar encargos y volver a la biblioteca. El tiempo corre: el Conclave los busca. — rep. hijos +1 · marca: cap2_done]*
 
 
@@ -601,6 +651,30 @@ Al pronunciarse el nombre de Azuran, una llamarada de energía dorada fracturada
 > Esa noche sueñan con el Simurg sobre una ciudad de huesos, y con tres djinns libres que miran hacia el este.
 > 
 
+### La marca en el Zoco — *De vuelta del acueducto*
+
+Volviendo del acueducto, Zyr'thar se detiene frente a una pared del Zoco. Alguien rayó ahí, con la punta de un cuchillo, un símbolo chico: una araña con una sola pata levantada. Para cualquiera es un garabato. Para ella es una firma.
+
+**Zyr'thar** *(sin tocar la pared)*: Vel'Shara. La Casa está en Zaryab. Y ese que firmó sabe que yo también.
+
+**Joren Hell** *(agachado, con los dedos en el polvo)*: Las huellas de abajo son de hace dos días. Botas blandas, paso corto. Te están siguiendo desde antes de que te colgaran.
+
+**Rabb Locke** *(con una mano sobre la empuñadura, como quien calma a un caballo)*: La hoja dice que conoce ese cuchillo. Que lo afiló una vez, con sangre de alguien que gritaba. Yo no me acuerdo. Ella sí.
+
+**Joren Hell** *(mirando hacia el camino por el que llegaron, donde quedó Nadir)*: Si la siguen desde antes del juicio, sabían que nos iban a colgar. Alguien nos vendió en el desierto.
+
+**✦ Elección:** La araña con una pata levantada quiere decir «te vimos». Zyr'thar tiene que contestar.
+
+> **1. Zyr'thar: tachar la marca con su propio cuchillo**
+> <small>pista: «Que la Casa sepa que no se esconde. Le van a cobrar el orgullo.» · Corrupción +1 · marca: zyr_contesta_casa</small>
+> 
+> Zyr'thar raya la araña con tres cortes cruzados, el signo de los que se fueron sin pedir permiso. Al terminar le tiembla la mano. Esa noche duerme con el cuchillo abierto y la espalda contra la pared.
+> 
+> **2. Dejarla y no volver por esa calle**
+> <small>pista: «Que crean que no la vio.» · Devoción +1 · marca: zyr_ignora_casa</small>
+> 
+> Siguen de largo. Zyr'thar no mira atrás, y es lo más difícil que hizo en semanas. Su sombra sí mira.
+> 
 *[Se abren el Jardín de los Suspiros y nuevos encargos. Las Si'lats han dejado un camino que sólo Pact puede seguir. — rep. mercaderes +1 · marca: cap3_done]*
 
 
@@ -765,6 +839,28 @@ Los Qilaat se alinean en anillos alrededor del Capitolio: «Protocolo 900. La Di
 
 **Dahhak**: ¿Querían un dios? Les traje uno. Uno con músculos de metal y alma de locura. Lucharán. O serán historia enterrada bajo la historia.
 
+Al salir del Cubo, cada uno se lleva algo que vio en los espejos y no lo cuenta. Joren vio a su hermano con la máscara de zorro, de espaldas, alejándose por un pasillo que no terminaba nunca. Lo llamó. El reflejo no se dio vuelta.
+
+**Joren Hell** *(mirando la puerta de obsidiana que ya se cerró)*: Si vuelvo a entrar, lo alcanzo. Sé que lo alcanzo.
+
+**Panchi** *(con los nudillos blancos)*: Yo vi a Ellie. Me miraba como se mira a un perro que mordió. No me dijo nada. Prefiero que me hubiera pegado.
+
+**✦ Elección:** La puerta del Cubo todavía late. Joren podría volver a entrar.
+
+> **1. Joren: volver a entrar a buscarlo**
+> <small>pista: «Los espejos cobran. Puede salir herido o no salir.» · 🎲 Percepción CD 13 (joren) · marca: joren_entra_cubo</small>
+> 
+> Joren entra solo. Sale media hora después, con un corte en la mejilla que nadie le vio hacerse y la máscara de zorro en la mano, de verdad, de madera. No dice de dónde la sacó. Esa noche la pone al lado de su almohada y duerme por primera vez en meses.
+> 
+> **Si falla:** Corrupción +1 · marca: joren_perdio_cubo
+> 
+> Joren no vuelve. Panchi entra a buscarlo y lo encuentra sentado frente a un espejo, hablándole a nadie, con las uñas rotas de arañar el vidrio. Lo saca a la rastra. Joren no se acuerda de nada y no deja que nadie le pregunte.
+> 
+> **2. Panchi: sacarlo de ahí a la fuerza**
+> <small>pista: «Antes de que alguno de los dos vuelva a entrar.» · Devoción +1 · marca: panchi_saca_joren</small>
+> 
+> Panchi lo agarra del brazo sin suavidad y no lo suelta hasta la plaza. Joren lo empuja, una vez, fuerte. Panchi aguanta el golpe sin moverse. «Pegame todo lo que quieras», le dice. «Pero afuera.»
+> 
 *[marca: cap4_done]*
 
 
@@ -939,6 +1035,42 @@ El Capitolio sangra aceite violeta por las grietas. Los Qilaat, sin órdenes cla
 > <small>pista: «Sombra: poder sobre las ruinas, con precio.» · Corrupción +2 · PF +8 · alerta +2 · rep. dahhak +1 · rep. conclave -1 · rep. mercaderes +1 · marca: postura_sombra</small>
 > 
 > Esperan. Cuando el humo baja, sus emisarios ya han comprado lealtades de la guardia herida. EaNassr sonríe en la esquina de la plaza con un contrato abierto.
+> 
+### El recuento — *La Plaza Central, entre los escombros del Coloso*
+
+Cuando el polvo baja, la plaza está llena de muertos de los dos lados: Qilaat con las lanzas todavía en la mano, Nasnas con piedras, vecinos que sólo querían ver. Romain camina entre ellos con la balanza. No la usa. No sabe para quién.
+
+Debajo de una viga, Zyr'thar oye una respiración chica. Es una nena, enterrada hasta el pecho, con los ojos abiertos y sin llorar. Pact levanta la viga con la espalda y las alas se le encienden solas, doradas, sin que él lo quiera. Medio barrio lo ve. Esa imagen va a correr por Zaryab antes del anochecer.
+
+**Rabb Locke** *(sosteniéndola lejos del cuerpo)*: La espada se tomó algo del Coloso cuando cayó. Está más pesada. Más contenta. La última vez que estuvo así de contenta, alguien murió. No me acuerdo quién.
+
+**✦ Elección:** Medio barrio vio las alas de Pact encenderse. Ya hay gente arrodillada.
+
+> **1. Pact: abrirlas del todo y dejar que miren**
+> <small>pista: «Un ángel en la plaza. El Conclave también lo va a ver.» · alerta +2 · marca: pact_alas_plaza</small>
+> 
+> Pact abre las alas. Son más grandes de lo que nadie esperaba, y una está quemada en la punta. La gente llora. Un Qilaat suelta la lanza. Pact siente algo que no sentía desde antes de caer, y le da tanto miedo como alegría.
+> 
+> **2. Pact: esconderlas y salir de la plaza**
+> <small>pista: «Nadie tiene que saber todavía.» · Devoción +1 · marca: pact_esconde_alas</small>
+> 
+> Pact se arropa con la capa y se va entre el humo. Le duele la espalda como si se hubiera arrancado algo. Esa noche sueña con una mujer que le cose las alas y le dice «todavía no».
+> 
+**✦ Elección:** Hay muertos de los dos bandos y nadie los va a enterrar hoy.
+
+> **1. Romain: dar el rito de Kelemvor a todos, Qilaat y Nasnas por igual (Religión)**
+> <small>pista: «Lo que le queda de fe, delante de toda la plaza. Si falla, la voz se le quiebra a mitad.» · 🎲 Religión CD 13 (romain) · Devoción +2 · rep. hijos +1 · marca: romain_rito_plaza</small>
+> 
+> Romain dice los nombres que sabe y, para los que no sabe, dice «este». La plaza se calla. Un Qilaat herido se saca el casco para escuchar. Cuando termina, Romain no siente a Kelemvor. Siente otra cosa: que a alguien le importó. Por ahora alcanza.
+> 
+> **Si falla:** Corrupción +1
+> 
+> A la mitad del rito, la voz se le quiebra y no vuelve. Romain se queda arrodillado con la boca abierta y nada adentro. Zyr'thar le pone una mano en el hombro y termina la frase por él, mal, con las palabras equivocadas. Nadie se ríe.
+> 
+> **2. Llevarse a la nena y dejar a los muertos**
+> <small>pista: «Los vivos primero.» · marca: nena_plaza</small>
+> 
+> La nena no suelta la mano de Zyr'thar en todo el camino a la biblioteca. Zyr'thar no se la saca. Dice que es para que no se pierda. Es mentira, y todos lo saben.
 > 
 *[Zahir: «El Eclipse se acerca. Cuento los días, aunque ustedes no.» — marca: cap5_done]*
 
@@ -1248,6 +1380,42 @@ Panchi cae de rodillas. Sifra no remata. Retrocede un paso, cierra el puño, lo 
 
 Medinat al-Rih se queda atrás, un resplandor naranja en el horizonte. Detrás de ustedes, la ciudad que nadie quiso decide cómo sobrevivir sin ustedes.
 
+### Los que no tienen dios — *Medinat al-Rih, al salir*
+
+En la salida de Medinat, una vieja Nasnas detiene a Romain por la manga. Quiere que entierre a su hijo, muerto en la revuelta. Pero sin dioses: Medinat no quiere ninguno, ni el de Romain.
+
+**Romain** *(mirando el cuerpo envuelto en una manta)*: No sé enterrar sin Kelemvor. Es como pedirme que hable sin lengua.
+
+**Zyr'thar** *(arremangándose)*: Yo sí sé. En la Infraoscuridad enterramos así: sin nombres, para que nadie pueda llamarlos de vuelta. A mi madre la enterré así. Tenía nueve años y las manos sangrando.
+
+**✦ Elección:** En la Infraoscuridad, quien entierra se queda con el nombre del muerto, para que nadie más lo use.
+
+> **1. Zyr'thar: quedarse con el nombre del chico**
+> <small>pista: «Cargar con un muerto ajeno, como manda su gente.» · marca: zyr_carga_nombre</small>
+> 
+> La vieja le susurra el nombre al oído. Zyr'thar lo repite una vez, sin voz, y se lo guarda. Desde esa noche, cuando duerme, alguien dice ese nombre en su sombra. Ella no se queja. Es lo justo.
+> 
+> **2. Zyr'thar: devolverle el nombre a la madre**
+> <small>pista: «Romper la costumbre de su Casa.» · Devoción +1 · marca: zyr_devuelve_nombre</small>
+> 
+> «Es tuyo», le dice a la vieja. «En mi casa no lo entenderían. Por eso me fui.» La vieja la abraza, y Zyr'thar se queda dura como una estatua hasta que la suelta. Después se va a vomitar detrás de una pared.
+> 
+Lo entierran entre los dos, sin rezos, con las manos. Rabb sostiene la espada lejos, porque la hoja quiere el cuerpo y él no la deja. Le cuesta. Le tiemblan los brazos como si sostuviera un peso enorme.
+
+**Rabb Locke** *(con los dientes apretados)*: Si la suelto, se lo come. No sé cómo lo sé.
+
+**✦ Elección:** La vieja les agradece y le pregunta a Romain si su dios lo va a castigar por esto.
+
+> **1. Romain: «Si me castiga por esto, no es mi dios»**
+> <small>pista: «Su fe cambia de forma.» · Devoción +1 · marca: romain_entierro_sin_dios</small>
+> 
+> La vieja asiente como si hubiera esperado esa respuesta toda la vida. Romain se va de Medinat más liviano, y no sabe si eso es bueno.
+> 
+> **2. Romain: «Sí. Y lo voy a aceptar»**
+> <small>pista: «La balanza pesa también al que pesa.» · marca: romain_acepta_castigo</small>
+> 
+> «Entonces sos mejor que tu dios», le dice la vieja, y no lo dice como un elogio. Romain lo va a pensar durante semanas.
+> 
 *[Capítulo VI completado. La Iglesia del Simurg espera. — rep. nomadas +1 · marca: cap6_done]*
 
 
@@ -2002,6 +2170,46 @@ Nadie dice nada. En la cocina, el cucharón vuelve a rozar la olla muy despacio.
 
 **Zahir** *(con una dulzura inesperada)*: No es un monstruo. Es peor: tiene razón en casi todo. Cree que ustedes son como los que vinieron antes. En eso se equivoca. Lo sé porque los conozco por dentro.
 
+### Lo que dejó el Vizir — *La biblioteca, de noche*
+
+Cuando Razul se fue, la espada de Rabb siguió vibrando durante una hora. Dijo su nombre, el de Razul, con un tono que Rabb nunca le había oído: como quien nombra a un acreedor.
+
+**✦ Elección:** La hoja sabe algo del Vizir. Rabb puede sacárselo.
+
+> **1. Rabb: arrancarle a la hoja lo que sabe (Intimidar)**
+> <small>pista: «Cuerpo a cuerpo con su propia arma. Si pierde, la hoja le cobra un recuerdo.» · 🎲 Intimidar CD 14 (rabb) · marca: rabb_silaba, rabb_sabe_razul</small>
+> 
+> Rabb aprieta la empuñadura hasta que le sangran los dedos. La hoja grita, y en el grito hay una sílaba, una sola, de su verdadero nombre. Rabb la repite en voz alta para no perderla. Es lo primero suyo que recupera desde el desierto.
+> 
+> «Razul me vendió», dice la hoja después, cansada. «O me compró. Hace tanto que ya no me acuerdo de qué lado de la mesa estaba.»
+> 
+> **Si falla:** Corrupción +1 · marca: rabb_pierde_recuerdo
+> 
+> La hoja gana. Rabb se despierta en el suelo de la biblioteca y no recuerda la cara de Aisha. Tiene que preguntarle cómo se llama. Ella se lo dice con una paciencia que lo avergüenza más que cualquier herida.
+> 
+> **2. Dejarla hablar sola y no escucharla**
+> <small>pista: «Rabb elige no saber todavía.» · Devoción +1</small>
+> 
+> Rabb envuelve la espada en tres mantas y la deja en el sótano. Esa noche duerme bien por primera vez desde el desierto. Se siente culpable por eso.
+> 
+Afuera, Joren reconoce a uno de los Qilaat que escoltaron al Vizir. Tiene una marca a fuego en la muñeca: la de La Marca. Ese hombre estuvo ahí. Joren le ve la cara y se le cierra la garganta.
+
+**Pact Risen** *(parándose entre él y la calle, con las alas a medio abrir)*: Joren. Mirame a mí. Hoy no. Si lo seguís esta noche, no volvés.
+
+**Joren Hell** *(con la mano en el carcaj)*: Sabe el nombre. El nombre del que dio la orden. Está a veinte pasos.
+
+**✦ Elección:** El Qilaat de La Marca dobla la esquina.
+
+> **1. Joren: dejarlo ir, por ahora**
+> <small>pista: «Pact lo pide. El nombre puede esperar.» · Devoción +1 · marca: joren_espera_marca</small>
+> 
+> Joren saca la mano del carcaj. Pact no se mueve hasta que el Qilaat desaparece. Después se sientan en el escalón, los dos, sin hablar, hasta que amanece.
+> 
+> **2. Joren: seguirlo y hacerlo hablar**
+> <small>pista: «Riesgo de que el Conclave sepa dónde viven.» · Corrupción +1 · alerta +2 · marca: joren_interroga_marca, kaelen_pista</small>
+> 
+> Joren vuelve a la madrugada con los nudillos rotos y un nombre que no dice. Pact le venda la mano sin preguntar. Cuando termina, Joren le dice «gracias» y algo más que Pact no alcanza a oír.
+> 
 *[Capítulo VIII completado. Ahora el juego calcula su Ruta. — marca: cap8_done]*
 
 
@@ -2770,6 +2978,44 @@ En el suelo, entre los frascos rotos, queda uno intacto. Es el del marido de Ais
 > 
 > La espada no obedece: contesta. Le pone en la mano un recuerdo que no es suyo, un patio y una firma, y el brazo de Rabb se mueve solo para envainarla. Cuando termina la escalera ya no sabe si la guardó él o ella lo guardó a él.
 > 
+### Lo que quedó en los estantes — *La cripta de las Trece Caras, después*
+
+Antes de subir, Joren recorre los estantes de Al-Mazhar leyendo etiquetas. Busca una sola palabra y la encuentra en el tercer estante desde abajo: «La Marca». Es un frasco chico, con la cera intacta.
+
+**✦ Elección:** Puede ser la voz de cualquiera de los que murieron en La Marca. Puede ser la de su hermano.
+
+> **1. Joren: abrirlo**
+> <small>pista: «Escuchar lo que haya adentro, sea de quien sea.» · marca: joren_oye_frasco</small>
+> 
+> La voz que sale no es la de su hermano. Es la de un hombre que Joren no conoce, que pide perdón a alguien que no está. Joren se queda escuchando hasta el final. Después dice el nombre de su hermano en voz alta, para que en la cripta quede por lo menos una voz que lo diga.
+> 
+> **2. Joren: llevárselo cerrado**
+> <small>pista: «No está listo. Puede que nunca lo esté.» · marca: joren_guarda_frasco</small>
+> 
+> Joren lo envuelve en un trapo y lo guarda en el carcaj, entre las flechas. A partir de ese día el carcaj suena distinto cuando camina. Nadie le dice nada.
+> 
+Pact se queda junto a Aisha mientras ella junta los pedazos del frasco de su marido. No la ayuda: la cuida de que no se corte. Una de las máscaras caídas de Al-Mazhar tiene la cara de una mujer de pelo corto, y Pact la mira demasiado tiempo.
+
+**Pact Risen** *(sin tocar la máscara)*: Esa cara la conozco. No sé de dónde. Me duele la espalda, donde están las alas, cuando la miro.
+
+Entre las trece máscaras hay una que no cayó. Sigue colgada de su cuerda, girando sola, y cuando se detiene, mira a Rabb. Tiene su cara. Más joven, sin cicatrices, sonriendo como sonríe alguien que acaba de cerrar un buen negocio.
+
+**Rabb Locke** *(con la voz rota, de rodillas frente a la máscara)*: Ese soy yo. Firmando. Nadie me vendió la espada. Yo me vendí a ella.
+
+**Panchi** *(agarrándolo de la nuca, frente contra frente)*: Rabb. Mirá para acá. Eso es una máscara. Vos sos el que está acá abajo, con nosotros. El otro no vino.
+
+**✦ Elección:** La máscara con la cara de Rabb sigue girando, sonriendo.
+
+> **1. Rabb: partirla con la espada**
+> <small>pista: «Que la hoja rompa la prueba de su propia venta. Puede que no quiera.» · Devoción +1 · marca: rabb_rompe_mascara</small>
+> 
+> Rabb levanta la espada y la hoja se resiste: pesa como una puerta. Grita, la baja igual, y la máscara se parte en dos. De adentro cae un papel doblado, viejo, con una firma que es la suya. Lo quema en una de las velas del Lich sin leerlo. Le sangra la nariz durante una hora.
+> 
+> **2. Rabb: guardarse la máscara**
+> <small>pista: «Quiere mirarla de nuevo, cuando pueda.» · Corrupción +1 · marca: rabb_guarda_mascara</small>
+> 
+> Rabb la descuelga con cuidado, como quien levanta a alguien dormido, y la mete en el morral. Pesa más de lo que debería. Desde esa noche, a veces, la oye reírse bajito cuando él duerme.
+> 
 *[Capítulo X completado. Al-Mazhar ha caído. La Mina de Alabastro se abre. — marca: cap10_done]*
 
 
@@ -3222,6 +3468,48 @@ Salen de las galerías en una nube de polvo. Detrás, la mina se hunde sobre sí
 > 
 > Le dan vueltas al juramento y no le encuentran el revés. Zahir sonríe, cansado: «¿Ven? No hay trampa.» Y el cristal se cobra la duda de todos modos.
 > 
+### Las voces en la piedra — *Mina de Alabastro, nivel 3*
+
+En el tercer nivel de la mina, las paredes hablan. No fuerte: un murmullo, como gente rezando detrás de una puerta. Son los mineros que nadie bajó a buscar. Romain apoya la oreja en la piedra y se le llenan los ojos de lágrimas.
+
+**✦ Elección:** Las almas de los mineros están atrapadas en el alabastro. Romain puede intentar soltarlas.
+
+> **1. Romain: pesarlas una por una y dejarlas ir (Religión)**
+> <small>pista: «Cuesta tiempo bajo tierra, con el gusano cerca. Si falla, las voces lo siguen.» · 🎲 Religión CD 15 (romain) · Devoción +2 · marca: romain_mineros</small>
+> 
+> Tarda una hora. Una por una, las voces se callan con un suspiro. La última es de un chico que pregunta si ya puede irse a casa. Romain le dice que sí. Es la primera vez desde el templo quemado que siente la balanza moverse en su mano.
+> 
+> **Si falla:** Corrupción +1 · marca: romain_voces_mina
+> 
+> Las voces no se van. Se le pegan. Desde ese día, cuando Romain se queda en silencio, alguien murmura un nombre de minero dentro de su cabeza. Él aprende sus nombres. Es lo único que puede hacer.
+> 
+> **2. Seguir: el gusano no espera**
+> <small>pista: «Los vivos primero.» · marca: mineros_quedan</small>
+> 
+> Siguen bajando. El murmullo los acompaña dos niveles más y después se apaga. Romain no dice nada en todo el camino. Al salir, deja la balanza en la boca de la mina.
+> 
+En los túneles angostos, Zyr'thar se queda sin aire. No es el polvo. Es la oscuridad cerrada, la piedra encima, el olor de la Infraoscuridad. Se apoya en la pared y tiembla como no la habían visto temblar nunca.
+
+**Zyr'thar** *(con la frente contra la piedra)*: Me criaron acá abajo. Bueno, no acá. En un lugar igual. Me prometí no volver a bajar nunca. Mirá qué bien cumplo las promesas.
+
+**✦ Elección:** Zyr'thar no puede seguir. El gusano se oye dos niveles más abajo.
+
+> **1. Zyr'thar: agarrarse del carcaj de Joren y bajar a ciegas**
+> <small>pista: «Confiar en alguien en la oscuridad. Nunca lo hizo.» · Devoción +1 · marca: zyr_confia_joren</small>
+> 
+> Joren le tiende la correa sin mirarla, para no avergonzarla. «Yo veo en la oscuridad mejor de lo que creés. No te suelto.» No la suelta. Al llegar abajo, ella le devuelve la correa y le dice «nunca pasó». Él asiente. Pasó.
+> 
+> **2. Zyr'thar: cerrar los ojos y caminar sola**
+> <small>pista: «Como la entrenaron. Si se pierde, el gusano la encuentra antes.» · 🎲 Sigilo CD 14 (zyrthar) · marca: zyr_sola_mina</small>
+> 
+> Zyr'thar cierra los ojos y camina como le enseñaron de chica: contando pasos, oliendo la piedra. Llega primera. Se sienta a esperar a los demás con las manos en las rodillas, para que no vean cuánto le tiemblan.
+> 
+> **Si falla:** Corrupción +1
+> 
+> Se pierde. Durante diez minutos la oyen llamar desde un túnel lateral, cada vez más lejos, con una voz de nena que nadie le conocía. Joren la encuentra siguiendo el llanto. Ninguno de los dos vuelve a hablar de eso.
+> 
+**Rabb Locke** *(sin reírse)*: La espada se calla acá abajo. Es la primera vez. Le tiene miedo al gusano. Y si ella tiene miedo, yo debería tener mucho más.
+
 *[Capítulo XI completado. La Ciudadela de los Susurros está abierta. — marca: cap11_done]*
 
 
@@ -3859,6 +4147,31 @@ Se gira por primera vez. Mira a cada uno con atención, como si los pesara.
 
 **Zahir** *(bajo, un susurro)*: Ese día me partí un poco más. Les dije que el Simurg se dividió solo, por voluntad. Una parte de eso es cobardía, y pensé que debían saberlo antes de entrar en las Catacumbas.
 
+**▸ Si `perma_panchi`:**
+**▸ Si no:**
+> ### La mano de Panchi — *La Ciudadela, en la escalera de bajada*
+> 
+> Bajando de la Ciudadela, Panchi se queda atrás. Tiene la venda de Ellie en la muñeca y la mira como si fuera un mensaje que no termina de entender. «Traelo o no vengas.» Hace meses que lo repite. Recién ahora se pregunta qué es «lo».
+> 
+> **Panchi** *(sentado en un escalón, con la venda entre los dedos)*: Pensé que era una cabeza. La de quien la lastimó. Después pensé que era un fragmento. Ahora creo que es otra cosa y me da más miedo.
+> 
+> **Pact Risen** *(sentándose al lado)*: ¿Qué cosa?
+> 
+> **Panchi** *(abriendo y cerrando la mano, despacio)*: Mi rabia. Que se la lleve entera, para que ella vea que la saqué de adentro. Y no sé si puedo pelear sin ella. No sé quién soy si no tengo los puños cerrados.
+> 
+> **✦ Elección:** Mañana es el Eclipse. Panchi no sabe si llega entero.
+> 
+> > **1. Panchi: practicar la mano abierta toda la noche**
+> > <small>pista: «Prepararse para soltar.» · Devoción +1 · marca: panchi_practica_mano</small>
+> > 
+> > Panchi pelea contra la pared de la escalera con la mano abierta hasta que se le hinchan los dedos. Pact se queda despierto contando los golpes en voz baja. A la madrugada, Panchi apoya la palma en la piedra y la deja ahí, quieta. Es la primera vez que algo suyo se queda quieto.
+> > 
+> > **2. Panchi: cerrar el puño y guardar la rabia para mañana**
+> > <small>pista: «La va a necesitar.» · Corrupción +1 · marca: panchi_guarda_rabia</small>
+> > 
+> > Panchi aprieta el puño hasta que crujen los nudillos y se va a dormir así, con la mano cerrada. Pact lo tapa con su capa. «Mañana la soltás», le dice. Panchi ya duerme, o hace como que duerme.
+> > 
+
 *[Capítulo XII completado. Las Catacumbas del Simurg se abren. — marca: cap12_done]*
 
 
@@ -4005,7 +4318,7 @@ Las Catacumbas del Simurg están bajo la biblioteca. Siempre estuvieron. Los pas
 **Zahir** *(sin pudor)*: El ritual del Eclipse unirá los fragmentos. El Simurg volverá a ser uno. Pero para eso necesito un cuerpo. Y ustedes me dieron siete.
 
 **▸ Si `farid_zahir`:**
-> **Zahir** *(con la misma ternura de aquella noche, que ahora da miedo)*: Seis llegaron por el desierto. El séptimo me lo abrieron ustedes, una noche de fiebre, sobre una mesa con platos sucios. Me pidieron que lo sostuviera. Lo sostengo todavía.
+> **Zahir** *(con la misma ternura de aquella noche, que ahora da miedo)*: Seis cristales di en el desierto. El séptimo me lo abrieron ustedes, una noche de fiebre, sobre una mesa con platos sucios. Me pidieron que lo sostuviera. Lo sostengo todavía.
 > 
 > Arriba, en la biblioteca, Farid deja de cantar a mitad de una nota. Aisha levanta la cabeza del pan.
 > 

@@ -16,7 +16,7 @@ export const NOVEL: Record<string, Node[]> = {
     T('ACTO I', 'Muerte y pacto', 'dunas'),
     N('Antes de la ciudad hubo un pájaro. Los viejos del desierto lo llaman Simurg y dicen que sus alas daban sombra a cuarenta ciudades. Hace siglos que nadie ve esa sombra, y nadie recuerda quién la apagó.'),
     N('Zaryab se levantó sobre la ausencia: un cuenco de adobe y mármol donde el viento llega por turnos y el agua se reparte con ceremonia. Se llama a sí misma eterna. Es una ciudad que repite una frase para no oír el silencio de debajo.'),
-    N('Seis forasteros se acercan a la ciudad sin saber que ya los están esperando.'),
+    N('Siete forasteros se acercan a la ciudad sin saber que ya los están esperando: seis compañeros y el gnomo que los guía.'),
   ],
   cap0: [
     T('Entreacto', 'Lo que callan los pilares', 'dunas'),

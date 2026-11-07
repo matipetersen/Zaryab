@@ -7,9 +7,9 @@ import type { Node } from './types';
 
 export const CAP0: Node[] = [
   { t: 'chapter', title: 'Prólogo — Cinco Días de Arena', sub: 'El desierto · Camino a Zaryab', bg: 'dunas' },
-  { t: 'narr', text: 'Seis viajeros curtidos por el camino: Pact, Romain, Rabb, Joren, Zyr\'thar y Panchi. Llevan semanas cruzando el desierto y hasta ahora no pasó nada grave: algún bandido, alguna bestia que se anima a atacar de noche. Un viaje como cualquier otro.' },
+  { t: 'narr', text: 'Siete viajeros curtidos por el camino: seis compañeros —Pact, Romain, Rabb, Joren, Zyr\'thar y Panchi— y Nadir, el gnomo que los guía. Llevan semanas cruzando el desierto y hasta ahora no pasó nada grave: algún bandido, alguna bestia que se anima a atacar de noche. Un viaje como cualquier otro.' },
   { t: 'say', who: 'Nadir', text: 'Cinco días más y llegamos a Zaryab. Lo calculé dos veces… y las dos me dio lo mismo.', tone: 'el gnomo guía, frotándose la nariz' },
-  { t: 'narr', text: 'Acampan al reparo de unas rocas negras. La arena está blanca y fría. Alguien se queda de guardia… y alguien más, que no tendría que haberse dormido, se durmió.' },
+  { t: 'narr', text: 'Acampan al reparo de unas rocas blancas. La arena está blanca y fría. Alguien se queda de guardia… y alguien más, que no tendría que haberse dormido, se durmió.' },
   { t: 'battle', enc: 'noche' },
   { t: 'narr', text: 'Los restos de las bestias humean junto a la fogata. Nadir revisa los camellos. Nadie se anima a decir lo que todos piensan: «un viaje como cualquier otro».' },
   { t: 'chapter', title: 'La Tormenta', sub: 'Tres días sin referencias', bg: 'tormenta' },
@@ -22,7 +22,7 @@ export const CAP0: Node[] = [
   ] },
   { t: 'bg', id: 'dunas' },
   { t: 'narr', text: 'Por suerte o por oficio, Pact distingue a lo lejos lo que parecen cuatro pilares torcidos, quebrados, golpeados por la arena. Cuando el viento por fin se calma, el lugar se ve completo: un anfiteatro hundido, casi un cráter, de arena blanca y fría, vetada de violeta como venas que respiran.' },
-  { t: 'narr', text: 'Un cielo gris, de eclipse, sin sol ni estrellas, lo baña todo con una luz de ceniza que no deja sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas negras brotan líquenes violetas. El pilar más alto se alza torcido, como un hueso mal soldado; otro está partido a media altura, como si algo enorme lo hubiera golpeado.' },
+  { t: 'narr', text: 'Un cielo gris, de eclipse, sin sol ni estrellas, lo baña todo con una luz de ceniza que no deja sombras. El suelo del fondo es de piedra tallada con espirales fracturadas; entre las juntas brotan líquenes violetas. El pilar más alto se alza torcido, como un hueso mal soldado; otro está partido a media altura, como si algo enorme lo hubiera golpeado.' },
   { t: 'narr', text: 'El aire huele a hierro oxidado y a ozono y, por debajo, a fruta podrida y a incienso viejo que sube de las vetas violetas. Hay un zumbido muy bajo que se siente más en el pecho que en los oídos. El viento silba en las grietas de la piedra como un lamento.' },
   { t: 'choice', prompt: 'Nadie querría acampar acá. Pero es el único reparo que hay.', options: [
     { label: 'Tocar la arena violeta', hint: 'La estática recorre los dedos.', e: { c: 1, flags: ['toco_veta'] }, result: ['Un cosquilleo frío sube por el brazo. Por un segundo oyen su nombre dicho en una lengua que no conocen.'] },

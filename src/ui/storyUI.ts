@@ -139,6 +139,7 @@ export class StoryUI {
     const base = options.filter(o => (!o.if || has(this.camp, o.if)) && !this.deadOpt(o));
     // también fuera las que lo nombran, salvo que no quede ninguna
     const named = base.filter(o => !this.namesDead(o.label + ' ' + (o.hint ?? ''))); const avail = named.length ? named : base;
+    if (!avail.length) return; // la decisión era de alguien que ya no está
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
       for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} · tira ${bestFor(this.camp, o.check)}`) : null, (o.disabled || (o.hint && scrubSoul(o.hint))) ? h('small', {}, o.disabled ?? scrubSoul(o.hint!)) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
