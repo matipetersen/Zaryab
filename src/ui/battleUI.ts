@@ -29,7 +29,7 @@ export class BattleUI {
   root: HTMLElement; b!: Battle; r!: Renderer; canvas!: HTMLCanvasElement;
   mode: Mode = { k: 'idle' }; selUid = -1; resolveTurn?: () => void; finished?: (r: BattleResult) => void; stopped = false;
   left!: HTMLElement; right!: HTMLElement; bar!: HTMLElement; logEl!: HTMLElement; tracker!: HTMLElement; tip!: HTMLElement; menuEl: HTMLElement | null = null;
-  keyH?: (e: KeyboardEvent) => void;
+  keyH?: (e: KeyboardEvent) => void; outsideH?: (e: PointerEvent) => void; menuKind: string | null = null;
 
   constructor(root: HTMLElement) { this.root = root; }
 
@@ -56,7 +56,7 @@ export class BattleUI {
     return new Promise(res => { this.finished = res; this.loop(); });
   }
   onResize = () => this.r?.resize();
-  destroy() { this.root.classList.remove('diorama'); this.stopped = true; this.r?.destroy(); window.removeEventListener('resize', this.onResize); if (this.keyH) window.removeEventListener('keydown', this.keyH); this.root.id = ''; }
+  destroy() { this.root.classList.remove('diorama'); this.stopped = true; this.r?.destroy(); window.removeEventListener('resize', this.onResize); if (this.keyH) window.removeEventListener('keydown', this.keyH); if (this.outsideH) document.removeEventListener('pointerdown', this.outsideH, true); this.root.id = ''; }
 
   // ---------- bucle ----------
   async flush() {
@@ -157,7 +157,7 @@ export class BattleUI {
         await sleep(250);
         await runAI(b, u, async ms => { await this.flush(); await sleep(ms ?? 300); });
         await this.flush(); if (b.over) break; b.endTurn(); await this.flush();
-      } else if (u.lostTurn) {
+      } else if (u.lostTurn || b.incapacitated(u)) { // caído, aturdido o paralizado: no hay nada que decidir, el turno pasa solo
         u.lostTurn = false; this.renderAll(); await this.flush(); await sleep(1100); b.endTurn(); await this.flush();
       } else {
         this.mode = { k: 'idle' }; this.renderAll(); this.updateOverlays();
@@ -197,7 +197,7 @@ export class BattleUI {
     this.keyH = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.tagName !== 'SELECT') { if (e.key === 'q' || e.key === 'Q' || e.key === 'ArrowLeft') { this.r.rotate(-1); return; } if (e.key === 'r' || e.key === 'R' || e.key === 'ArrowRight') { this.r.rotate(1); return; } } // la cámara se puede girar siempre, incluso en turnos ajenos
       if (!this.cur || this.mode.k === 'busy') return; if ((e.target as HTMLElement)?.tagName === 'SELECT') return;
-      if (e.key === 'Escape') { this.setMode({ k: 'idle' }); }
+      if (e.key === 'Escape') { this.clearMenu(); this.setMode({ k: 'idle' }); }
       else if (e.key === 'm' || e.key === 'M') this.setMode({ k: 'move' });
       else if (e.key === 'a' || e.key === 'A') this.openAttackMenu();
       else if (e.key === 'h' || e.key === 'H') this.openAbilityMenu();
@@ -206,6 +206,9 @@ export class BattleUI {
       else if (e.key === ' ' || e.key === 'e' || e.key === 'E') { e.preventDefault(); this.endTurn(); }
     };
     window.addEventListener('keydown', this.keyH);
+    // tocar fuera de un desplegable lo cierra (el botón que lo abrió hace de interruptor)
+    this.outsideH = (e: PointerEvent) => { const m = this.menuEl; if (!m) return; const t = e.target as HTMLElement; if (m.contains(t) || t.closest?.('button.act')) return; this.clearMenu(); };
+    document.addEventListener('pointerdown', this.outsideH, true);
   }
   unitAtTile(t: P) { const u = this.b.unitAt(t.x, t.y); return u && (!this.r.fogActive || this.b.isSeen(u)) ? u : undefined; }
   /** ¿Se ve a esta unidad (o la niebla está apagada)? */
@@ -246,7 +249,9 @@ export class BattleUI {
     this.renderAll();
   }
   setMode(m: Mode) { this.mode = m; this.clearMenu(); this.updateOverlays(); this.renderBar(); }
-  clearMenu() { this.menuEl?.remove(); this.menuEl = null; }
+  clearMenu() { this.menuEl?.remove(); this.menuEl = null; this.menuKind = null; }
+  /** Los desplegables se cierran al volver a tocar su botón; devuelve true si había que cerrarlo. */
+  toggleMenu(kind: string) { if (this.menuKind === kind && this.menuEl) { this.clearMenu(); return true; } return false; }
 
   updateOverlays() {
     if (this.mode.k === 'deploy') { this.deployOverlays(); return; }
@@ -323,7 +328,7 @@ export class BattleUI {
     }
   }
   renderBar() {
-    const u = this.cur, B = this.bar; B.innerHTML = ''; this.menuEl = null;
+    const u = this.cur, B = this.bar; B.innerHTML = ''; this.menuEl = null; this.menuKind = null;
     if (this.mode.k === 'deploy') { B.append(h('div', { class: 'small', style: { padding: '6px 4px', flex: '1 1 220px' } }, 'Despliegue: tocá un personaje y después una casilla azul para reubicarlo (o a otro personaje para intercambiarlos). Los frágiles, atrás; los resistentes, adelante.'), h('button', { class: 'btn', onClick: () => this.deployDone?.() }, '⚔ ¡Comenzar!')); return; }
     if (!u) { B.append(h('div', { class: 'small', style: { padding: '8px 4px' } }, this.b.over ? 'Combate terminado.' : `Turno de ${this.b.cur?.name ?? '…'}`)); return; }
     const b = this.b; const busy = this.mode.k === 'busy'; const inc = b.incapacitated(u);
@@ -334,7 +339,7 @@ export class BattleUI {
     B.append(btn('✦ Habilidades', 'H', () => this.openAbilityMenu(), this.mode.k === 'ability'));
     if (b.cube || b.grid.tiles.some(r => r.some(t => t.obj))) B.append(btn('🔧 Interactuar', 'F', () => this.setMode(this.mode.k === 'interact' ? { k: 'idle' } : { k: 'interact' }), this.mode.k === 'interact', !b.hasAction(u)));
     B.append(btn('🎒 Objeto', 'I', () => this.openItemMenu(), false, !Object.entries(this.b.inv).some(([id, n]) => n > 0 && Object.values(ABILITIES).some(a => a.item === id))));
-    B.append(btn('⏳ Terminar turno', 'Espacio', () => this.endTurn()));
+    B.append(h('button', { class: 'act', disabled: busy, onClick: () => this.endTurn() }, '⏳ Terminar turno', h('kbd', {}, 'Espacio')));
     if (this.isTouch && this.mode.k === 'idle') B.append(h('div', { class: 'small touchhint' }, '👆 Tocá un enemigo para atacarlo · una casilla azul para moverte'));
     const left = u.moveLeft;
     B.append(h('div', { class: 'pips' },
@@ -406,7 +411,7 @@ export class BattleUI {
       h('button', { class: 'go', disabled: !inRange && !ap, onClick: go }, inRange ? `⚔ Atacar con ${w.name}` : `🏃 Acercarse y atacar`), h('button', { class: 'no', onClick: () => this.closeSheet() }, '✕')));
   }
   openAttackMenu() {
-    const u = this.cur; if (!u) return; this.clearMenu();
+    const u = this.cur; if (!u || this.toggleMenu('attack')) return; this.clearMenu(); this.menuKind = 'attack';
     const m = h('div', { class: 'menu' }, h('h4', {}, 'Ataque con arma'));
     for (const w of u.weapons) {
       const bonusOk = !w.bonusAction || !u.bonusUsed || u.res['flurry'] > 0;
@@ -419,7 +424,7 @@ export class BattleUI {
     this.menuEl = m; this.bar.append(m);
   }
   openAbilityMenu() {
-    const u = this.cur; if (!u) return; this.clearMenu(); const b = this.b;
+    const u = this.cur; if (!u || this.toggleMenu('ability')) return; this.clearMenu(); this.menuKind = 'ability'; const b = this.b;
     const m = h('div', { class: 'menu' }); const groups: [string, string[]][] = [['Acción', []], ['Acción adicional', []], ['Gratuita', []]];
     for (const id of u.abilities) { const ab = ABILITIES[id]; if (!ab) continue; groups[ab.cost === 'action' ? 0 : ab.cost === 'bonus' ? 1 : 2][1].push(id); }
     for (const [name, ids] of groups) {
@@ -451,7 +456,7 @@ export class BattleUI {
       h('div', { class: 'small' }, `Llevan: ${Object.keys(b.carry).map(k => names[k] ?? k).join(', ') || 'nada'}`), h('div', { class: 'small' }, `Objetivo: tomo + 3 calaveras → La Salida (${c.goal.filter(g => b.carry[g]).length}/3).`));
   }
   openItemMenu() {
-    const u = this.cur; if (!u) return; this.clearMenu(); const b = this.b;
+    const u = this.cur; if (!u || this.toggleMenu('item')) return; this.clearMenu(); this.menuKind = 'item'; const b = this.b;
     const m = h('div', { class: 'menu' }, h('h4', {}, 'Mochila de la compañía'));
     for (const ab of Object.values(ABILITIES).filter(a => a.item && (b.inv[a.item] ?? 0) > 0)) {
       const can = b.canUse(u, ab.id); const it = ITEM[ab.item!];
