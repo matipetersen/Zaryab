@@ -27,6 +27,8 @@ interface Def {
   from?: string; recolor?: Record<string, string>;
   /** Rasgos (ojos, cejas, nariz, boca…) que se pintan sobre la plantilla de cabeza, antes de pelo y tocados. */
   look?: Look;
+  /** Silueta: corre la figura en el cuadro. dy > 0 = más bajo (el niño, el gnomo, el enano); dy < 0 = más alto (se le corta la cabeza y se ve más torso). */
+  shift?: [number, number];
 }
 
 // ───── piezas comunes ─────
@@ -157,6 +159,30 @@ const BODY_N: string[] = [ // hombros angostos
   '..kPPPPPPPPOOQQQQQQQQk..',
   '..kPPPPPPPPOOQQQQQQQQk..',
 ];
+const BODY_HUNCH: string[] = [ // hombros caídos y espalda vencida (viejos, magos)
+  '........kkkkYZkkkk......',
+  '......kkPPPkYZkQQQkk....',
+  '....kkPPPPPPkkQQQQQQkk..',
+  '...kPPPPPPPPOOQQQQQQQQk.',
+  '..kPPPPPPPPPOOQQQQQQQQQk',
+  '.kPPPPPPPPPPOOQQQQQQQQQk',
+];
+const BODY_SLIM: string[] = [ // cuello largo y hombros caídos (la drow, la viuda)
+  '........kkkYZkkk........',
+  '.......kPPkYZkQQk.......',
+  '.....kkPPPPkkQQQQkk.....',
+  '....kPPPPPPOOQQQQQQk....',
+  '...kPPPPPPPOOQQQQQQQk...',
+  '..kPPPPPPPPOOQQQQQQQQk..',
+];
+const BODY_BULL: string[] = [ // sin cuello, trapecios de toro (el enano)
+  '..kkkkkkkkkYZkkkkkkkkk..',
+  '.kPPPPPPPPkYZkQQQQQQQQk.',
+  'kPPPPPPPPPPkkQQQQQQQQQQk',
+  'kPPPPPPPPPPOOQQQQQQQQQQk',
+  'kPPPPPPPPPPOOQQQQQQQQQQk',
+  'kPPPPPPPPPPOOQQQQQQQQQQk',
+];
 const FACE: Face = { x1: 9, x2: 13, y: 10, mx: 10, my: 14 };
 const HEADS = new Set<string[]>([HEAD, HEAD_F, HEAD_R, HEAD_G]);
 const head = (rows = HEAD): Layer => [6, 3, rows];
@@ -166,6 +192,7 @@ const body = (rows = BODY): Layer => [0, 18, rows];
 const D: Record<string, Def> = {
   // Pact Risen — aasimar: piel de oro pálido, halo, alas a la espalda, cicatriz en la mejilla.
   pact: {
+    shift: [0, -1],
     look: { eyes: 'iris', eyeC: 'S', brows: 'thin', browC: 't', nose: 'long', mouth: 'tight', extra: ['cleft'] },
     theme: 'market', bg: 'D', glow: 'W', map: { X: 'b', Y: 'A', Z: 'a', P: 'e', Q: 'D', O: 'f' }, face: FACE,
     layers: [
@@ -192,6 +219,7 @@ const D: Record<string, Def> = {
   },
   // Rabb Locke — brujo encapuchado, violeta, la cara en sombra; la empuñadura de la espada al hombro.
   rabb: {
+    shift: [-1, 0],
     look: { eyes: 'narrow', brows: 'none', nose: 'long', mouth: 'small' },
     theme: 'sanctum', bg: 'd', glow: 'G', map: { X: 'e', Y: 'D', Z: 'd', P: 'V', Q: 'd', O: 'v' }, face: { ...FACE, brow: 'k' },
     layers: [
@@ -220,10 +248,11 @@ const D: Record<string, Def> = {
   },
   // Zyr'thar — drow: piel oscura, pelo blanco largo, ojos rojos, orejas en punta.
   zyrthar: {
+    shift: [1, 0],
     look: { eyes: 'almond', brows: 'thin', browC: 'w', nose: 'small', mouth: 'small' },
     theme: 'crater', bg: 'd', glow: 'W', map: { X: 'a', Y: 't', Z: 'S', P: 'D', Q: 'd', O: 'V' }, face: { ...FACE, brow: 'w' },
     layers: [
-      body(),
+      body(BODY_SLIM),
       [3, 5, ['..kwk', '.kwbk', '.kwbk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwbAk', 'kwAk.', 'kwAk.', 'kwAk.', 'kAk..', 'kk...']],
       [16, 5, ['kAk..', 'kAAk.', 'kAAk.', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', 'kAAAk', '.kAAk', '.kAAk', '.kAAk', '..kAk', '...kk']],
       head(HEAD_G),
@@ -235,10 +264,11 @@ const D: Record<string, Def> = {
   },
   // Panchi — enano monje: calvo con vincha roja, barba naranja enorme.
   panchi: {
+    shift: [0, 2],
     look: { eyes: 'dark', brows: 'heavy', browC: 'R', nose: 'broad', mouth: 'wide' },
     theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'A', Y: 'a', Z: 't', P: 'r', Q: 'R', O: 'k' }, face: { ...FACE, mouth: 'f' },
     layers: [
-      body(), head(HEAD_R), [3, 9, ['.k', 'kX', 'kY', 'kY', '.k']], [19, 9, ['k.', 'Zk', 'Zk', 'Zk', 'k.']],
+      [0, 17, BODY_BULL], head(HEAD_R), [3, 9, ['.k', 'kX', 'kY', 'kY', '.k']], [19, 9, ['k.', 'Zk', 'Zk', 'Zk', 'k.']],
       [6, 3, ['...kkkkkk...', '..kbAYYYZk..', '.kXbYYYYYZk.', 'krrrrrrrrRRk', 'kRRRRRRRRRRk']],
       [17, 6, ['krk.', 'kRrk', '.kRk', '..kk']],
       [5, 12, [
@@ -294,6 +324,7 @@ const D: Record<string, Def> = {
   },
   // Vizir Razul — máscara de oro tras la que asoma otra máscara blanca; turbante y túnica rojo oscuro.
   razul: {
+    shift: [0, -1],
     theme: 'market', bg: 'd', glow: 'R', map: { X: 'b', Y: 'f', Z: 'a', P: 'R', Q: 'd', O: 'f' }, generic: false,
     face: { x1: 9, x2: 13, y: 10, mx: 10, my: 14 },
     layers: [
@@ -320,6 +351,7 @@ const D: Record<string, Def> = {
   },
   // Dahhak — el hombre de los cuellos: dos serpientes le brotan de los hombros.
   dahhak: {
+    shift: [0, -1],
     look: { eyes: 'glow', eyeC: 'r', brows: 'angled', nose: 'hook', mouth: 'frown', extra: ['wrinkles'] },
     theme: 'ruins', bg: 'd', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'D', Q: 'd', O: 'f' }, face: FACE,
     layers: [
@@ -333,10 +365,11 @@ const D: Record<string, Def> = {
   },
   // Aisha — pañuelo ciruela, ojeras de no dormir.
   aisha: {
+    shift: [0, 1],
     look: { eyes: 'lash', eyeC: 'S', brows: 'arched', nose: 'small', mouth: 'small', extra: ['freckles'] },
     theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', P: 'S', Q: 's', O: 'p' }, face: FACE,
     layers: [
-      body(BODY_N), head(HEAD_F),
+      body(BODY_SLIM), head(HEAD_F),
       [4, 1, ['.....kkkkkk.....', '....kppVVVVk....', '...kpVVVVVVVk...', '..kpVVVVVVVVVk..', '.kpVkkkkkkkkVVk.', '.kpVkdddddddkVk.',
         '.kpVkdXYYYYYdkVk', '.kpVk........kVk', '.kpVk........kVk', '.kpV..........Vk', '.kpV..........Vk', '.kpV..........Vk',
         '.kpVk........kVk', '.kpVVk......kVVk', '.kpVVk......kVVk', '.kpVVVk....kVVVk', '.kpVVVVkkkkVVVVk', 'kppVVVVVVVVVVVVk']],
@@ -357,6 +390,7 @@ const D: Record<string, Def> = {
   },
   // Farid — niño enfermo, piel translúcida, ojos grandes y ojerosos.
   farid: {
+    shift: [0, 3],
     look: { eyes: 'big', brows: 'none', nose: 'button', mouth: 'small' },
     theme: 'mirror', bg: 'd', glow: 'W', map: { X: 'w', Y: 'b', Z: 'A', P: 'a', Q: 't', O: 't' }, face: { ...FACE, y: 12, my: 16 },
     layers: [
@@ -368,6 +402,7 @@ const D: Record<string, Def> = {
   },
   // Sifra (Ellie) — guerrera alta de hombros anchos, venda en la frente, quemaduras del cuello a la oreja.
   sifra: {
+    shift: [0, -2],
     look: { eyes: 'narrow', brows: 'thick', nose: 'broad', mouth: 'tight' },
     theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'A', Y: 'a', Z: 't', P: 'e', Q: 'D', O: 't' }, face: FACE,
     layers: [
@@ -380,6 +415,7 @@ const D: Record<string, Def> = {
   },
   // Nadir — gnomo guía: gorro verde con antiparras, nariz grande, bigote.
   nadir: {
+    shift: [0, 3],
     theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', P: 'g', Q: 'G', O: 't' }, face: { ...FACE, y: 11, my: 15, mouth: 'S', brow: 'b' },
     layers: [
       body(BODY_N), [6, 4, HEAD],
@@ -392,11 +428,12 @@ const D: Record<string, Def> = {
   },
   // Kethras — el hombre del bastón: túnica rojo oscuro, barba gris, cristal en el bastón.
   kethras: {
+    shift: [-1, 0],
     look: { eyes: 'tired', brows: 'heavy', browC: 'b', nose: 'long', mouth: 'plain', extra: ['wrinkles'] },
     theme: 'ruins', bg: 'd', glow: 'G', map: { X: 'A', Y: 'a', Z: 't', P: 'R', Q: 'd', O: 'f' }, face: { ...FACE, mouth: 'A', brow: 'b' },
     layers: [
       [19, 0, ['.kk.', 'kvwk', 'kvVk', '.kk.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.', '.ks.', '.kt.', '.kt.'].map(r => r.replace(/^\.k(.)\.$/, '.k$1k'))],
-      body(), head(HEAD_G),
+      body(BODY_HUNCH), head(HEAD_G),
       [4, 1, ['.....kkkkkk.....', '....krrRRRRk....', '...krrRRRRRRk...', '..krRRRRRRRRRk..', '.krRkkkkkkkkRRk.', '.krRkXYYYYYZkRk.', '.krRk......kRRk.', '.krR........RRk.', '.krR........RRk.', '.krR........RRk.', '.krR........RRk.']],
       [9, 9, ['bb..bb']],
       [7, 13, ['kA......tk', 'kAAA..AAtk', '.kAAAAAAtk', '.kAAAAAAtk', '..kAAAAtk.', '..kAAAAtk.', '...kAAtk..', '....kkk...']],
@@ -427,6 +464,7 @@ const D: Record<string, Def> = {
   },
   // genéricos: guardia (casco con nasal y penacho), gente del Bajo (pañuelo), acólito (capucha y máscara blanca).
   guardia: {
+    shift: [0, -1],
     look: { eyes: 'dark', brows: 'thick', nose: 'broad', mouth: 'tight', extra: ['stubble'] },
     theme: 'tavern', bg: 'd', glow: 'R', map: { X: 'A', Y: 'a', Z: 't', A: 'M', a: 'N', t: 'L', s: 'L', S: 'e', O: 'r' }, face: { ...FACE, x1: 9, x2: 13 },
     layers: [
@@ -439,10 +477,11 @@ const D: Record<string, Def> = {
     ],
   },
   vecino: {
+    shift: [0, 1],
     look: { eyes: 'white', brows: 'thin', nose: 'button', mouth: 'wide', extra: ['blush', 'freckles'] },
     theme: 'tavern', bg: 'd', glow: 'e', map: { X: 'A', Y: 'a', Z: 't', P: 'a', Q: 't', O: 'S' }, face: FACE,
     layers: [
-      body(), head(HEAD_R), ...EARS,
+      body(BODY_HUNCH), head(HEAD_R), ...EARS,
       [5, 2, ['...kkkkkkkk...', '..kAAAAaaattk.', '.kAAaaaaaaattk', 'kAaaaaaaaaattk', 'kkkkkkkkkkkkkk', 'k.dXYYYYYYZd.k'].map(r => r.slice(0, 14))],
       [6, 7, ['kd', 'kd']], [16, 7, ['dk', 'dk']],
       [9, 15, ['t.t.t.']],
@@ -501,6 +540,9 @@ function grid(id: string): string[][] {
       const c = ch === '_' ? 'Y' : ch; g![Y][X] = map[c] ?? c;
     }
   }
+  if (d.shift && !d.from) { const [dx, dy] = d.shift; const src = g; const out = Array.from({ length: N }, () => Array<string>(N).fill('.'));
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let sy = y - dy; const sx = x - dx; if (sx < 0 || sx >= N) continue; if (sy >= N) sy = N - 1; if (sy < 0) continue; out[y][x] = src[sy][sx]; } // el torso se prolonga hacia abajo
+    g = out; }
   gridCache.set(id, g); return g;
 }
 const defOf = (id: string): Def => { const d = D[id]; return d.from ? { ...D[d.from], ...d, layers: d.layers, ex: { ...D[d.from].ex, ...d.ex } } : d; };
@@ -534,7 +576,7 @@ export function pixPortraitUrl(id: string, e: Expr = 'neutral'): string | null {
   // fondo: color liso y un halo tramado detrás de la cabeza
   ctx.fillStyle = col(d.bg ?? 'd'); ctx.fillRect(0, 0, c.width, c.height);
   if (d.glow) { ctx.fillStyle = col(d.glow); for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const r = Math.hypot(x - 11.5, y - 9.5); if (r < 8.5 || (r < 11 && (x + y) % 2 === 0)) ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+    const r = Math.hypot(x - 11.5 - (d.shift?.[0] ?? 0), y - 9.5 - (d.shift?.[1] ?? 0)); if (r < 8.5 || (r < 11 && (x + y) % 2 === 0)) ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
   } }
   const g = withExpr(id, e);
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const ch = g[y][x]; if (ch === '.') continue; ctx.fillStyle = col(ch); ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE); }
