@@ -55,14 +55,24 @@ export const has = (c: Campaign, f: string) => c.flags.includes(f);
 export const built = (c: Campaign, b: string) => c.buildings.includes(b);
 
 const clamp = (n: number, lo = 0, hi = 10) => Math.max(lo, Math.min(hi, n));
+const r1 = (n: number) => Math.round(n * 10) / 10;
+/** Corrupción y Devoción: las ganancias rinden menos cuanto más alto está el medidor
+ *  y empujan un poco hacia abajo al opuesto, para que no se saturen las dos a la vez. */
+export function soul(c: Campaign, dc = 0, dd = 0) {
+  const up = (v: number, g: number) => g > 0 ? g * Math.max(0.3, 1 - v / 12) : g;
+  const nc = c.c + up(c.c, dc) - Math.max(0, dd) * 0.35, nd = c.d + up(c.d, dd) - Math.max(0, dc) * 0.35;
+  c.c = r1(clamp(nc)); c.d = r1(clamp(nd));
+}
+/** Valor mostrado del medidor (entero) */
+export const meterShow = (v: number) => Math.round(v);
 export function applyEffect(c: Campaign, e?: Effect): string[] {
   if (!e) return [];
   const out: string[] = [];
   if (e.c) {
-    c.c = clamp(c.c + e.c); out.push(`${e.c > 0 ? '+' : ''}${e.c} Corrupción`);
+    soul(c, e.c, 0); out.push(`${e.c > 0 ? '+' : ''}${e.c} Corrupción`);
     if (e.c > 0 && built(c, 'altar')) { const g = 1 + Math.floor(Math.random() * 6); c.pf += g; c.seal += g; out.push(`+${g} PF (Altar de Huesos)`); }
   }
-  if (e.d) { c.d = clamp(c.d + e.d); out.push(`${e.d > 0 ? '+' : ''}${e.d} Devoción`); }
+  if (e.d) { soul(c, 0, e.d); out.push(`${e.d > 0 ? '+' : ''}${e.d} Devoción`); }
   if (e.pf) { c.pf = Math.max(0, c.pf + e.pf); if (e.pf > 0) c.seal += e.pf; out.push(`${e.pf > 0 ? '+' : ''}${e.pf} PF`); }
   for (const [k, v] of Object.entries(e.rep ?? {})) { c.rep[k] = clamp((c.rep[k] ?? 0) + v, -5, 5); out.push(`${v > 0 ? '+' : ''}${v} rep. ${FACTIONS[k] ?? k}`); }
   if (e.alert) { c.alert = clamp(c.alert + e.alert); out.push(`${e.alert > 0 ? '+' : ''}${e.alert} Alerta`); }

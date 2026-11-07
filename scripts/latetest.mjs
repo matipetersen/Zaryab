@@ -12,7 +12,7 @@ await page.goto('http://127.0.0.1:5173/'); await page.waitForTimeout(800);
 await page.click('text=Nueva campaña'); await page.waitForTimeout(400);
 // partida avanzada: capítulos anteriores hechos, nivel acorde, sin guion en curso
 await page.evaluate(from => {
-  const a = window.__app, c = a.camp; const lv = { 4: 4, 5: 5, 6: 6, 7: 7, 8: 7, 9: 8, 10: 9, 11: 10, 12: 12, 13: 13 }[from] ?? 7;
+  const a = window.__app, c = a.camp; const lv = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 7, 9: 8, 10: 9, 11: 10, 12: 12, 13: 13 }[from] ?? 7;
   const flags = []; for (let i = 0; i < from; i++) flags.push(`cap${i}_done`);
   flags.push('postura_pueblo', 'conoce_ellie', 'torneo_digno');
   const quests = {}; for (let i = 1; i < from; i++) quests[`m_cap${i}`] = 'done';
@@ -20,7 +20,7 @@ await page.evaluate(from => {
   localStorage.setItem('zaryab.save.v3', JSON.stringify(sv));
 }, from);
 await page.reload(); await page.waitForTimeout(800); await page.click('text=Continuar'); await page.waitForTimeout(600);
-const seen = new Set(), titles = []; let lastText = '', stuck = 0, steps = 0, ends = 0; const t0 = Date.now(); const battles = [];
+let lastDone = -1; const trace = []; const seen = new Set(), titles = []; let lastText = '', stuck = 0, steps = 0, ends = 0; const t0 = Date.now(); const battles = [];
 for (let i = 0; i < 20000; i++) {
   steps++;
   if (Date.now() - t0 > maxMin * 60000) { console.log('TIEMPO agotado'); break; }
@@ -33,6 +33,7 @@ for (let i = 0; i < 20000; i++) {
       endBtn: [...document.querySelectorAll('button')].some(b => b.textContent === 'Volver al mapa de Zaryab'), done: Object.keys(window.__app.camp.quests).filter(k => window.__app.camp.quests[k] === 'done') };
   });
   if (st.title && !titles.includes(st.title)) titles.push(st.title);
+  if (st.done.length !== lastDone) { lastDone = st.done.length; const cd = await page.evaluate(() => ({ c: window.__app.camp.c, d: window.__app.camp.d, day: window.__app.camp.day })); trace.push(`${st.done[st.done.length - 1]} c${cd.c} d${cd.d} día${cd.day}`); }
   if (st.done.includes('m_cap13') && st.hub) { console.log('FIN: Cap. XIII hecho'); break; }
   if (st.overlay) { await page.click('.overlay .btn').catch(() => {}); await page.waitForTimeout(150); continue; }
   if (st.endBtn) { ends++; await page.screenshot({ path: `${dir}/late_end_${pick}.png` }); await page.click('text=Volver al mapa de Zaryab').catch(() => {}); await page.waitForTimeout(300); continue; }
@@ -55,6 +56,7 @@ for (let i = 0; i < 20000; i++) {
 const fin = await page.evaluate(() => { const c = window.__app.camp; return { day: c.day, lvl: c.lvl, c: c.c, d: c.d, done: Object.keys(c.quests).filter(k => c.quests[k] === 'done'), dead: c.dead, flags: c.flags.length, finales: c.flags.filter(f => f.startsWith('final_')) }; });
 console.log(`elección=${pick} pasos=${steps} capítulos=${[...seen].join(',')} combates=${battles.length} finales vistos=${ends}`);
 console.log('títulos:', titles.join(' | '));
+console.log('medidores por capítulo:', trace.join(' · '));
 console.log(JSON.stringify(fin));
 console.log(errs.slice(0, 15).join('\n') || 'sin errores de consola');
 await page.screenshot({ path: `${dir}/late_final_${pick}.png` });
