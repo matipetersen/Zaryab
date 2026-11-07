@@ -3,6 +3,7 @@ import { X_MAZHAR_TOMO, X_MAZHAR_OPT, XI_SIMBOLO, XII_KETHRAS, XII_ROMAIN_OPT, X
 import type { Node } from './types';
 import type { Effect } from '../state';
 import { EPILOGUE } from './endings';
+import { SEPTIMO, FARID_EPI } from './fiebre';
 
 const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
@@ -37,6 +38,7 @@ export const CAP13: Node[] = [
   IF('zahir_promesa', [S('Zahir', 'Les prometí a Farid sano, la corona perdonada, el nombre de Rabb. Lo sigo prometiendo. Es verdad. No es toda la verdad.', 'con una mano abierta')]),
   IF('zahir_regalo_1', [S('Zahir', 'Les di el nombre de Mirabel. Fue un regalo. También fue un cebo.', 'con una media sonrisa triste')]),
   S('Zahir', 'El ritual del Eclipse unirá los fragmentos. El Simurg volverá a ser uno. Pero para eso necesito un cuerpo. Y ustedes me dieron siete.', 'sin pudor'),
+  ...SEPTIMO,
   { t: 'choice', prompt: 'Las espirales del círculo son las mismas del desierto. Se leen.', options: [
     { label: 'Romain: leer la liturgia invertida del círculo (Religión)', hint: 'Es la oración del primer día, escrita al revés. Romain es quien mejor la entiende. Si falla, Zahir se da cuenta de que la leyeron.', check: { skill: 'religion', dc: 16, pc: 'romain' }, e: { d: 1, flags: ['liturgia_leida'] }, result: ['Romain la lee en voz baja, de atrás para adelante, como se lee una sentencia. No es un rito para unir: es un rito para comer. El Simurg no vuelve a ser uno; uno de los fragmentos se queda con los otros. Y el cuerpo que pide no es una ofrenda: es la boca.'], fail: { e: { c: 1 }, result: ['Romain se traba en la tercera vuelta de la espiral. Zahir lo mira por encima del hombro, con una ternura que asusta. «No te esfuerces, clérigo. Al final todos los rezos dicen lo mismo: gracias.»'] } },
     { label: 'No leer: decidir con lo que ya saben', result: ['Dejan las espirales en paz. Ya leyeron bastante en este viaje.'] },
@@ -56,29 +58,29 @@ export const CAP13: Node[] = [
   IF('samira_confia', [S('Capitana Samira', 'La Guardia está contenida arriba. Tienen lo que tarden en dar la alarma. No es mucho.', 'con una espada de mano')]),
   IF('razul_aliado', [S('Vizir Razul', 'Ya lo han visto. Me quedan fuerzas para un último trabajo. Que sea éste.', 'bajando del último escalón, con el bastón en alto')]),
   IF('ellie_sabe', [S('Sifra (Ellie)', 'Panchi. ¿Lo trajiste?', 'a un paso de él, sin mirarle')]),
-  IF('ellie_sabe', [{ t: 'choice', prompt: 'Panchi tiene delante lo que Ellie le pidió: «Traelo». Es su rabia.', options: [
+  IF('perma_panchi', [IF('ellie_sabe', [N('Sifra la Silente busca a alguien entre ustedes y no lo encuentra. No pregunta. Se ajusta la venda y se queda igual, un paso más cerca de donde él habría estado.')])], [IF('ellie_sabe', [{ t: 'choice', prompt: 'Panchi tiene delante lo que Ellie le pidió: «Traelo». Es su rabia.', options: [
     { label: 'Cerrar el puño', hint: 'Golpear a Zahir con todo.', e: { c: 1, flags: ['panchi_cierra'] }, result: ['Panchi cierra el puño. Es el golpe más lento y más preciso de su vida.'] },
     { label: 'Abrir la mano', hint: 'Perdonar.', e: { d: 1, flags: ['panchi_perdona'] }, result: ['Panchi abre la mano, y por un instante no hay ira en ella.'] },
     { label: 'Guardar la rabia para después', e: { flags: ['panchi_guarda'] }, result: ['Panchi sonríe con medio labio. «Todavía no. Lo necesito.»'] },
-  ] }]),
+  ] }])]),
   IF('ellie_sabe', [{ t: 'choice', prompt: 'Sifra la Silente aparece de la nada, con la venda de lino en la muñeca. Hay un instante, uno sólo, en que Zahir cree haber ganado.', options: [
     { label: 'Dejar que Zahir crea que ha ganado… y usar la venda de Ellie', hint: 'El Pacto Roto: Zahir queda sin su máscara de dios.', e: { d: 2, flags: ['pacto_roto'] }, result: ['Zahir abre los brazos. «Han venido. Lo han traído todo.» Es entonces cuando Ellie levanta la mano. La venda de lino se enciende como una cuerda de alambre. «Ahora.» Zahir se queda con la boca abierta.'] },
     { label: 'Ignorar a Ellie', e: {}, result: ['Ellie baja la mano. Los mira. No dice nada. Se desvanece.'] },
   ] }]),
-  S('Azuran', 'Pact. Soy yo. El que fuiste. El que serás. Tengo una corona y no sé si quiero seguir llevándola.', 'una voz dorada, dentro de la cabeza de Pact'),
+  IF('perma_pact', [], [S('Azuran', 'Pact. Soy yo. El que fuiste. El que serás. Tengo una corona y no sé si quiero seguir llevándola.', 'una voz dorada, dentro de la cabeza de Pact'),
   { t: 'choice', prompt: 'El Segundo Aliento de Pact: ¿qué hace con la corona de fuego invertido?', options: [
     { label: 'Rendir la corona: vivir como humano', hint: 'Pierde las alas y gana una vida.', e: { d: 1, flags: ['pact_rinde'] }, result: ['La corona se apaga entre sus manos. Pact exhala, como alguien que suelta una carga. Las alas no vuelven a salir. Sonríe.'] },
     { label: 'Asumir la corona: ángel de la verdad', hint: 'Azuran y Pact, juntos.', e: { c: 1, flags: ['pact_asume'] }, result: ['Pact se pone la corona. Una sola vez, el eclipse se llena de luz. Una voz doble, la suya y la de Azuran, dice: «Ahora sí.»'] },
     { label: 'Pact: hablarle a Azuran de igual a igual (Persuasión)', hint: 'Ni rendir ni asumir: que Azuran se quede como recuerdo y no como dueño. Si Pact no convence, la corona decide sola.', check: { skill: 'persuasion', dc: 16, pc: 'pact' }, e: { d: 1, flags: ['pact_rinde'] }, result: ['«No te voy a llevar puesto», le dice Pact a la voz dorada. «Te voy a llevar como se lleva a un hermano mayor: contando lo que hiciste bien.» Azuran se ríe, por primera vez, con su propia risa. La corona se apaga sin dolor. Pact se queda sin alas y con un nombre de más, y los dos le alcanzan.'], fail: { e: { c: 1, flags: ['pact_asume'] }, result: ['Pact empieza a hablar y Azuran termina la frase por él. Después la siguiente. La corona sube sola hasta su frente. «Ahora sí», dicen dos voces con una sola boca, y Pact no está seguro de cuál de las dos lo dijo primero.'] } },
-  ] },
-  IF('rabb_silaba', [S('Rabb Locke', 'Hace meses, en la biblioteca, le arranqué una sílaba. Una sola. La sigo teniendo. Ahora quiero el resto.', 'apretando la empuñadura')]),
+  ] }]),
+  IF('perma_rabb', [], [IF('rabb_silaba', [S('Rabb Locke', 'Hace meses, en la biblioteca, le arranqué una sílaba. Una sola. La sigo teniendo. Ahora quiero el resto.', 'apretando la empuñadura')]),
   S('Rabb Locke', 'La espada me susurra otra vez. Dice que hay un contrato nuevo. Que puedo reescribirme. Que ya no habrá huecos.', 'con la mano en la empuñadura'),
   { t: 'choice', prompt: 'El Reescribir de Rabb: tres formas de acabar con el pacto que no recuerda haber firmado.', options: [
     { label: 'Dejar que lo reescriban', hint: 'Memoria completa, pero ajena.', e: { c: 1, flags: ['rabb_reescribe'] }, result: ['La espada vibra. Los huecos se llenan. Rabb abre los ojos con una cara que no es la suya y que es suya.'] },
     { label: 'Firmar un contrato nuevo con el Simurg', hint: 'Sin olvido.', e: { d: 1, flags: ['rabb_firma'] }, result: ['Rabb firma con su propio nombre, el que se inventó. La espada se queda muda, y luego, muy bajito, repite el nombre.'] },
     { label: 'Romper el pacto', hint: 'Sólo con la clave de Ellie.', if: 'ellie_sabe', e: { d: 2, flags: ['rabb_rompe'] }, result: ['La espada se deshace en ceniza gris. Rabb sostiene una empuñadura vacía. Es la primera vez que se queda sin voz ajena. Llora, aunque no sabe por qué.'] },
     { label: 'Rabb: exigirle a la espada el nombre de quien la vendió (Intimidar)', hint: 'La última pulseada entre Rabb y su arma. Si la hoja gana, lo reescribe a su gusto.', check: { skill: 'intimidar', dc: 17, pc: 'rabb' }, e: { d: 1, flags: ['rabb_firma'] }, result: ['«Primero el nombre», dice Rabb. «Después hablamos de contratos.» La espada calla tanto que parece rota. Después dice un nombre, uno solo, de alguien que murió hace siglos y que ya no puede cobrar nada. Rabb lo repite en voz alta para que quede dicho, y firma el contrato nuevo con el suyo, el que se inventó, debajo.'], fail: { e: { c: 1, flags: ['rabb_reescribe'] }, result: ['La espada no da nombres: da recuerdos, muchos, todos a la vez. Rabb cae de rodillas bajo el peso de una vida entera que no vivió, y cuando se levanta los huecos están llenos. No sabe con qué.'] } },
-  ] },
+  ] }]),
   ...RESURRECCION,
   IF('sacrificio_elegido', [N('Y, desde algún rincón de las catacumbas, la puerta de la mina se cierra otra vez. Hay un precio que no se olvida.')]),
   N('Zahir abre las alas. Son de fuego y de mentira. El eclipse cae sobre la cámara y apaga las antorchas. Cuando se enciende otra vez, Zahir no es una silueta: es un ave del tamaño de un templo.'),
@@ -87,5 +89,6 @@ export const CAP13: Node[] = [
   N('El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como ceniza luminosa, y una por una se apagan. Lo que queda es una figura alta y andrógina, con ropajes de plumas rotas.'),
   S('Zahir', 'No sé si gané o perdí. Pero ha sido bonito ser un dios, aunque fuera un momento.', 'casi sin voz'),
   FX({ flags: ['cap13_done'] }, 'El Ritual del Eclipse ha terminado.'),
+  ...FARID_EPI,
   ...EPILOGUE,
 ];

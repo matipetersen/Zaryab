@@ -110,7 +110,7 @@ export class StoryUI {
       // El mapa y la compañía aparecen ya; los enemigos pedidos, con la línea siguiente (la que los presenta).
       case 'stage': this.bg.style.background = BG.limbo; await this.stage?.set(n.map, this.cast(), []); this.stage?.clear(true); this.pendingFoes = n.foes?.length ? n.foes : undefined; return;
       case 'narr': this.revealFoes(); await this.show(null, n.text); await this.pause(); return;
-      case 'say': this.revealFoes(); await this.show(n.who, n.text, n.tone); await this.pause(); return;
+      case 'say': if (this.deadSpeaker(n.who)) return; this.revealFoes(); await this.show(n.who, n.text, n.tone); await this.pause(); return;
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }
       case 'if': { const ok = has(this.camp, n.flag); await this.play(ok ? n.then : n.else ?? []); return; }
       case 'choice': return this.choice(n.prompt, n.options);
@@ -121,8 +121,12 @@ export class StoryUI {
       case 'end': this.dlg.classList.add('hidden'); { const t = h('div', { class: 'stage-title' }, h('h1', {}, n.title), h('p', {}, n.text)); t.style.top = '30%'; t.querySelector('p')!.setAttribute('style', 'max-width:720px;margin:14px auto;line-height:1.7;letter-spacing:.04em;text-transform:none'); this.el.append(t); const b = h('button', { class: 'btn', style: { position: 'absolute', bottom: '14%', left: '50%', transform: 'translateX(-50%)' } }, 'Volver al mapa de Zaryab'); this.el.append(b); await new Promise<void>(r => b.addEventListener('click', () => r())); t.remove(); b.remove(); } return;
     }
   }
+  /** Los muertos de la compañía ya no hablan ni protagonizan opciones. */
+  private deadId(name: string): string | undefined { const n = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); return this.camp.dead.find(id => n.startsWith(id === 'zyrthar' ? 'zyr' : id)); }
+  deadSpeaker(who: string) { return !!this.deadId(who); }
+  deadOpt(o: Opt) { const d = this.camp.dead; if (o.alive && (d.includes(o.alive) || !this.camp.party.includes(o.alive))) return true; if (o.check?.pc && d.includes(o.check.pc)) return true; const m = /^([^:(]{2,14}):/.exec(o.label); return !!(m && this.deadId(m[1])); }
   async choice(prompt: string | undefined, options: Opt[]) {
-    const avail = options.filter(o => !o.if || has(this.camp, o.if));
+    const avail = options.filter(o => (!o.if || has(this.camp, o.if)) && !this.deadOpt(o));
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
       for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} · tira ${bestFor(this.camp, o.check)}`) : null, (o.disabled || (o.hint && scrubSoul(o.hint))) ? h('small', {}, o.disabled ?? scrubSoul(o.hint!)) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
