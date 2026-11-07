@@ -8,8 +8,9 @@ export type Node =
   | { t: 'chapter'; title: string; sub: string; bg?: string }
   | { t: 'bg'; id: string }
   | { t: 'stage'; map: string; foes?: string[] }
-  | { t: 'narr'; text: string }
-  | { t: 'say'; who: string; text: string; tone?: string }
+  /** mem: recuerda a un muerto a propósito (no se salta aunque lo nombre). */
+  | { t: 'narr'; text: string; mem?: boolean }
+  | { t: 'say'; who: string; text: string; tone?: string; mem?: boolean }
   | { t: 'choice'; prompt?: string; options: Opt[] }
   | { t: 'battle'; enc: string; foeCount?: number; title?: string; soft?: boolean }
   | { t: 'puzzle'; id: 'marks' }

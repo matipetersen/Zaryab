@@ -96,8 +96,15 @@ export class StoryUI {
 
   // ---------- reproducción ----------
   async play(nodes: Node[], top = false): Promise<void> {
+    let chain = false; // conversación que nombraba a un muerto: se saltean también las réplicas que siguen
     for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i]; await this.node(n, nodes[i + 1]);
+      const n = nodes[i];
+      if (n.t === 'say' || n.t === 'narr') {
+        const skip = !n.mem && (this.namesDead(n.text) || (n.t === 'say' && (this.deadSpeaker(n.who) || chain)));
+        if (skip) { chain = true; if (top) this.onTop?.(i + 1); continue; }
+        if (n.t === 'narr') chain = false;
+      } else chain = false;
+      await this.node(n, nodes[i + 1]);
       if (top) this.onTop?.(i + 1);
     }
   }
@@ -124,9 +131,14 @@ export class StoryUI {
   /** Los muertos de la compañía ya no hablan ni protagonizan opciones. */
   private deadId(name: string): string | undefined { const n = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); return this.camp.dead.find(id => n.startsWith(id === 'zyrthar' ? 'zyr' : id)); }
   deadSpeaker(who: string) { return !!this.deadId(who); }
+  private static NAME: Record<string, RegExp> = { romain: /\bRomain\b/, pact: /\bPact\b/, rabb: /\bRabb\b/, joren: /\bJoren\b/, zyrthar: /Zyr'?thar/, panchi: /\bPanchi\b/ };
+  /** El texto nombra a alguien de la compañía que murió para siempre. */
+  namesDead(t: string) { return this.camp.dead.some(id => StoryUI.NAME[id]?.test(t)); }
   deadOpt(o: Opt) { const d = this.camp.dead; if (o.alive && (d.includes(o.alive) || !this.camp.party.includes(o.alive))) return true; if (o.check?.pc && d.includes(o.check.pc)) return true; const m = /^([^:(]{2,14}):/.exec(o.label); return !!(m && this.deadId(m[1])); }
   async choice(prompt: string | undefined, options: Opt[]) {
-    const avail = options.filter(o => (!o.if || has(this.camp, o.if)) && !this.deadOpt(o));
+    const base = options.filter(o => (!o.if || has(this.camp, o.if)) && !this.deadOpt(o));
+    // también fuera las que lo nombran, salvo que no quede ninguna
+    const named = base.filter(o => !this.namesDead(o.label + ' ' + (o.hint ?? ''))); const avail = named.length ? named : base;
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
       for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} · tira ${bestFor(this.camp, o.check)}`) : null, (o.disabled || (o.hint && scrubSoul(o.hint))) ? h('small', {}, o.disabled ?? scrubSoul(o.hint!)) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
@@ -138,6 +150,8 @@ export class StoryUI {
       { const box = h('div'); this.show(null, '', undefined, box); await rollDie(box, r.pc, PARTY_BY_ID[r.pc].name, SKILL_LABEL[picked.check.skill], r.d20, r.mod); } await this.pause();
       if (!ok) branch = picked.fail ?? {};
     }
+    // se filtra antes de aplicar: quien muere en esta misma decisión sí tiene su despedida
+    if (branch.result) branch = { ...branch, result: branch.result.filter(r => !this.namesDead(r)) };
     const lines = applyEffect(this.camp, branch.e); this.hud();
     for (let i = 0; i < (branch.result?.length ?? 0); i++) { await this.show(null, branch.result![i], undefined, i === branch.result!.length - 1 && lines.length ? this.badges(lines) : null); await this.pause(); }
     if (!branch.result?.length && lines.length) { await this.show(null, '…', undefined, this.badges(lines)); await this.pause(); }

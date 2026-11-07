@@ -666,3 +666,9 @@ export function campfire(c: Campaign, questId: string): Node[] | null {
 /** Para pruebas y para el validador: todas las claves con escena propia. */
 export const CAMPFIRE_QUESTS = Object.keys(CHAPTER);
 export const CAMPFIRE_GENERIC = Object.keys(GEN);
+/** Para exportar el guion: todas las escenas de fogata de `questId` en su versión base (todos vivos, sin banderas). */
+export function CAMPFIRE_SCENES(questId: string, base?: Campaign): Node[] {
+  const c = base ?? ({ flags: [], arq: {}, chem: {}, dead: [], party: Object.keys(WHO) } as unknown as Campaign);
+  const x: Ctx = { c, f: () => false, alive: Object.keys(WHO), q: questId };
+  return (CHAPTER[questId] ?? []).flatMap(sc => [T(sc.sub, sc.bg), ...sc.body(x)]);
+}
