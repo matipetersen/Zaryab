@@ -147,7 +147,7 @@ export class HubUI {
       for (const r of RITUALS) {
         if (r.id === 'resurreccion') {
           b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, scrubSoul(r.desc)), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, scrubSoul(r.cost)),
-            c.dead.length ? h('div', {}, ...c.dead.map(id => h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, id), tab) }, `Resucitar a ${PARTY_BY_ID[id]?.name ?? id}`))) : h('div', { class: 'small' }, 'Nadie ha caído por ahora.')));
+            c.dead.some(id => !c.flags.includes(`perma_${id}`)) ? h('div', {}, ...c.dead.filter(id => !c.flags.includes(`perma_${id}`)).map(id => h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, id), tab) }, `Resucitar a ${PARTY_BY_ID[id]?.name ?? id}`))) : h('div', { class: 'small' }, 'Nadie ha caído por ahora.')));
           continue;
         }
         const asc = r.id === 'ascension';

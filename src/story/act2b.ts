@@ -2,6 +2,7 @@
 // Los flags `frag_<id>` ya no se ponen en las resoluciones: los fija `fragChoice` al final de cada capítulo.
 import { X_MAZHAR_TOMO, X_MAZHAR_OPT } from './integra';
 import { fragChoice } from './frag';
+import { FIEBRE } from './fiebre';
 import type { Node } from './types';
 import type { Effect } from '../state';
 
@@ -83,8 +84,9 @@ export const CAP9: Node[] = [
   N("Se quedan así, dos hombres duros sentados en un banco, hasta que Cabernet llega con un odre de vino y rompe el hechizo con un chiste de pésimo gusto."),
   fragChoice("marid"),
   BG("limbo"),
-  S("Zahir", "Hay un secreto que no les conté. No los elegí por casualidad ni por suerte. Los elegí por sus heridas. Cada uno de ustedes tenía una puerta abierta; yo sólo entré.", "sin tono, casi un parte"),
-  S("Zahir", "No me pidan perdón por ello. Pero se lo debo decir.", "esperando"),
+  S("Zahir", "Hay algo que no les conté. No los elegí por suerte. Los elegí por sus heridas. Los sanos nunca me habrían entendido: sólo el que perdió algo sabe lo que cuesta volver a tenerlo.", "en voz baja, como quien confiesa algo de lo que no se avergüenza"),
+  S("Zahir", "Esta noche quiero que descansen. Se lo ganaron.", "y, por una vez, suena a que lo dice en serio"),
+  ...FIEBRE,
   FX({ flags: ["cap9_done"], ruta: { sombra: 1 } }, "Capítulo IX completado."),
 ];
 
@@ -97,11 +99,12 @@ export const CAP10: Node[] = [
   S("Aisha", "Por favor. Por favor. Es mi hijo.", "sin soltar a Farid ni un segundo, con la frente contra la suya"),
   IF("farid_sombra_libre", [N("La sombra de Farid, en la pared, se queda quieta: desde la iglesia de Dahhak ya no ríe sola. Esta voz no viene de su sombra. Viene de abajo, de la tierra, de un lugar que Romain no llegó a cerrar.")]),
   IF("farid_vio_alas", [S("Farid", "Pact, el pájaro del sueño es el mismo que me canta. Pero el pájaro era bueno. Este es otro.", "abriendo por un segundo los ojos de verdad")]),
-  { t: "choice", prompt: "La Balanza de Romain: medir el alma de Farid para decidir qué hacer.", options: [
+  IF("farid_zahir", [N("Hay algo más en la voz de Farid, debajo de la canción del Lich: un tibio, un dorado, como una mano que lo sostiene de la nuca para que no se hunda. Aisha lo nota y sonríe entre lágrimas. «Zahir está con él», dice. «Zahir no lo suelta.»")]),
+  IF("perma_romain", [N("Sin la balanza de Romain nadie sabe medir lo que le pasa a Farid. Aisha lo ata a la cama con una sábana para que no camine dormido y le besa la frente cada vez que canta. Nadie dice el nombre de Romain. Todos lo piensan.")], [{ t: "choice", prompt: "La Balanza de Romain: medir el alma de Farid para decidir qué hacer.", options: [
     { label: "Sellar el alma de Farid", hint: "Lo salva del Lich pero lo vuelve frío.", e: { c: 1, flags: ["farid_sellado"], huella: "Sellaron el alma de un niño para salvarlo de un Lich." }, result: ["Romain pone una mano sobre el pecho de Farid, y la balanza, en la otra, se inclina hacia un plato que nadie había pesado. Cuando retira la mano, el niño sigue vivo, y respira, y parpadea. Pero ya no canta, ni sueña, ni ríe.", "Aisha lo abraza igual. Cuando levanta la vista, Romain no se atreve a sostenerla. «Está a salvo», dice. «Está a salvo» es lo que se dice cuando algo no está bien, y los dos lo saben."] },
     { label: "Ofrecer la voz de Romain al Lich", hint: "Romain paga con su voz. Devoción.", e: { d: 2, flags: ["romain_voz"], huella: "Romain cambió su voz por el alma de Farid." }, result: ["Romain apoya la balanza en el pecho de Farid y habla una última vez, con una voz que no reconocerían: más joven, más honda, la de antes del incendio. Dice el nombre de Kelemvor, dice el de Farid, dice «a cambio». Cuando termina, no vuelve a hablar.", "Farid despierta, parpadea y le pregunta a Aisha qué hay para desayunar. Romain sonríe sin sonido y le acaricia el pelo. Es el precio más barato que ha pagado en su vida."] },
     { label: "Romper la conexión con la ayuda de Ellie", hint: "Requiere la Venda de Ellie.", if: "conoce_ellie", e: { d: 1, flags: ["farid_roto", "ellie_rompe"] }, result: ["La venda de Ellie se enrolla en la muñeca de Farid como una serpiente de lino. «Ya está», dice una voz que no está allí. La canción deja de sonar en mitad de una nota.", "Los ghuls del barrio se quedan quietos, desconcertados, como perros a los que se les acabó el silbato. Farid parpadea. Tiene la lengua dormida y una pregunta: «¿Quién cantaba?». Nadie se atreve a contestarle."] },
-  ] },
+  ] }]),
   N("Hay una sola manera de que el Lich deje de cantarle a Farid: ir a buscarlo. La cripta de Al-Mazhar está bajo el cementerio del Bajo Zaryab, a trece escalones de profundidad. Aisha dice que va. Nadie le discute. Se ata el delantal a la cintura y se pone la cuchara de madera en el cinturón, como otros se ponen una daga."),
   N("Cada peldaño tiene una máscara tallada que llora arena negra. Las máscaras tienen rostros de hombres, de hombres comunes: un panadero, un arriero, un tejedor de sedas con la barba rala. Hombres que no pidieron irse y dejaron un hijo atrás."),
   S("Panchi", "¿Vos rezás, Romain? Quiero decir, desde lo de la voz. Desde que no sabés si te escuchan.", "bajando a su lado, con una mano en la pared húmeda"),

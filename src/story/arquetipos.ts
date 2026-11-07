@@ -154,7 +154,7 @@ export const ARQ: Record<string, Node[]> = {
 };
 
 /** Rito de resurrección del Cap. XIII: cada personaje deja atrás su arquetipo viejo o lo acepta. */
-const rite = (pc: string, name: string, askA: string, askB: string, resA: string, resB: string): Node[] => [
+const rite = (pc: string, name: string, askA: string, askB: string, resA: string, resB: string): Node[] => [IF(`perma_${pc}`, [N(`${name} no está en el círculo. Queda un hueco del tamaño exacto de su voz.`)], [
   IF(`arq_${pc}_a`, [N(`${name}: ha caminado hacia ${POLOS[pc][0]}. La pregunta ya no es qué será, sino si puede dejar de temer serlo.`)], [
     IF(`arq_${pc}_b`, [N(`${name}: ha caminado hacia ${POLOS[pc][1]}. La pregunta ya no es qué será, sino si puede dejar de justificarlo.`)], [N(`${name}: sigue en el cruce. Aún no ha elegido.`)]),
   ]),
@@ -162,7 +162,7 @@ const rite = (pc: string, name: string, askA: string, askB: string, resA: string
     { label: askA, e: { d: 1, arq: { [pc]: 2 }, flags: [`res_${pc}_a`] }, result: [resA] },
     { label: askB, e: { c: 1, arq: { [pc]: -2 }, flags: [`res_${pc}_b`] }, result: [resB] },
   ] },
-];
+])];
 export const RESURRECCION: Node[] = [
   T('La Resurrección', 'Antes del Eclipse', 'limbo'),
   N('Antes del Eclipse, en el círculo de piedra, cada uno de ustedes siente la misma cosa: que lo que ha sido hasta ahora ya no alcanza. Es el momento de decidir en quién se convierten al salir de aquí.'),
@@ -178,5 +178,5 @@ export const RESURRECCION: Node[] = [
 const nm = (pc: string) => pc === 'zyrthar' ? "Zyr'thar" : pc[0].toUpperCase() + pc.slice(1);
 const lineA = (pc: string) => N(`${nm(pc)}: terminó siendo ${POLOS[pc][0]}. No porque lo decidiera una vez, sino porque lo decidió muchas.`);
 const lineB = (pc: string) => N(`${nm(pc)}: terminó siendo ${POLOS[pc][1]}. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.`);
-export const ARQ_EPILOGO: Node[] = [N('— Quiénes fueron —'), ...Object.keys(POLOS).map(pc =>
-  IF(`res_${pc}_a`, [lineA(pc)], [IF(`res_${pc}_b`, [lineB(pc)], [IF(`arq_${pc}_a`, [lineA(pc)], [IF(`arq_${pc}_b`, [lineB(pc)])])])]))];
+export const ARQ_EPILOGO: Node[] = [N('— Quiénes fueron —'), ...Object.keys(POLOS).map(pc => IF(`perma_${pc}`, [N(`${nm(pc)}: no llegó al final. Dio su aliento para que otro lo tuviera.`)], [
+  IF(`res_${pc}_a`, [lineA(pc)], [IF(`res_${pc}_b`, [lineB(pc)], [IF(`arq_${pc}_a`, [lineA(pc)], [IF(`arq_${pc}_b`, [lineB(pc)])])])])]))];
