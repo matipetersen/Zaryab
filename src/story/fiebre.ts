@@ -83,7 +83,7 @@ const ocupa = (pc: string): Opt => ({
 
 export const SEPTIMO: Node[] = [
   { t: 'if', flag: 'farid_zahir', then: [
-    S('Zahir', `Seis llegaron por el desierto. El séptimo me lo abrieron ustedes, una noche de fiebre, sobre una mesa con platos sucios. Me pidieron que lo sostuviera. Lo sostengo todavía.`, 'con la misma ternura de aquella noche, que ahora da miedo'),
+    S('Zahir', `Seis cristales di en el desierto. El séptimo me lo abrieron ustedes, una noche de fiebre, sobre una mesa con platos sucios. Me pidieron que lo sostuviera. Lo sostengo todavía.`, 'con la misma ternura de aquella noche, que ahora da miedo'),
     N(`Arriba, en la biblioteca, Farid deja de cantar a mitad de una nota. Aisha levanta la cabeza del pan.`),
     S('Zahir', `No le va a doler. Nunca les dolió a ustedes, ¿o sí?`, 'casi ofendido'),
     { t: 'choice', prompt: 'Zahir tiene a Farid por dentro. Para sacarlo, alguien tiene que ocupar su lugar.', options: [

@@ -88,7 +88,7 @@ Object.assign(MAPS, {
   },
   dunas: {
     id: 'dunas', name: 'Las Dunas Blancas', theme: 'crater',
-    objective: 'Sobrevivan al ataque nocturno. Usen las rocas negras como cobertura.',
+    objective: 'Sobrevivan al ataque nocturno. Usen las rocas blancas como cobertura.',
     rows: paint(20, 14, [
       ['fill', '.'],
       R(2, 3, 5, 5, ','), R(13, 7, 17, 9, ','), R(8, 6, 11, 7, ','), P(10, 4, ','), P(4, 10, ','), P(15, 3, ','),
