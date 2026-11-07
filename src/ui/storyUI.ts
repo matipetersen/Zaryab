@@ -2,6 +2,8 @@ import { portraitUrl, slug } from './portraits';
 import { pixPortrait } from './pixPortraits';
 import { dioramaPref } from './diorama';
 import { h, sleep, avatar } from './dom';
+import { rollDie } from './dice';
+import { scrubSoul } from './scrub';
 import type { Node, Opt } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
 import { applyEffect, has, built, previewEffect, type Campaign, type Effect } from '../state';
@@ -73,7 +75,7 @@ export class StoryUI {
     for (let i = 0; i <= text.length && !skip; i++) { el.textContent = text.slice(0, i); await sleep(text[i - 1] === '.' ? 90 : 14); }
     el.textContent = text; this.root.removeEventListener('click', stop); window.removeEventListener('keydown', key, true);
   }
-  badges(lines: string[]): HTMLElement { return h('div', { class: 'badges' }, ...lines.map(l => h('span', { class: `badge ${/Corrup/.test(l) ? 'c' : /Devoc/.test(l) ? 'd' : /PF/.test(l) ? 'pf' : 'n'}` }, l))); }
+  badges(lines: string[]): HTMLElement { return h('div', { class: 'badges' }, ...lines.filter(l => !/Corrup|Devoc/.test(l)).map(l => h('span', { class: `badge ${/Corrup/.test(l) ? 'c' : /Devoc/.test(l) ? 'd' : /PF/.test(l) ? 'pf' : 'n'}` }, l))); }
 
   async show(who: string | null, text: string, tone?: string, extra?: HTMLElement | null) {
     this.dlg.classList.remove('hidden'); this.dlg.innerHTML = '';
@@ -123,13 +125,13 @@ export class StoryUI {
     const avail = options.filter(o => !o.if || has(this.camp, o.if));
     const wrap = h('div', { class: 'choices' });
     const picked = await new Promise<Opt>(res => {
-      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} CD ${o.check.dc} · mejor: ${bestFor(this.camp, o.check)}`) : null, o.hint || o.disabled ? h('small', {}, o.disabled ?? o.hint) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
+      for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} · tira ${bestFor(this.camp, o.check)}`) : null, (o.disabled || (o.hint && scrubSoul(o.hint))) ? h('small', {}, o.disabled ?? scrubSoul(o.hint!)) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
       this.show(null, prompt ?? 'Elijan.', undefined, wrap);
     });
     let branch: { e?: Effect; result?: string[]; then?: Node[] } = picked;
     if (picked.check) {
       const r = rollCheck(this.camp, picked.check); const ok = r.total >= picked.check.dc;
-      await this.show(null, `${PARTY_BY_ID[r.pc].name} — ${SKILL_LABEL[picked.check.skill]} (CD ${picked.check.dc}): d20 ${r.d20} ${r.mod >= 0 ? '+' : ''}${r.mod} = ${r.total}. ${r.d20 === 20 ? '¡Crítico! ' : r.d20 === 1 ? 'Pifia. ' : ''}${ok ? 'ÉXITO.' : 'FALLO.'}`, undefined); await this.pause();
+      { const box = h('div'); this.show(null, '', undefined, box); await rollDie(box, r.pc, PARTY_BY_ID[r.pc].name, SKILL_LABEL[picked.check.skill], r.d20, r.mod); } await this.pause();
       if (!ok) branch = picked.fail ?? {};
     }
     const lines = applyEffect(this.camp, branch.e); this.hud();

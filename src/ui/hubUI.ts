@@ -1,4 +1,5 @@
 import { h } from './dom';
+import { scrubSoul } from './scrub';
 import { DISTRICTS, ROADS, DISTRICT_BY_ID, type District } from '../world/districts';
 import { QUESTS, type QuestDef } from '../world/quests';
 import { BUILDINGS, RITOS } from '../world/buildings';
@@ -126,7 +127,7 @@ export class HubUI {
   openInventory(tab = 'personajes') { if (!this.inv) return; this.openModal('Inventario · Equipo y objetos', this.inv.render(this.camp, tab, () => { this.onChange?.(); this.openInventory(this.inv!.tab); })); }
   openLevel() { const c = this.camp; this.lvl.redraw = () => this.openLevel(); const done = () => { this.onChange?.(); this.render(); this.closeModal(); if (pendingLevel(c)) this.openLevel(); }; this.openModal(pendingLevel(c) ? 'Subida de nivel' : 'Nivel del grupo', this.lvl.render(c, done)); }
   lastMsg = ''; api?: { advance: (n: number) => void };
-  act(r: ActResult, tab: string) { this.lastMsg = r.text; if (r.ok && r.days) this.api?.advance(r.days); this.onChange?.(); this.openSanctuary(tab); }
+  act(r: ActResult, tab: string) { this.lastMsg = scrubSoul(r.text); if (r.ok && r.days) this.api?.advance(r.days); this.onChange?.(); this.openSanctuary(tab); }
   openSanctuary(tab = 'seguidores') {
     const c = this.camp; const b = h('div', { class: 'res' });
     const tabs = h('div', { class: 'tabs' }, ...[['seguidores', '👥 Seguidores'], ['rituales', '🕯 Rituales'], ['edificios', '🏛 Edificios'], ['milagros', '✦ Milagros']].map(([id, lb]) => h('button', { class: `tabbtn ${tab === id ? 'on' : ''}`, onClick: () => this.openSanctuary(id) }, lb)));
@@ -135,7 +136,7 @@ export class HubUI {
     if (tab === 'seguidores') {
       const p = projection(c);
       b.append(h('div', { class: 'small', style: { margin: '6px 0' } }, `Cada 3 días: ${[`+${p.pf} PF`, `+${p.food} víveres`, `+${p.mats} materiales`, `+${p.rumors} rumores`].join(' · ')} · el culto come ${p.need} víveres.${c.food < p.need ? ' ⚠ Faltan víveres.' : ''}`),
-        h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'fe'), tab) }, 'Sermón de Fe (1 día)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'hierro'), tab) }, 'Sermón de Hierro (1 día, +1 Corrupción)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(recruit(c), tab) }, 'Predicar y reclutar (1 día)')));
+        h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'fe'), tab) }, 'Sermón de Fe (1 día)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(sermon(c, 'hierro'), tab) }, 'Sermón de Hierro (1 día)'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(recruit(c), tab) }, 'Predicar y reclutar (1 día)')));
       if (!c.followers.length) b.append(h('div', { class: 'small', style: { marginTop: '10px' } }, 'Aún no tienen seguidores. Prediquen en el Bajo Zaryab.'));
       for (const f of c.followers) {
         const sel = h('select', { onChange: (e: Event) => { setRole(c, f.id, (e.target as HTMLSelectElement).value as Role); this.onChange?.(); this.openSanctuary(tab); } }, ...f.apt.map(r => h('option', { value: r, selected: r === f.role }, `${ROLES[r].icon} ${ROLES[r].label}`)));
@@ -145,12 +146,12 @@ export class HubUI {
     } else if (tab === 'rituales') {
       for (const r of RITUALS) {
         if (r.id === 'resurreccion') {
-          b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, r.desc), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, r.cost),
+          b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, scrubSoul(r.desc)), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, scrubSoul(r.cost)),
             c.dead.length ? h('div', {}, ...c.dead.map(id => h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, id), tab) }, `Resucitar a ${PARTY_BY_ID[id]?.name ?? id}`))) : h('div', { class: 'small' }, 'Nadie ha caído por ahora.')));
           continue;
         }
         const asc = r.id === 'ascension';
-        b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, r.desc), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, r.cost),
+        b.append(h('div', { class: 'jq' }, h('b', {}, r.name), h('div', { class: 'small' }, scrubSoul(r.desc)), h('div', { class: 'small', style: { color: 'var(--secondary)' } }, scrubSoul(r.cost)),
           asc ? h('div', {}, h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'ascender'), tab) }, 'Ascender'), ' ', h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id, 'reliquia'), tab) }, 'Convertir en reliquia')) : h('button', { class: 'btn sm', onClick: () => this.act(ritual(c, r.id), tab) }, 'Celebrar')));
       }
       b.append(h('div', { class: 'small lore', style: { marginTop: '8px' } }, RITOS));

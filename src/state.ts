@@ -69,10 +69,10 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
   if (!e) return [];
   const out: string[] = [];
   if (e.c) {
-    soul(c, e.c, 0); out.push(`${e.c > 0 ? '+' : ''}${e.c} Corrupción`);
+    soul(c, e.c, 0); // el cambio se ve en el medidor, no como etiqueta: el jugador no sabe cuánto suma cada decisión
     if (e.c > 0 && built(c, 'altar')) { const g = 1 + Math.floor(Math.random() * 6); c.pf += g; c.seal += g; out.push(`+${g} PF (Altar de Huesos)`); }
   }
-  if (e.d) { soul(c, 0, e.d); out.push(`${e.d > 0 ? '+' : ''}${e.d} Devoción`); }
+  if (e.d) soul(c, 0, e.d);
   if (e.pf) { c.pf = Math.max(0, c.pf + e.pf); if (e.pf > 0) c.seal += e.pf; out.push(`${e.pf > 0 ? '+' : ''}${e.pf} PF`); }
   for (const [k, v] of Object.entries(e.rep ?? {})) { c.rep[k] = clamp((c.rep[k] ?? 0) + v, -5, 5); out.push(`${v > 0 ? '+' : ''}${v} rep. ${FACTIONS[k] ?? k}`); }
   if (e.alert) { c.alert = clamp(c.alert + e.alert); out.push(`${e.alert > 0 ? '+' : ''}${e.alert} Alerta`); }
@@ -118,7 +118,7 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
 export function previewEffect(e?: Effect): string[] {
   if (!e) return [];
   const o: string[] = [];
-  if (e.c) o.push(`${e.c > 0 ? '+' : ''}${e.c} Corrupción`); if (e.d) o.push(`${e.d > 0 ? '+' : ''}${e.d} Devoción`); if (e.pf) o.push(`${e.pf > 0 ? '+' : ''}${e.pf} PF`);
+  if (e.pf) o.push(`${e.pf > 0 ? '+' : ''}${e.pf} PF`);
   if (e.gold) o.push(`${e.gold > 0 ? '+' : ''}${e.gold} PO`);
   if (e.alert) o.push(`${e.alert > 0 ? '+' : ''}${e.alert} Alerta`);
   for (const [k, v] of Object.entries(e.rep ?? {})) o.push(`${v > 0 ? '+' : ''}${v} ${FACTIONS[k] ?? k}`);

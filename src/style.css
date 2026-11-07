@@ -387,3 +387,21 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 .dialog .portrait { margin-top: 0; }
 .portrait.pix { border-radius: 14px; }
 @media (max-width: 600px) { .dialog .portrait { width: 76px; height: 76px; } .dialog .row { gap: 12px; } }
+/* tirada de dados de las pruebas de la historia */
+.dice { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0 2px; }
+.die-who { font-family: var(--f-head); font-size: 17px; letter-spacing: .02em; text-shadow: 0 1px 0 #000; }
+.die { width: 92px; height: 92px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.6)); }
+.die svg { width: 100%; height: 100%; display: block; }
+.die .d20n { font-family: var(--f-num); font-weight: bold; }
+.die.rolling { animation: dieRoll .26s linear infinite, dieHop 1.3s cubic-bezier(.3,.6,.4,1) forwards; }
+.die.land { animation: dieLand .35s ease-out; }
+.die.crit { animation: dieLand .35s ease-out; filter: drop-shadow(0 0 14px #ffd23f) drop-shadow(0 6px 6px rgba(0,0,0,.6)); }
+.die.fumble { animation: dieLand .35s ease-out; filter: drop-shadow(0 0 12px #c0392b) drop-shadow(0 6px 6px rgba(0,0,0,.6)) saturate(.6); }
+@keyframes dieRoll { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes dieHop { 0% { translate: -120px -30px; scale: .7; } 30% { translate: -40px 0; scale: 1; } 45% { translate: -10px -22px; } 62% { translate: 10px 0; } 75% { translate: 16px -8px; } 100% { translate: 0 0; } }
+@keyframes dieLand { 0% { scale: 1.25; } 60% { scale: .95; } 100% { scale: 1; } }
+.die-res { min-height: 54px; text-align: center; }
+.die-total { font-family: var(--f-num); font-size: 34px; line-height: 1; color: #f3e6c8; animation: dieLand .3s ease-out; }
+.die-math { font-size: 12px; color: #a99bbd; font-family: var(--f-num); margin-top: 2px; }
+.die-tag { font-family: var(--f-head); font-size: 14px; margin-top: 2px; } .die-tag.crit { color: #ffd23f; } .die-tag.fumble { color: #ff7a6a; }
+@media (prefers-reduced-motion: reduce) { .die.rolling { animation: none; } }
