@@ -4,12 +4,12 @@ import CAL from './difficulty.cal.json';
 
 /** Nivel de diseño de cada combate: con un grupo de ese nivel, sin ayudas y con el bot de pruebas, se gana ≈ 50 %. */
 export const DESIGN_LVL: Record<string, number> = {
-  noche: 1, linyera: 2,
-  acueducto: 3, lago: 3, espejo: 3, zyr: 3, joren: 3, romain: 3, panchi: 3, patrulla: 3, ninos: 3, infiltrado: 3, ghul_vendedor: 3, recaudador: 3,
+  noche: 1, linyera: 2, ghul_vendedor: 2,
+  acueducto: 3, lago: 3, espejo: 3, zyr: 3, joren: 3, romain: 3, panchi: 3, patrulla: 3, ninos: 3, infiltrado: 3, recaudador: 3,
   cubo: 4, te: 4, pact: 4, caravana: 4, motin: 4, jann_zoco: 4, gusano_martillo: 4,
-  coloso: 5, asalto: 5,
-  revuelta_orden: 6, revuelta_pueblo: 6, revuelta_sombra: 6, tigre: 7, cementerio: 7, dahhak_final: 7,
-  varreth: 8, d4_defensa: 8, marid: 9, al_mazhar: 10, gusano: 11, huida_mina: 11, razul_final: 13, eclipse: 14,
+  coloso: 4, tigre: 5, asalto: 8,
+  revuelta_orden: 6, revuelta_pueblo: 6, revuelta_sombra: 6, cementerio: 7, dahhak_final: 7,
+  varreth: 8, d4_defensa: 8, marid: 9, al_mazhar: 10, gusano: 11, huida_mina: 11, razul_final: 13, eclipse: 15,
 };
 /** Combates que no se miden por victoria (duelo perdido, objetivos, huida): no se calibran. */
 export const NO_CAL = new Set(['huida_mina', 'gusano_caza', 'torneo', 'cubo_maunator', 'tuneles_a', 'tuneles_b', 'kethras_quemarropa']);
