@@ -22,6 +22,8 @@ export interface BattleResult { chem?: Record<string, number>; result: 'victory'
 import { audio } from './audio';
 import { objectiveStatus, type Reward } from '../engine/twists';
 import { bark, BarkGate, shortBark, type BarkEv } from '../story/barks';
+import { reply, BOSS, moodFor } from '../story/barks2';
+import { pixPortraitUrl } from './pixPortraits';
 const ABN: Record<Ab, string> = { str: 'FUE', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR' };
 const sgn = (n: number) => (n >= 0 ? '+' : '') + n;
 
@@ -34,7 +36,7 @@ export class BattleUI {
   constructor(root: HTMLElement) { this.root = root; }
 
   async run(b: Battle, mapId: string, intro: string): Promise<BattleResult> {
-    this.b = b; this.stopped = false; this.gate = new BarkGate(); this.lowSaid = new Set(); this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
+    this.b = b; this.stopped = false; this.gate = new BarkGate(); this.lowSaid = new Set(); this.downSeen = new Set(); this.lastStandSaid = false; this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
     this.mapId = mapId; audio.setMood(b.units.some(u => u.traits.includes('boss')) ? 'boss' : 'battle'); const map = MAPS[mapId];
     this.canvas = h('canvas', { id: 'board' }); this.left = h('aside', { id: 'left', class: 'side' }); this.right = h('aside', { id: 'right', class: 'side' });
     this.bar = h('div', { id: 'actionbar' }); this.logEl = h('div', { id: 'log' }); this.tracker = h('div', { id: 'tracker' }); this.tip = h('div', { id: 'tooltip', class: 'hidden' });
@@ -71,10 +73,27 @@ export class BattleUI {
   gate = new BarkGate(); lowSaid = new Set<number>();
   /** Un PC vivo y consciente cerca de `u` (o el más cercano), que no sea `not`. */
   nearPC(u: Unit, not?: Unit) { const ps = this.b.units.filter(p => p.pcId && p !== not && !p.dead && !p.down); ps.sort((a, c) => cheb(a, u) - cheb(c, u)); return ps[0]; }
-  say(u: Unit | undefined, ev: BarkEv, other?: string) {
-    if (!u?.pcId || u.dead || u.down || !this.gate.allow(ev, this.b.round)) return; const line = bark(u.pcId, ev, { other }); if (!line) return;
-    this.addLog(`${PARTY_BY_ID[u.pcId]?.name ?? u.name}: «${line}»`, 'bark'); this.r.speech(u.uid, line, shortBark(line));
+  say(u: Unit | undefined, ev: BarkEv, other?: string): boolean {
+    if (!u?.pcId || u.dead || u.down || !this.gate.allow(ev, this.b.round)) return false; const line = bark(u.pcId, ev, { other, tone: this.tone() }); if (!line) return false;
+    this.speak(u, line, moodFor(u.pcId, ev));
+    // a veces un compañero contesta (o festeja la baja)
+    if (ev !== 'start' && Math.random() < (ev === 'foeKilled' || ev === 'bossKilled' ? 0.35 : 0.25)) {
+      const o = this.b.units.filter(p => p.pcId && p !== u && !p.dead && !p.down); const r = o[Math.floor(Math.random() * o.length)];
+      if (r) setTimeout(() => { if (this.stopped || r.dead || r.down) return; const praise = (ev === 'foeKilled' || ev === 'bossKilled') && Math.random() < 0.6 ? bark(r.pcId!, 'praise', { other: u.pcId }) : null; const l2 = praise ?? reply(r.pcId!, u.pcId!); if (l2) this.speak(r, l2, moodFor(r.pcId!, praise ? 'praise' : 'reply')); }, (window as any).__fast ? 0 : 1400);
+    }
+    return true;
   }
+  /** Con mucha Corrupción o Devoción, la compañía habla distinto. */
+  tone(): 'dark' | 'light' | undefined { const c = (window as any).__app?.camp; if (!c) return undefined; return c.c >= 7 && c.c > c.d + 1 ? 'dark' : c.d >= 7 && c.d > c.c + 1 ? 'light' : undefined; }
+  /** La línea flota sobre el personaje y, abajo, aparece su retrato con la cara que corresponde. */
+  speak(u: Unit, line: string, expr: Parameters<typeof pixPortraitUrl>[1]) {
+    const name = PARTY_BY_ID[u.pcId!]?.name ?? u.name; this.addLog(`${name}: «${line}»`, 'bark'); this.r.speech(u.uid, line, shortBark(line));
+    const url = pixPortraitUrl(u.pcId!, expr); const stage = this.canvas.parentElement; if (!stage) return;
+    stage.querySelector('.cutin')?.remove();
+    const el = h('div', { class: 'cutin' }, url ? h('div', { class: 'cutin-pic', style: { backgroundImage: `url(${url})` } }) : null, h('div', { class: 'cutin-txt' }, h('b', {}, name), h('span', {}, line)));
+    stage.append(el); setTimeout(() => el.classList.add('out'), 2600); setTimeout(() => el.remove(), 3100);
+  }
+  downSeen = new Set<number>(); lastStandSaid = false;
   barkEvents(ev: BEvent[]) {
     const b = this.b, cur = b.cur, pcCur = cur?.pcId && !cur.down && !cur.dead ? cur : undefined;
     for (const e of ev) {
@@ -85,10 +104,16 @@ export class BattleUI {
         if (e.text === '¡Caído!' && u.pcId) this.say(this.nearPC(u, u), 'allyDown', u.pcId);
         else if (e.cls === 'crit' && /^\d+$/.test(e.text) && u.side === 'foe') this.say(pcCur, 'crit');
         else if (e.cls === 'miss' && e.text === 'Falla' && u.side === 'foe') this.say(pcCur, 'miss');
+        else if (e.cls === 'miss' && e.text === 'Falla' && u.pcId && !u.down) this.say(u, 'dodge');
         else if (e.cls === 'heal' && e.text.startsWith('+') && u.pcId && pcCur && pcCur !== u) this.say(u, 'healed', pcCur.pcId);
       }
     }
     for (const p of b.units) if (p.pcId && !p.dead && !p.down && p.hp > 0 && p.hp <= p.maxHp * .3 && !this.lowSaid.has(p.uid)) { this.lowSaid.add(p.uid); this.say(p, 'lowHp'); break; }
+    // vuelve en sí alguien que estaba caído
+    for (const p of b.units) if (p.pcId) { if (p.down) this.downSeen.add(p.uid); else if (this.downSeen.has(p.uid) && !p.dead) { this.downSeen.delete(p.uid); this.say(p, 'revived'); } }
+    // último en pie
+    const up = b.units.filter(p => p.pcId && !p.dead && !p.down), all = b.units.filter(p => p.pcId && !p.dead);
+    if (!this.lastStandSaid && up.length === 1 && all.length >= 3 && !b.over) { this.lastStandSaid = true; this.say(up[0], 'lastStand'); }
   }
   addLog(t: string, cls = '') { const d = h('div', { class: cls }, t); this.logEl.append(d); this.logEl.scrollTop = this.logEl.scrollHeight; }
   // ───── despliegue previo (Tactics Ogre): se elige dónde empieza cada personaje ─────
@@ -149,7 +174,10 @@ export class BattleUI {
     await this.deployPhase();
     if (this.coach && !this.coach.el.classList.contains('hidden') && this.coach.i === 0) this.coach.open(1);
     const b = this.b; b.start(); await this.flush();
-    { const ps = b.units.filter(p => p.pcId && !p.dead); this.say(ps[Math.floor(Math.random() * ps.length)], 'start'); }
+    { const ps = b.units.filter(p => p.pcId && !p.dead); const boss = b.units.find(u => u.side === 'foe' && u.traits.includes('boss') && BOSS[u.id]);
+      const lines = boss ? BOSS[boss.id]! : undefined; const who = lines ? ps.filter(p => lines[p.pcId!]?.length) : [];
+      if (lines && who.length) { const p = who[Math.floor(Math.random() * who.length)]; const pool = lines[p.pcId!]!; this.gate.allow('start', b.round); this.speak(p, pool[Math.floor(Math.random() * pool.length)], 'enojo'); }
+      else this.say(ps[Math.floor(Math.random() * ps.length)], 'start'); }
     while (!b.over && !this.stopped) {
       const u = b.cur; if (!u) break;
       this.r.activeUid = u.uid; this.selUid = u.uid; this.r.selUid = u.uid; this.renderAll();
@@ -167,7 +195,9 @@ export class BattleUI {
       }
     }
     if (this.stopped) return;
-    await this.flush(); await sleep(700);
+    await this.flush();
+    if (b.result === 'victory') { const up = b.units.filter(p => p.pcId && !p.dead && !p.down); if (this.say(up[Math.floor(Math.random() * up.length)], 'win')) await sleep((window as any).__fast ? 0 : 1600); }
+    await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
     this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), chem: b.chemGains(), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed }, bonus: objectiveStatus(b).filter(o => o.state === 'done').map(o => ({ text: o.text, reward: o.reward })) });

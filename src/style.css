@@ -405,3 +405,12 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 .die-math { font-size: 12px; color: #a99bbd; font-family: var(--f-num); margin-top: 2px; }
 .die-tag { font-family: var(--f-head); font-size: 14px; margin-top: 2px; } .die-tag.crit { color: #ffd23f; } .die-tag.fumble { color: #ff7a6a; }
 @media (prefers-reduced-motion: reduce) { .die.rolling { animation: none; } }
+/* retrato que aparece cuando un personaje habla en combate */
+#stage { position: relative; }
+.cutin { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px; max-width: min(460px, 70%); padding: 8px 14px 8px 8px; background: rgba(11,8,16,.88); border: 1px solid var(--secondary); border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.6); pointer-events: none; z-index: 5; animation: cutIn .25s ease-out; transition: opacity .45s, transform .45s; }
+.cutin.out { opacity: 0; transform: translateX(20px); }
+.cutin-pic { width: 64px; height: 64px; flex: none; border-radius: 8px; background-size: cover; image-rendering: pixelated; border: 2px solid var(--secondary); }
+.cutin-txt { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.35; }
+.cutin-txt b { font-family: var(--f-head); color: var(--secondary); font-size: 14px; }
+@keyframes cutIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) { .cutin { bottom: 8px; right: 8px; padding: 6px 10px 6px 6px; } .cutin-pic { width: 46px; height: 46px; } .cutin-txt { font-size: 12px; } }

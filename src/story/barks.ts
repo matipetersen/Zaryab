@@ -1,12 +1,13 @@
 import { NAMES } from '../engine/synergy';
+import { EXTRA, TONE, type Bark2Ev } from './barks2';
 
 /**
  * Frases de combate («barks»): una línea corta por personaje y evento, elegida al azar.
  * Son sólo de interfaz: no tocan el motor ni la simulación. `{o}` es el otro personaje (el caído, el que cura).
  */
-export type BarkEv = 'allyDown' | 'foeKilled' | 'bossKilled' | 'crit' | 'lowHp' | 'healed' | 'miss' | 'start';
+export type BarkEv = 'allyDown' | 'foeKilled' | 'bossKilled' | 'crit' | 'lowHp' | 'healed' | 'miss' | 'start' | Bark2Ev;
 
-const L: Record<string, Record<BarkEv, string[]>> = {
+const L: Record<string, Partial<Record<BarkEv, string[]>>> = {
   romain: {
     start: ['Kelemvor, mirá bien. Hoy pesamos a muchos.', 'Que la balanza no tiemble. Yo sí, un poco.', 'Nadie muere antes de su hora. Hoy, menos.', 'Pongan los platillos. Empezamos.'],
     allyDown: ['¡{o}! No es tu hora, ¿me oíste?', '{o}, aguantá. La balanza todavía no se inclina.', 'Kelemvor, a {o} no. Todavía no.', '¡Cúbranme! Voy por {o}.'],
@@ -72,8 +73,11 @@ export const BARK_LINES = L;
 
 const lastLine: Record<string, string> = {};
 /** Una frase al azar para `pcId` ante `ev` (sin repetir la última), o null si no hay. */
-export function bark(pcId: string, ev: BarkEv, ctx?: { other?: string }): string | null {
-  const pool = L[pcId]?.[ev]; if (!pool?.length) return null;
+export function bark(pcId: string, ev: BarkEv, ctx?: { other?: string; tone?: 'dark' | 'light' }): string | null {
+  const base = L[pcId]?.[ev] ?? EXTRA[pcId]?.[ev as Bark2Ev] ?? [];
+  // con el alma de la compañía muy inclinada, la mitad de las veces habla ese tono
+  const toned = ctx?.tone && (ev === 'start' || ev === 'foeKilled') ? TONE[ctx.tone][pcId]?.[ev] ?? [] : [];
+  const pool = toned.length && Math.random() < 0.5 ? toned : base; if (!pool?.length) return null;
   const o = ctx?.other ? (NAMES[ctx.other] ?? ctx.other) : '';
   const usable = pool.filter(l => (o || !l.includes('{o}')) && l !== lastLine[pcId + ev]);
   const list = usable.length ? usable : pool.filter(l => o || !l.includes('{o}')); if (!list.length) return null;
@@ -82,9 +86,9 @@ export function bark(pcId: string, ev: BarkEv, ctx?: { other?: string }): string
 }
 
 /** Probabilidad de que un evento dispare una frase (los graves siempre). */
-const CHANCE: Record<BarkEv, number> = { start: 1, allyDown: 1, bossKilled: 1, lowHp: 0.9, crit: 0.6, foeKilled: 0.45, healed: 0.5, miss: 0.25 };
+const CHANCE: Record<BarkEv, number> = { start: 1, allyDown: 1, bossKilled: 1, lowHp: 0.9, crit: 0.6, foeKilled: 0.45, healed: 0.5, miss: 0.25, win: 1, revived: 1, dodge: 0.3, lastStand: 1, praise: 0.5 };
 /** Estos ignoran la pausa de dos turnos (pero no el límite de uno por evento y ronda). */
-const URGENT: BarkEv[] = ['allyDown', 'bossKilled', 'start'];
+const URGENT: BarkEv[] = ['allyDown', 'bossKilled', 'start', 'win', 'revived', 'lastStand'];
 
 /**
  * Freno para que no se llene de frases: como máximo una cada 2 turnos (salvo las urgentes)
