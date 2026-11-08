@@ -97,6 +97,7 @@ export const CAP10: Node[] = [
   N("Aisha lo encuentra sentado en el borde del jergón, con los ojos abiertos y la mirada en ningún lado. La cuchara de madera que llevaba en la mano cae al suelo. El golpe es lo único que suena por encima de la canción."),
   S("Farid", "Dice que me quiere como un hijo. Dice que no me hará daño. Dice que tiene trece caras y que todas me quieren.", "a medias dormido, con los labios mojados de una lengua ajena"),
   S("Aisha", "Por favor. Por favor. Es mi hijo.", "sin soltar a Farid ni un segundo, con la frente contra la suya"),
+  IF("nana_desague", [S("Aisha", "Es la canción del desagüe. La que cantaba él. Ahora la canta Farid, con la voz de mi marido adentro.", "mirando a Romain, que ya lo sabía")]),
   IF("farid_sombra_libre", [N("La sombra de Farid, en la pared, se queda quieta: desde la iglesia de Dahhak ya no ríe sola. Esta voz no viene de su sombra. Viene de abajo, de la tierra, de un lugar que Romain no llegó a cerrar.")]),
   IF("farid_vio_alas", [S("Farid", "Pact, el pájaro del sueño es el mismo que me canta. Pero el pájaro era bueno. Este es otro.", "abriendo por un segundo los ojos de verdad")]),
   IF("farid_zahir", [N("Hay algo más en la voz de Farid, debajo de la canción del Lich: un tibio, un dorado, como una mano que lo sostiene de la nuca para que no se hunda. Aisha lo nota y sonríe entre lágrimas. «Zahir está con él», dice. «Zahir no lo suelta.»")]),

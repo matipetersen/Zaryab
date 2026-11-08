@@ -135,16 +135,31 @@ export class StoryUI {
   /** El texto nombra a alguien de la compañía que murió para siempre. */
   namesDead(t: string) { return this.camp.dead.some(id => StoryUI.NAME[id]?.test(t)); }
   deadOpt(o: Opt) { const d = this.camp.dead; if (o.alive && (d.includes(o.alive) || !this.camp.party.includes(o.alive))) return true; if (o.check?.pc && d.includes(o.check.pc)) return true; const m = /^([^:(]{2,14}):/.exec(o.label); return !!(m && this.deadId(m[1])); }
+  confirmDeath(ids: string[]): Promise<boolean> {
+    const names = ids.map(id => PARTY_BY_ID[id]?.name ?? id).join(' y ');
+    return new Promise(res => {
+      const box = h('div', { class: 'choices confirm-death' },
+        h('button', { class: 'choice confirm-yes', onClick: () => res(true) }, `Sí. ${names} muere para siempre`, h('small', {}, 'No vuelve: ni el cristal ni el ritual lo traen de regreso.')),
+        h('button', { class: 'choice confirm-no', onClick: () => res(false) }, 'Volver a pensarlo'));
+      this.show(null, `Esta decisión mata a ${names} para siempre. No se puede deshacer.`, undefined, box);
+    });
+  }
   async choice(prompt: string | undefined, options: Opt[]) {
     const base = options.filter(o => (!o.if || has(this.camp, o.if)) && !this.deadOpt(o));
     // también fuera las que lo nombran, salvo que no quede ninguna
     const named = base.filter(o => !this.namesDead(o.label + ' ' + (o.hint ?? ''))); const avail = named.length ? named : base;
     if (!avail.length) return; // la decisión era de alguien que ya no está
+    let picked: Opt;
+    for (;;) {
     const wrap = h('div', { class: 'choices' });
-    const picked = await new Promise<Opt>(res => {
+    picked = await new Promise<Opt>(res => {
       for (const o of avail) wrap.append(h('button', { class: 'choice', disabled: !!o.disabled, onClick: () => res(o) }, o.label, o.check ? h('small', { style: { color: '#e8c872' } }, `🎲 ${SKILL_LABEL[o.check.skill]} · tira ${bestFor(this.camp, o.check)}`) : null, (o.disabled || (o.hint && scrubSoul(o.hint))) ? h('small', {}, o.disabled ?? scrubSoul(o.hint!)) : null, built(this.camp, 'espejo') && !o.disabled && previewEffect(o.e).length ? h('small', { style: { color: '#c9a6ff' } }, '☽ ' + previewEffect(o.e).join(' · ')) : null));
       this.show(null, prompt ?? 'Elijan.', undefined, wrap);
     });
+    // una muerte para siempre se confirma: el jugador tiene que saber que la está eligiendo
+    const dies = picked.e?.dead?.filter(d => !this.camp.dead.includes(d)) ?? [];
+    if (!dies.length || await this.confirmDeath(dies)) break;
+    }
     let branch: { e?: Effect; result?: string[]; then?: Node[] } = picked;
     if (picked.check) {
       const r = rollCheck(this.camp, picked.check); const ok = r.total >= picked.check.dc;

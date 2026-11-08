@@ -6,7 +6,7 @@ import { CAP6 } from '../story/cap6';
 import { CAP7, CAP8, CAP9, CAP10, CAP11, CAP12, CAP13 } from '../story/acts';
 import { ACT2 } from './act2quests';
 import { DEEP } from './quests_deep';
-import { NIVEL } from '../story/nivel';
+import { NIVEL, NIVEL_AT } from '../story/nivel';
 import { CYRIC } from '../story/integra';
 import { MAUNATOR } from '../story/maunator';
 import { CAP0, CAP1, CAP2, CAP3, CAP4, CAP5 } from '../story/script';
@@ -243,7 +243,8 @@ QUESTS.push({ id: 'o_cyric', title: 'La Herencia de Cyric', kind: 'side', distri
 for (const q of QUESTS) if (DEEP[q.id]) q.script = DEEP[q.id];
 // escenas de nivelación (ver src/story/nivel.ts): al cierre del capítulo, antes de marcarlo terminado
 const beforeDone = (arr: Node[], add: Node[] | undefined) => { if (!add?.length) return arr; const i = arr.map((n, k) => n.t === 'fx' && (n.e?.flags ?? []).some(f => /^cap\d+_done$/.test(f)) ? k : -1).filter(k => k >= 0).pop(); const out = arr.slice(); if (i == null) out.push(...add); else out.splice(i, 0, ...add); return out; };
-for (const q of QUESTS) if (q.kind === 'main') q.script = beforeDone(q.script, NIVEL[q.id]);
+const atTitle = (arr: Node[], title: string, add: Node[]) => { const i = arr.findIndex(n => n.t === 'chapter' && n.title === title); if (i < 0) return beforeDone(arr, add); const out = arr.slice(); out.splice(i, 0, ...add); return out; };
+for (const q of QUESTS) if (q.kind === 'main') q.script = NIVEL_AT[q.id] ? atTitle(q.script, NIVEL_AT[q.id], NIVEL[q.id] ?? []) : beforeDone(q.script, NIVEL[q.id]);
 const RETIRED = new Set(['s_khush', 's_libro', 's_espejo', 'm_ladron', 'm_inq', 'f_motin', 'f_impuesto', 'f_hereje']);
 for (let i = QUESTS.length - 1; i >= 0; i--) if (RETIRED.has(QUESTS[i].id)) QUESTS.splice(i, 1);
 export const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));

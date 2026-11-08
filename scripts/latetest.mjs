@@ -43,6 +43,7 @@ for (let i = 0; i < 20000; i++) {
   }
   if (st.squad) { await page.click('.puzzle .box > .btn').catch(() => {}); await page.waitForTimeout(150); continue; }
   if (st.puzzle) { await page.evaluate(() => { const A = ['balanza', 'fuego', 'espejo', 'senda', 'cuchilla', 'eco']; [...document.querySelectorAll('.puzzle select')].forEach((s, i) => { s.value = A[i] ?? s.value; }); }); await page.click('.puzzle .btn').catch(() => {}); await page.waitForTimeout(200); continue; }
+  if (await page.$('.confirm-yes')) { await page.click('.confirm-yes').catch(() => {}); await page.waitForTimeout(80); continue; }
   if (st.choices) { const n = st.choices; const idx = pick === 'last' ? n - 1 : pick === 'rand' ? Math.floor(rnd() * n) : Math.min(+pick || 0, n - 1); const btn = (await page.$$('.choice:not([disabled])'))[idx]; if (btn) await btn.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(80); continue; }
   if (st.hub) {
     const q = await page.evaluate(() => { const app = window.__app, Q = window.__quests, hub = app.hub; const av = Q.filter(q => q.kind === 'main' && hub.questStatus(q) === 'available'); return av[0]?.id ?? null; });

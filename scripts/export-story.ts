@@ -29,7 +29,14 @@ function fx(e: any): string {
   return p.join(' · ');
 }
 
-function nodes(ns: Node[], d = 0) { for (const n of ns) node(n, d); }
+const seenMd = new Set<Node>();
+/** Los bloques que se repiten (el epílogo de la compañía en cada final) se imprimen una vez y después se remiten. */
+function nodes(ns: Node[], d = 0) {
+  let run = 0;
+  const flush = () => { if (run) { W(`${q(d)}*↺ (${run} bloque${run > 1 ? 's' : ''} igual${run > 1 ? 'es' : ''} a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*`); W(q(d)); run = 0; } };
+  for (const n of ns) { const shared = (n.t === 'if' || n.t === 'narr') && seenMd.has(n); if (shared) { run++; continue; } flush(); if (n.t === 'if' || n.t === 'narr') seenMd.add(n); node(n, d); }
+  flush();
+}
 function node(n: Node, d: number) {
   const Q = q(d);
   switch (n.t) {
@@ -73,7 +80,7 @@ const sec = (title: string, ns: Node[] | undefined, level = '##') => { if (!ns?.
 
 W('# Zaryab · Las Entrañas de Piedra Viva — la historia completa');
 W();
-W(`Exportado del juego el ${new Date().toISOString().slice(0, 10)}. Orden de juego. Las decisiones muestran pista, prueba, consecuencias (Corrupción, Devoción, marcas) y lo que se lee después; «▸ Si \`marca\`» son variantes según lo que se eligió antes. Las fogatas aparecen en su versión base (sin variantes de química).`);
+W(`**Zaryab es un juego digital.** El juego lleva solo todas las marcas, ecos y reputaciones; el jugador nunca ve una lista ni tiene que anotar nada, y en una partida lee sólo la rama que eligió. Este documento muestra todas las ramas a la vez para poder revisar el guion, por eso se ve más denso de lo que se juega. Exportado el ${new Date().toISOString().slice(0, 10)}, en orden de juego. Las decisiones muestran pista, prueba, consecuencias (Corrupción, Devoción, marcas) y lo que se lee después; «▸ Si \`marca\`» son variantes según lo que se eligió antes. Las fogatas aparecen en su versión base. Al final hay un apéndice con los umbrales de los sistemas.`);
 W();
 
 const MAIN = QUESTS.filter(x => x.kind === 'main');
@@ -91,13 +98,57 @@ for (const m of MAIN) {
   sec('Arquetipos', ARQ[m.id], '###');
   if (INTER_AFTER[m.id]) sec(`Interludio · ${INTER_AFTER[m.id]}`, INTERLUDES[INTER_AFTER[m.id]], '###');
 }
-W('# Parte II · Misiones personales y secundarias'); W();
-for (const m of QUESTS.filter(x => x.kind !== 'main')) { sec(`${m.title}  ·  \`${m.id}\` (${m.kind}${m.pc ? ', ' + m.pc : ''})`, m.script, '##'); sec('Junto al fuego', CAMPFIRE_SCENES(m.id), '###'); sec('Entreacto', NOVEL[m.id], '###'); }
+const KIND: Record<string, string> = { side: 'opcional', personal: 'misión personal · opcional, pero es el giro del arco', faction: 'de facción · opcional' };
+W('# Parte II · Misiones personales y secundarias (opcionales)'); W(); W('Todo lo de esta parte es opcional: aparece en el mapa de la ciudad y se juega cuando el jugador quiera. Las misiones personales se abren desde el Cap. II y son el giro del arco de cada personaje. El Inventario de Maunator (el Cubo que se mueve) es una aventura opcional larga; si no se juega, sus personajes (Seraphel, Kethras) sólo aparecen en variantes.'); W();
+for (const m of QUESTS.filter(x => x.kind !== 'main')) { sec(`${m.title}  ·  \`${m.id}\` (${KIND[m.kind] ?? m.kind}${m.pc ? ', ' + m.pc : ''})`, m.script, '##'); sec('Junto al fuego', CAMPFIRE_SCENES(m.id), '###'); sec('Entreacto', NOVEL[m.id], '###'); }
 W('# Parte III · Eventos, ecos e interludios sueltos'); W();
 const used = new Set(Object.values(INTER_AFTER));
 for (const [k, v] of Object.entries(EVENTS)) if (!used.has(k) && !(k in ECOS)) sec(`Evento · \`${k}\``, v, '##');
 for (const [k, v] of Object.entries(ECOS)) sec(`Eco · \`${k}\``, v, '##');
 
+// ───────────── apéndice: los sistemas y sus umbrales ─────────────
+const SYS: [string, string[]][] = [
+  ['Corrupción y Devoción (0 a 10)', [
+    'El juego las guarda con decimales y muestra el entero. Las decisiones no dicen cuánto suman: el jugador sólo ve moverse el medidor.',
+    'Cada suba rinde menos cerca del tope (se multiplica por 1 − valor/12, con un mínimo de 0,3), y subir una baja la otra 0,35 por punto.',
+    'Milagros en combate: Devoción ≥ 2 Bendición de las Arenas, ≥ 4 Muro de Virtud, ≥ 6 Renacimiento Puro; Corrupción ≥ 2 Grito de la Tormenta, ≥ 4 Pacto con el Abismo, ≥ 6 Eclipse de Zahir.',
+    'Voz en combate: con Corrupción ≥ 7 (y más de un punto sobre Devoción) la compañía habla en tono oscuro; con Devoción ≥ 7 (y más de un punto sobre Corrupción), en tono luminoso.',
+    'Seguidores: el escéptico pierde fe si Corrupción ≥ 6; el fanático gana fe si Corrupción ≥ 4.',
+  ]],
+  ['Ruta (se fija al cerrar el Cap. VIII)', [
+    'Sombra si Corrupción ≥ 7 y Devoción ≤ 4. Fe si Devoción ≥ 7 y Corrupción ≤ 4. Balanza si las dos están entre 4 y 6, o si se eligió la postura del Orden en el Cap. V.',
+    'Si no se cumple ninguna, gana la ruta con más puntos acumulados en las decisiones (Orden → Balanza, Pueblo → Fe, Sombra → Sombra).',
+  ]],
+  ['Puntos de Fe y Sello', [
+    'Los PF se ganan con decisiones, sermones, ofrendas y combates, y se gastan en milagros y rituales.',
+    'El Sello cuenta todos los PF ganados en la campaña; gastarlos no lo baja. Mide cuánto alimentaron al cristal.',
+  ]],
+  ['Alerta del Conclave (0 a 10)', [
+    '≥ 4: una patrulla viene a buscarlos. ≥ 7: asaltan la biblioteca. ≥ 10: cacería (salvo que hayan construido la Torre).',
+    'En combate, la Alerta alta los pone en desventaja: −4 con Alerta ≥ 7 y −8 con ≥ 10.',
+  ]],
+  ['Fragmentos del Simurg', [
+    'Cinco fragmentos atados a alguien: Dahhak (Farid), Marid (Zyr\'thar), Al-Mazhar (Aisha), Gul-Amarat (Samira) y Razul (Zaryab).',
+    'Cada uno se cede a Zahir (Sombra +1), se guarda (+6 PF) o se rompe (−6 PF, Devoción +1, y Zahir llega más débil al ritual).',
+  ]],
+  ['Finales (Cap. XIII)', [
+    'Liberar: Devoción ≥ 7, Sello ≤ 30 y al menos 3 fragmentos resueltos (guardados, cedidos o rotos).',
+    'Gobernar: Corrupción ≥ 7.',
+    'Espiral: Sello ≥ 60, o haber devorado a Dahhak.',
+    'Silencio: la vía del Silencio con Razul, o los huérfanos de Al-Mazhar en paz más el fragmento de Gul-Amarat resuelto.',
+    'Equilibrio: Corrupción y Devoción entre 4 y 6.',
+    'Destruir: siempre disponible.',
+    'Pacto Roto: haber conocido a Ellie y usar su venda en el ritual; reemplaza al resto.',
+  ]],
+  ['Muertes permanentes', [
+    'La noche de la fiebre (Cap. IX): si alguien da su aliento por Farid. El séptimo cuerpo (Cap. XIII): si alguien ocupa el lugar de Farid.',
+    'En combate, desde el Cap. III, sólo con la opción de muerte permanente activada; si no, el caído vuelve con +1 Corrupción.',
+    'Toda muerte permanente se confirma antes de elegirla. El ritual del cristal (12 PF) revive a los caídos en combate, nunca a quien dio su aliento.',
+    'Un muerto para siempre ya no habla ni protagoniza opciones; las escenas que dependían de él tienen su variante.',
+  ]],
+];
+W('# Apéndice · Los sistemas y sus umbrales'); W();
+for (const [t, ls] of SYS) { W(`## ${t}`); W(); for (const l of ls) W(`- ${l}`); W(); }
 const file = process.argv[2] ?? 'docs/HISTORIA_COMPLETA.md';
 writeFileSync(file, out.join('\n'));
 const words = out.join(' ').split(/\s+/).length;
@@ -108,7 +159,13 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const H: string[] = []; const toc: { id: string; title: string; lvl: number }[] = []; let nid = 0;
 const PCC: Record<string, string> = { romain: 'romain', pact: 'pact', rabb: 'rabb', joren: 'joren', zyr: 'zyr', panchi: 'panchi', zahir: 'zahir', razul: 'razul', vizir: 'razul' };
 const who = (w: string) => { const k = Object.keys(PCC).find(k => w.toLowerCase().replace(/[^a-z]/g, '').startsWith(k)); return k ? ` s-${PCC[k]}` : ''; };
-function hn(ns: Node[]) { for (const n of ns) hnode(n); }
+const seenH = new Set<Node>();
+function hn(ns: Node[]) {
+  let run = 0;
+  const flush = () => { if (run) { H.push(`<p class="meta">↺ ${run} bloque${run > 1 ? 's' : ''} igual${run > 1 ? 'es' : ''} a los de más arriba: el epílogo de la compañía se lee igual en todos los finales.</p>`); run = 0; } };
+  for (const n of ns) { const shared = (n.t === 'if' || n.t === 'narr') && seenH.has(n); if (shared) { run++; continue; } flush(); if (n.t === 'if' || n.t === 'narr') seenH.add(n); hnode(n); }
+  flush();
+}
 function hnode(n: Node) {
   switch (n.t) {
     case 'chapter': H.push(`<h4 class="scene">${esc(n.title)}${n.sub ? `<span>${esc(n.sub)}</span>` : ''}</h4>`); return;
@@ -151,11 +208,13 @@ for (const m of MAIN) {
   hsec(m.title, m.script, 1); hsec('Entreacto', NOVEL[m.id], 2); hsec('Junto al fuego', CAMPFIRE_SCENES(m.id), 2); hsec('Arquetipos', ARQ[m.id], 2);
   if (INTER_AFTER[m.id]) hsec(`Interludio`, INTERLUDES[INTER_AFTER[m.id]], 2);
 }
-part('Misiones personales y secundarias');
-for (const m of QUESTS.filter(x => x.kind !== 'main')) { hsec(m.title, m.script, 1); hsec('Junto al fuego', CAMPFIRE_SCENES(m.id), 2); hsec('Entreacto', NOVEL[m.id], 2); }
+part('Misiones personales y secundarias (opcionales)'); H.push(`<p class="lead">Todo lo de esta parte es opcional: aparece en el mapa de la ciudad y se juega cuando el jugador quiera. Las misiones personales se abren desde el Cap. II y son el giro del arco de cada personaje. El Inventario de Maunator es una aventura opcional larga; si no se juega, Seraphel y Kethras sólo aparecen en variantes.</p>`);
+for (const m of QUESTS.filter(x => x.kind !== 'main')) { hsec(`${m.title} · ${KIND[m.kind] ?? m.kind}`, m.script, 1); hsec('Junto al fuego', CAMPFIRE_SCENES(m.id), 2); hsec('Entreacto', NOVEL[m.id], 2); }
 part('Eventos y ecos');
 for (const [k, v] of Object.entries(EVENTS)) if (!used.has(k) && !(k in ECOS)) hsec(`Evento · ${k}`, v, 1);
 for (const [k, v] of Object.entries(ECOS)) hsec(`Eco · ${k}`, v, 1);
+part('Apéndice · Los sistemas y sus umbrales');
+for (const [t, ls] of SYS) { const id = `s${++nid}`; toc.push({ id, title: t, lvl: 1 }); H.push(`<section id="${id}" class="l1 sys"><h2>${esc(t)}</h2><ul>${ls.map(l => `<li>${esc(l)}</li>`).join('')}</ul></section>`); }
 const tocHtml = toc.filter(t => (t.lvl as number) <= 1).map(t => (t.lvl as number) === 0 ? `<li class="tp"><a href="#${t.id}">${esc(t.title)}</a></li>` : `<li><a href="#${t.id}">${esc(t.title)}</a></li>`).join('');
 writeFileSync(process.argv[3] ?? 'docs/historia-body.html', `<!--TOC-->${tocHtml}<!--/TOC-->\n${H.join('\n')}`);
 console.log('html', H.length, 'bloques');

@@ -1,6 +1,6 @@
 # Zaryab · Las Entrañas de Piedra Viva — la historia completa
 
-Exportado del juego el 2026-11-07. Orden de juego. Las decisiones muestran pista, prueba, consecuencias (Corrupción, Devoción, marcas) y lo que se lee después; «▸ Si `marca`» son variantes según lo que se eligió antes. Las fogatas aparecen en su versión base (sin variantes de química).
+**Zaryab es un juego digital.** El juego lleva solo todas las marcas, ecos y reputaciones; el jugador nunca ve una lista ni tiene que anotar nada, y en una partida lee sólo la rama que eligió. Este documento muestra todas las ramas a la vez para poder revisar el guion, por eso se ve más denso de lo que se juega. Exportado el 2026-11-08, en orden de juego. Las decisiones muestran pista, prueba, consecuencias (Corrupción, Devoción, marcas) y lo que se lee después; «▸ Si `marca`» son variantes según lo que se eligió antes. Las fogatas aparecen en su versión base. Al final hay un apéndice con los umbrales de los sistemas.
 
 # Parte I · La campaña
 
@@ -2210,6 +2210,20 @@ Afuera, Joren reconoce a uno de los Qilaat que escoltaron al Vizir. Tiene una ma
 > 
 > Joren vuelve a la madrugada con los nudillos rotos y un nombre que no dice. Pact le venda la mano sin preguntar. Cuando termina, Joren le dice «gracias» y algo más que Pact no alcanza a oír.
 > 
+### La nana del desagüe — *El Bajo, de madrugada*
+
+Ya casi amanece cuando Aisha baja a buscar agua y se queda quieta en la mitad de la escalera. Por la rejilla del desagüe sube una canción. Una nana, cantada muy despacio por una voz de hombre, cascada y cálida.
+
+**Aisha** *(con el balde vacío en la mano)*: Esa la cantaba mi marido. Así, con esa voz. Hace tres inviernos que lo enterré.
+
+Romain se arrodilla junto a la rejilla. La canción viene de muy abajo, de debajo del cementerio, y va y viene como si alguien la estuviera probando. En la calle de al lado, una madre golpea las puertas: su hijo salió anoche detrás de una música y no volvió.
+
+**Romain** *(con la oreja contra el hierro frío)*: No es un fantasma. Los fantasmas no ensayan. Alguien está aprendiendo a cantar con la voz de otro.
+
+**Aisha** *(subiendo la escalera sin el agua)*: No le digan nada a Farid. Por favor. Si la oye, va a querer bajar.
+
+*[marca: nana_desague]*
+
 *[Capítulo VIII completado. Ahora el juego calcula su Ruta. — marca: cap8_done]*
 
 
@@ -2534,6 +2548,12 @@ Farid arde. Aisha lo tiene en brazos sobre la mesa larga de la cena, entre los p
 
 **Aisha** *(sin levantar la cabeza)*: Se apagó así, de golpe. Estaba cantando y se apagó. Hagan algo. Ustedes volvieron de la muerte, ¿no? Enséñenle.
 
+**Aisha** *(apretándole la mano, que está helada)*: Cantaba la nana de su padre. Nadie se la enseñó. Tenía dos años cuando lo enterramos. ¿De dónde la sacó?
+
+**▸ Si `nana_desague`:**
+> Romain y Aisha se miran. Los dos piensan en la rejilla del desagüe y ninguno lo dice.
+> 
+
 **Romain** *(con dos dedos en el cuello del niño)*: El corazón todavía late. Lejos. Como alguien que golpea una puerta desde la otra punta de la casa.
 
 **Zahir** *(muy bajo; es la primera vez que no espera a que le pregunten)*: Puedo sostenerlo.
@@ -2749,6 +2769,10 @@ Aisha lo encuentra sentado en el borde del jergón, con los ojos abiertos y la m
 **Farid** *(a medias dormido, con los labios mojados de una lengua ajena)*: Dice que me quiere como un hijo. Dice que no me hará daño. Dice que tiene trece caras y que todas me quieren.
 
 **Aisha** *(sin soltar a Farid ni un segundo, con la frente contra la suya)*: Por favor. Por favor. Es mi hijo.
+
+**▸ Si `nana_desague`:**
+> **Aisha** *(mirando a Romain, que ya lo sabía)*: Es la canción del desagüe. La que cantaba él. Ahora la canta Farid, con la voz de mi marido adentro.
+> 
 
 **▸ Si `farid_sombra_libre`:**
 > La sombra de Farid, en la pared, se queda quieta: desde la iglesia de Dahhak ya no ríe sola. Esta voz no viene de su sombra. Viene de abajo, de la tierra, de un lugar que Romain no llegó a cerrar.
@@ -3322,6 +3346,48 @@ Antes de bajar, Samira se queda mirando una puerta que da a un cuarto de varones
 
 **Capitana Samira** *(en voz muy baja, con el silbato en el puño)*: Idris. Siempre le dije que lo tirara.
 
+### Las voces en la piedra — *Mina de Alabastro, nivel 3*
+
+En el tercer nivel de la mina, las paredes hablan. No fuerte: un murmullo, como gente rezando detrás de una puerta. Son los mineros que nadie bajó a buscar. Romain apoya la oreja en la piedra y se le llenan los ojos de lágrimas.
+
+**✦ Elección:** Las almas de los mineros están atrapadas en el alabastro. Romain puede intentar soltarlas.
+
+> **1. Romain: pesarlas una por una y dejarlas ir (Religión)**
+> <small>pista: «Cuesta tiempo bajo tierra, con el gusano cerca. Si falla, las voces lo siguen.» · 🎲 Religión CD 15 (romain) · Devoción +2 · marca: romain_mineros</small>
+> 
+> Tarda una hora. Una por una, las voces se callan con un suspiro. La última es de un chico que pregunta si ya puede irse a casa. Romain le dice que sí. Es la primera vez desde el templo quemado que siente la balanza moverse en su mano.
+> 
+> **Si falla:** Corrupción +1 · marca: romain_voces_mina
+> 
+> Las voces no se van. Se le pegan. Desde ese día, cuando Romain se queda en silencio, alguien murmura un nombre de minero dentro de su cabeza. Él aprende sus nombres. Es lo único que puede hacer.
+> 
+> **2. Seguir: el gusano no espera**
+> <small>pista: «Los vivos primero.» · marca: mineros_quedan</small>
+> 
+> Siguen bajando. El murmullo los acompaña dos niveles más y después se apaga. Romain no dice nada en todo el camino. Al salir, deja la balanza en la boca de la mina.
+> 
+En los túneles angostos, Zyr'thar se queda sin aire. No es el polvo. Es la oscuridad cerrada, la piedra encima, el olor de la Infraoscuridad. Se apoya en la pared y tiembla como no la habían visto temblar nunca.
+
+**Zyr'thar** *(con la frente contra la piedra)*: Me criaron acá abajo. Bueno, no acá. En un lugar igual. Me prometí no volver a bajar nunca. Mirá qué bien cumplo las promesas.
+
+**✦ Elección:** Zyr'thar no puede seguir. El gusano se oye dos niveles más abajo.
+
+> **1. Zyr'thar: agarrarse del carcaj de Joren y bajar a ciegas**
+> <small>pista: «Confiar en alguien en la oscuridad. Nunca lo hizo.» · Devoción +1 · marca: zyr_confia_joren</small>
+> 
+> Joren le tiende la correa sin mirarla, para no avergonzarla. «Yo veo en la oscuridad mejor de lo que creés. No te suelto.» No la suelta. Al llegar abajo, ella le devuelve la correa y le dice «nunca pasó». Él asiente. Pasó.
+> 
+> **2. Zyr'thar: cerrar los ojos y caminar sola**
+> <small>pista: «Como la entrenaron. Si se pierde, el gusano la encuentra antes.» · 🎲 Sigilo CD 14 (zyrthar) · marca: zyr_sola_mina</small>
+> 
+> Zyr'thar cierra los ojos y camina como le enseñaron de chica: contando pasos, oliendo la piedra. Llega primera. Se sienta a esperar a los demás con las manos en las rodillas, para que no vean cuánto le tiemblan.
+> 
+> **Si falla:** Corrupción +1
+> 
+> Se pierde. Durante diez minutos la oyen llamar desde un túnel lateral, cada vez más lejos, con una voz de nena que nadie le conocía. Joren la encuentra siguiendo el llanto. Ninguno de los dos vuelve a hablar de eso.
+> 
+**Rabb Locke** *(sin reírse)*: La espada se calla acá abajo. Es la primera vez. Le tiene miedo al gusano. Y si ella tiene miedo, yo debería tener mucho más.
+
 ### Nivel 4 — El Corazón — *Una espiral de brazos humanos*
 
 En El Corazón, una espiral de brazos humanos sale de la roca. No tiene ojos. Cuando respira, el aire de toda la mina se detiene. Es lo que los mineros llamaron «el Silencio». Es lo que Gul-Amarat aprendió a ser cuando nadie lo escuchaba.
@@ -3439,6 +3505,80 @@ Salen de las galerías en una nube de polvo. Detrás, la mina se hunde sobre sí
 > > 
 > > El fragmento se desmorona como sal. La mina deja de callar y Samira, por primera vez, llora sin que nadie la vea.
 > > 
+### La caseta del capataz — *Nythra Vel'Shara, a la salida de la mina*
+
+A la salida de la mina, la caseta del capataz huele a almendras amargas y a cera. La puerta está entreabierta. Adentro, sobre la mesa de las raciones, alguien dispuso en perfecta formación diecisiete frascos de cristal. En el borde de la mesa, sentada como una gata, hay una drow de cabello blanco.
+
+**Nythra Vel'Shara** *(sentada sobre la mesa de las raciones, balanceando un pie)*: Hermana pequeña. Qué cosas ha dado la sombra. Te dimos por muerta en el Zoco y aquí estás, con la mano manchada de la ciudad de otros.
+
+**Zyr'thar** *(sin entrar del todo, la mano a un palmo del cuchillo)*: Vos le vendés venenos al Vizir.
+
+**Nythra Vel'Shara** *(con una sonrisa casi tierna)*: A quien pague. Ese fue siempre el idioma de la Casa. Vos lo aprendiste mejor que yo y te fuiste. Eso no te hizo mejor persona. Te hizo una persona que no cobra.
+
+**▸ Si `zyr_sombra_acepta`:**
+> **Nythra Vel'Shara** *(mirando el suelo junto a Zyr'thar)*: Y esa sombra que llevás. ¿Te sigue ella o la seguís vos? Tiene tu paso, pero llega primero. Madre decía que esa era la señal.
+> 
+
+**▸ Si `zyr_sombra_resiste`:**
+> **Nythra Vel'Shara** *(mirando el suelo junto a Zyr'thar)*: Tu sombra camina a un paso. Ya veo que le pusiste correa. Madre lo habría llamado debilidad. Yo lo llamo cuidado.
+> 
+
+**▸ Si `velshara_aviso`:**
+> **Nythra Vel'Shara** *(sin sorpresa)*: Me avisaron de vos. Una garza te vio caminar en una fiesta, y una esfera te oyó hablar en un patio. La Casa lleva la cuenta: ya sabíamos que ibas a salir por esta boca.
+> 
+
+**▸ Si `velshara_enganada`:**
+> **Nythra Vel'Shara** *(con un respeto que no quiere sentir)*: Madre todavía cree que le hablaste con su propia voz, en el Zoco. Le duró una semana entera la confusión. Te felicito: nadie la engaña dos días seguidos.
+> 
+
+**Nythra Vel'Shara** *(levantando uno de los frascos a contraluz)*: No vine a matarte. Estoy acá porque la mina es del Vizir, y los Vel'Shara vendemos lo que el Vizir quiere y él quiere venenos que no dejen rastro. Hay uno que preparé para una ocasión especial. Un solo frasco. Cuesta lo que yo diga.
+
+**Zyr'thar** *(con una voz que casi no se oye)*: ¿Para quién?
+
+**Nythra Vel'Shara** *(sin dejar de sonreír)*: Para quien tenga sed de verdad. Para ti, si lo pides. O para quien tú me señales.
+
+Zyr'thar no contesta enseguida. Mira los diecisiete frascos, mira a su hermana, mira el cuchillo que no sacó. Rabb, desde la puerta, se aclara la garganta, y es la única interrupción que se permite. Zyr'thar levanta una mano, apenas. Se calla de inmediato.
+
+**✦ Elección:** Diecisiete frascos en formación. Uno es distinto, y Nythra no lo mira a propósito.
+
+> **1. Zyr'thar: encontrar entre los diecisiete el frasco del Vizir (Percepción)**
+> <small>pista: «Zyr'thar conoce los trucos de la Casa: el frasco importante es el que nadie mira. Si falla, Nythra lo guarda.» · 🎲 Percepción CD 17 (zyrthar) · PF +2 · marca: nythra_frasco</small>
+> 
+> Zyr'thar no mira los frascos: mira dónde no mira su hermana. El decimotercero tiene el lacre un pelo más oscuro. Lo toma con dos dedos antes de que Nythra pueda moverse, y se lo guarda en la manga.
+> 
+> «Siempre fuiste la mejor de las dos para eso», dice Nythra, y por primera vez la sonrisa le llega a los ojos.
+> 
+> **Si falla:** alerta +1
+> 
+> Zyr'thar alarga la mano hacia el frasco equivocado. Nythra chasquea la lengua, como hacía Madre, y se guarda el bueno en el escote. «Lento, hermanita. En casa te habrían dejado sin cena.» Afuera, alguien que la oyó reírse se acerca por el pasillo.
+> 
+> **2. No tocar nada**
+> 
+> Los frascos se quedan donde están. Nythra lo agradece con una inclinación mínima de cabeza.
+> 
+**✦ Elección:** Nythra Vel'Shara, la hermana mayor de Zyr'thar, vende venenos al Vizir. Sabe quién es Zyr'thar y por qué ha venido.
+
+> **1. Ajustar cuentas: matarla**
+> <small>pista: «Una deuda de sangre cobrada.» · Corrupción +1 · marca: velshara_mata</small>
+> 
+> Zyr'thar no dice nada. Un movimiento limpio, de los que nadie ve. Nythra cae sobre sus pergaminos con una sonrisa casi amable, y un frasco rueda hasta el borde de la mesa y no se rompe.
+> 
+> Zyr'thar lo recoge. Lo mira un rato largo, a contraluz, como lo miraba su hermana. Después lo deja donde lo encontró, sin tocar el corcho. «Ese no lo quiero.»
+> 
+> **2. Exponerla ante la ciudad**
+> <small>pista: «La Casa Vel'Shara arderá en público.» · alerta +1 · rep. mercaderes +1 · marca: velshara_expone</small>
+> 
+> Zyr'thar deja caer una lista de nombres sobre la mesa: todos los clientes de la Casa. «Que lo lea el Vizir.» Nythra palidece, por primera vez, y no por miedo a morir.
+> 
+> Zyr'thar le arranca el broche de la Casa del cuello y lo clava en la lista con el cuchillo. A la mañana sabrán todos en Zaryab de quién se fiaban. Nythra no se mueve. Está pensando cuánto cuesta ahora su propio silencio.
+> 
+> **3. Perdonarla**
+> <small>pista: «Lo más difícil.» · Devoción +2 · marca: velshara_perdona</small>
+> 
+> «No sos mi hermana», dice Zyr'thar. «Pero tampoco tengo por qué ser la tuya.» Se da la vuelta. Nythra no la sigue.
+> 
+> Desde el pasillo, Zyr'thar oye que su hermana empieza a ordenar los frascos otra vez, uno por uno, en fila perfecta. Por el sonido sabe que ahora son dieciséis. Uno rodó hasta la puerta; Zyr'thar lo pisa sin mirar, y sigue.
+> 
 **Zahir** *(con la voz quebrada)*: Lo que han visto en esa mina es lo que le pasa a un dios que se parte. No es un gusano: es un pedazo que se quedó sin nadie que le cantara.
 
 **Zahir** *(suplicando casi)*: Entréguenme los fragmentos y los dejaré ir. A todos. Se lo juro por quien fui antes de ser un fragmento.
@@ -3468,48 +3608,6 @@ Salen de las galerías en una nube de polvo. Detrás, la mina se hunde sobre sí
 > 
 > Le dan vueltas al juramento y no le encuentran el revés. Zahir sonríe, cansado: «¿Ven? No hay trampa.» Y el cristal se cobra la duda de todos modos.
 > 
-### Las voces en la piedra — *Mina de Alabastro, nivel 3*
-
-En el tercer nivel de la mina, las paredes hablan. No fuerte: un murmullo, como gente rezando detrás de una puerta. Son los mineros que nadie bajó a buscar. Romain apoya la oreja en la piedra y se le llenan los ojos de lágrimas.
-
-**✦ Elección:** Las almas de los mineros están atrapadas en el alabastro. Romain puede intentar soltarlas.
-
-> **1. Romain: pesarlas una por una y dejarlas ir (Religión)**
-> <small>pista: «Cuesta tiempo bajo tierra, con el gusano cerca. Si falla, las voces lo siguen.» · 🎲 Religión CD 15 (romain) · Devoción +2 · marca: romain_mineros</small>
-> 
-> Tarda una hora. Una por una, las voces se callan con un suspiro. La última es de un chico que pregunta si ya puede irse a casa. Romain le dice que sí. Es la primera vez desde el templo quemado que siente la balanza moverse en su mano.
-> 
-> **Si falla:** Corrupción +1 · marca: romain_voces_mina
-> 
-> Las voces no se van. Se le pegan. Desde ese día, cuando Romain se queda en silencio, alguien murmura un nombre de minero dentro de su cabeza. Él aprende sus nombres. Es lo único que puede hacer.
-> 
-> **2. Seguir: el gusano no espera**
-> <small>pista: «Los vivos primero.» · marca: mineros_quedan</small>
-> 
-> Siguen bajando. El murmullo los acompaña dos niveles más y después se apaga. Romain no dice nada en todo el camino. Al salir, deja la balanza en la boca de la mina.
-> 
-En los túneles angostos, Zyr'thar se queda sin aire. No es el polvo. Es la oscuridad cerrada, la piedra encima, el olor de la Infraoscuridad. Se apoya en la pared y tiembla como no la habían visto temblar nunca.
-
-**Zyr'thar** *(con la frente contra la piedra)*: Me criaron acá abajo. Bueno, no acá. En un lugar igual. Me prometí no volver a bajar nunca. Mirá qué bien cumplo las promesas.
-
-**✦ Elección:** Zyr'thar no puede seguir. El gusano se oye dos niveles más abajo.
-
-> **1. Zyr'thar: agarrarse del carcaj de Joren y bajar a ciegas**
-> <small>pista: «Confiar en alguien en la oscuridad. Nunca lo hizo.» · Devoción +1 · marca: zyr_confia_joren</small>
-> 
-> Joren le tiende la correa sin mirarla, para no avergonzarla. «Yo veo en la oscuridad mejor de lo que creés. No te suelto.» No la suelta. Al llegar abajo, ella le devuelve la correa y le dice «nunca pasó». Él asiente. Pasó.
-> 
-> **2. Zyr'thar: cerrar los ojos y caminar sola**
-> <small>pista: «Como la entrenaron. Si se pierde, el gusano la encuentra antes.» · 🎲 Sigilo CD 14 (zyrthar) · marca: zyr_sola_mina</small>
-> 
-> Zyr'thar cierra los ojos y camina como le enseñaron de chica: contando pasos, oliendo la piedra. Llega primera. Se sienta a esperar a los demás con las manos en las rodillas, para que no vean cuánto le tiemblan.
-> 
-> **Si falla:** Corrupción +1
-> 
-> Se pierde. Durante diez minutos la oyen llamar desde un túnel lateral, cada vez más lejos, con una voz de nena que nadie le conocía. Joren la encuentra siguiendo el llanto. Ninguno de los dos vuelve a hablar de eso.
-> 
-**Rabb Locke** *(sin reírse)*: La espada se calla acá abajo. Es la primera vez. Le tiene miedo al gusano. Y si ella tiene miedo, yo debería tener mucho más.
-
 *[Capítulo XI completado. La Ciudadela de los Susurros está abierta. — marca: cap11_done]*
 
 
@@ -3837,80 +3935,27 @@ Joren no dice nada durante mucho tiempo. Saca una flecha del carcaj y la mira, l
 > 
 > Kaelen se queda de pie en el balcón mucho después de que se vayan, con la orden sin cumplir en la mano. Por primera vez en años, nadie le dijo qué hacer con ella.
 > 
-### El Gabinete de los Venenos — *Nythra Vel'Shara*
+### El Gabinete de los Venenos — *Diecisiete marcas en el polvo*
 
-El pasillo siguiente huele a almendras amargas y cera. Hay una puerta entreabierta; del otro lado, una sala larga, tapizada de pergaminos, con una mesa donde alguien ha dispuesto, en perfecta formación, diecisiete frascos de cristal. En el borde de la mesa, sentada como una gata, una drow de cabello blanco.
+Antes del trono, el pasillo pasa por una sala que huele a almendras amargas. La mesa está vacía: sólo quedan, en el polvo, diecisiete marcas redondas donde hubo frascos. Alguien se los llevó hace poco.
 
-**Nythra Vel'Shara** *(una drow sentada sobre una mesa, entre pergaminos)*: Hermana pequeña. Qué cosas ha dado la sombra. Te dimos por muerta en el Zoco y aquí estás, con la mano manchada de la ciudad de otros.
-
-**Zyr'thar** *(sin entrar del todo, la mano a un palmo del cuchillo)*: Vos le vendés venenos al Vizir.
-
-**Nythra Vel'Shara** *(con una sonrisa casi tierna)*: A quien pague. Ese fue siempre el idioma de la Casa. Vos lo aprendiste mejor que yo y te fuiste. Eso no te hizo mejor persona. Te hizo una persona que no cobra.
-
-**▸ Si `zyr_sombra_acepta`:**
-> **Nythra Vel'Shara** *(mirando el suelo junto a Zyr'thar)*: Y esa sombra que llevás. ¿Te sigue ella o la seguís vos? Tiene tu paso, pero llega primero. Madre decía que esa era la señal.
+**▸ Si `velshara_mata`:**
+> **Zyr'thar** *(pasando los dedos por las marcas, sin detenerse)*: Ya no va a volver a ordenarlos.
 > 
-
-**▸ Si `zyr_sombra_resiste`:**
-> **Nythra Vel'Shara** *(mirando el suelo junto a Zyr'thar)*: Tu sombra camina a un paso. Ya veo que le pusiste correa. Madre lo habría llamado debilidad. Yo lo llamo cuidado.
-> 
-
-**▸ Si `velshara_aviso`:**
-> **Nythra Vel'Shara** *(sin sorpresa)*: Me avisaron de vos. Una garza te vio caminar en una fiesta, y una esfera te oyó hablar en un patio. La Casa lleva la cuenta: ya sabíamos que ibas a subir esta escalera.
-> 
-
-**▸ Si `velshara_enganada`:**
-> **Nythra Vel'Shara** *(con un respeto que no quiere sentir)*: Madre todavía cree que le hablaste con su propia voz, en el Zoco. Le duró una semana entera la confusión. Te felicito: nadie la engaña dos días seguidos.
+**▸ Si no:**
+> **▸ Si `velshara_perdona`:**
+> > **Zyr'thar** *(con algo que casi es una sonrisa)*: Se los llevó. Siempre fue ordenada para irse.
+> > 
+> **▸ Si no:**
+> > **▸ Si `velshara_expone`:**
+> > > **Zyr'thar** *(sin mirar atrás)*: Los vendió todos antes de que leyeran su nombre en la plaza. Es lo único que la Casa sabe hacer bien.
+> > > 
+> > **▸ Si no:**
+> > > Zyr'thar mira las marcas un rato largo y no dice nada.
+> > > 
+> > 
 > 
 
-**Nythra Vel'Shara** *(levantando uno de los frascos a contraluz)*: No vine a matarte. Estoy acá porque los Vel'Shara vendemos lo que el Vizir quiere y él quiere venenos que no dejen rastro. Hay uno que preparé para una ocasión especial. Un solo frasco. Cuesta lo que yo diga.
-
-**Zyr'thar** *(con una voz que casi no se oye)*: ¿Para quién?
-
-**Nythra Vel'Shara** *(sin dejar de sonreír)*: Para quien tenga sed de verdad. Para ti, si lo pides. O para quien tú me señales.
-
-Zyr'thar no contesta enseguida. Mira los diecisiete frascos, mira a su hermana, mira el cuchillo que no sacó. Rabb, desde la puerta, se aclara la garganta, y es la única interrupción que se permite. Zyr'thar levanta una mano, apenas. Se calla de inmediato.
-
-**✦ Elección:** Diecisiete frascos en formación. Uno es distinto, y Nythra no lo mira a propósito.
-
-> **1. Zyr'thar: encontrar entre los diecisiete el frasco del Vizir (Percepción)**
-> <small>pista: «Zyr'thar conoce los trucos de la Casa: el frasco importante es el que nadie mira. Si falla, Nythra lo guarda.» · 🎲 Percepción CD 17 (zyrthar) · PF +2 · marca: nythra_frasco</small>
-> 
-> Zyr'thar no mira los frascos: mira dónde no mira su hermana. El decimotercero tiene el lacre un pelo más oscuro. Lo toma con dos dedos antes de que Nythra pueda moverse, y se lo guarda en la manga.
-> 
-> «Siempre fuiste la mejor de las dos para eso», dice Nythra, y por primera vez la sonrisa le llega a los ojos.
-> 
-> **Si falla:** alerta +1
-> 
-> Zyr'thar alarga la mano hacia el frasco equivocado. Nythra chasquea la lengua, como hacía Madre, y se guarda el bueno en el escote. «Lento, hermanita. En casa te habrían dejado sin cena.» Afuera, alguien que la oyó reírse se acerca por el pasillo.
-> 
-> **2. No tocar nada**
-> 
-> Los frascos se quedan donde están. Nythra lo agradece con una inclinación mínima de cabeza.
-> 
-**✦ Elección:** Nythra Vel'Shara, la hermana mayor de Zyr'thar, vende venenos al Vizir. Sabe quién es Zyr'thar y por qué ha venido.
-
-> **1. Ajustar cuentas: matarla**
-> <small>pista: «Una deuda de sangre cobrada.» · Corrupción +1 · marca: velshara_mata</small>
-> 
-> Zyr'thar no dice nada. Un movimiento limpio, de los que nadie ve. Nythra cae sobre sus pergaminos con una sonrisa casi amable, y un frasco rueda hasta el borde de la mesa y no se rompe.
-> 
-> Zyr'thar lo recoge. Lo mira un rato largo, a contraluz, como lo miraba su hermana. Después lo deja donde lo encontró, sin tocar el corcho. «Ese no lo quiero.»
-> 
-> **2. Exponerla ante la Ciudadela**
-> <small>pista: «La Casa Vel'Shara arderá en público.» · alerta +1 · rep. mercaderes +1 · marca: velshara_expone</small>
-> 
-> Zyr'thar deja caer una lista de nombres sobre la mesa: todos los clientes de la Casa. «Que lo lea el Vizir.» Nythra palidece, por primera vez, y no por miedo a morir.
-> 
-> Zyr'thar le arranca el broche de la Casa del cuello y lo clava en la lista con el cuchillo. A la mañana sabrán todos en Zaryab de quién se fiaban. Nythra no se mueve. Está pensando cuánto cuesta ahora su propio silencio.
-> 
-> **3. Perdonarla**
-> <small>pista: «Lo más difícil.» · Devoción +2 · marca: velshara_perdona</small>
-> 
-> «No sos mi hermana», dice Zyr'thar. «Pero tampoco tengo por qué ser la tuya.» Se da la vuelta. Nythra no la sigue.
-> 
-> Desde el pasillo, Zyr'thar oye que su hermana empieza a ordenar los frascos otra vez, uno por uno, en fila perfecta. Por el sonido sabe que ahora son dieciséis. Uno rodó hasta la puerta; Zyr'thar lo pisa sin mirar, y sigue.
-> 
 El trono de Razul no está en una sala: está en un balcón sin barandilla que da a toda la ciudad. Desde allí se ven las plazas, el Zoco, la biblioteca, las Catacumbas. Razul tiene la espalda recta y las manos a la espalda. Sin girarse, los saluda.
 
 **Vizir Razul** *(su rostro es una máscara con otra máscara detrás)*: Han llegado más lejos que los otros. Eso sólo significa que serán olvidados más tarde.
@@ -5098,339 +5143,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > **▸ Si `final_espiral`:**
 > > La Espiral. Zahir se alza como el Simurg completo, y por un instante todos creen que es una liberación. No lo es. El cielo de Zaryab se cierra como un puño.
 > > 
-> > — Epílogo de la compañía —
-> > 
-> > **▸ Si `perma_romain`:**
-> > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `farid_roto`:**
-> > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `romain_voz`:**
-> > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `farid_sellado`:**
-> > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_pact`:**
-> > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `pact_recuerda`:**
-> > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `pact_corona`:**
-> > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_rabb`:**
-> > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `rabb_activado`:**
-> > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_joren`:**
-> > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `joren_perdona`:**
-> > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `joren_mata`:**
-> > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_zyrthar`:**
-> > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `zyr_sombra_acepta`:**
-> > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_panchi`:**
-> > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `conoce_ellie`:**
-> > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > 
-> > > **▸ Si no:**
-> > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > 
-> > > 
-> > 
-> > — Quiénes fueron —
-> > 
-> > **▸ Si `perma_romain`:**
-> > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_romain_a`:**
-> > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_romain_b`:**
-> > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_romain_a`:**
-> > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_pact`:**
-> > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_pact_a`:**
-> > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_pact_b`:**
-> > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_pact_a`:**
-> > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_rabb`:**
-> > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_rabb_a`:**
-> > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_rabb_b`:**
-> > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_joren`:**
-> > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_joren_a`:**
-> > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_joren_b`:**
-> > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_joren_a`:**
-> > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_zyrthar`:**
-> > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_zyrthar_a`:**
-> > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_zyrthar_b`:**
-> > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `perma_panchi`:**
-> > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `res_panchi_a`:**
-> > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_panchi_b`:**
-> > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > — El que escarba —
-> > 
-> > **▸ Si `gusano_abismal`:**
-> > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `gusano_colosal`:**
-> > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `gusano_adulto`:**
-> > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > — Los arcos se cierran —
-> > 
-> > **▸ Si `romain_peso_santo`:**
-> > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `romain_peso_verdugo`:**
-> > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `romain_peso_duda`:**
-> > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `pact_rinde`:**
-> > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `pact_asume`:**
-> > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > 
-> > > 
-> > 
-> > **▸ Si `rabb_rompe`:**
-> > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `rabb_firma`:**
-> > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `rabb_reescribe`:**
-> > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `velshara_mata`:**
-> > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `velshara_expone`:**
-> > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `velshara_perdona`:**
-> > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `panchi_cierra`:**
-> > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > 
-> > **▸ Si no:**
-> > > **▸ Si `panchi_perdona`:**
-> > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `panchi_guarda`:**
-> > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > 
-> > > > 
-> > > 
-> > 
-> > **▸ Si `qadir_golem`:**
-> > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > 
+> > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > 
 > > #### FIN · Fin · La Espiral
 > > Zahir no es misericordioso. Lo fue sólo mientras necesitaba a alguien que le abriera la puerta.
@@ -5439,339 +5152,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > > **▸ Si `final_gobernar`:**
 > > > Gobernar Zaryab. Zahir se sienta en el trono del Vizir con un cristal violeta en el pecho. Los seguidores lo llaman señor. Ustedes son los consejeros que él nunca tuvo, y los prisioneros que nunca pidió.
 > > > 
-> > > — Epílogo de la compañía —
-> > > 
-> > > **▸ Si `perma_romain`:**
-> > > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `farid_roto`:**
-> > > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `romain_voz`:**
-> > > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `farid_sellado`:**
-> > > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_pact`:**
-> > > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `pact_recuerda`:**
-> > > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `pact_corona`:**
-> > > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_rabb`:**
-> > > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `rabb_activado`:**
-> > > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_joren`:**
-> > > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `joren_perdona`:**
-> > > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `joren_mata`:**
-> > > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_zyrthar`:**
-> > > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `zyr_sombra_acepta`:**
-> > > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_panchi`:**
-> > > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `conoce_ellie`:**
-> > > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > > 
-> > > > 
-> > > 
-> > > — Quiénes fueron —
-> > > 
-> > > **▸ Si `perma_romain`:**
-> > > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_romain_a`:**
-> > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_romain_b`:**
-> > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_romain_a`:**
-> > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_pact`:**
-> > > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_pact_a`:**
-> > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_pact_b`:**
-> > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_pact_a`:**
-> > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_rabb`:**
-> > > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_rabb_a`:**
-> > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_rabb_b`:**
-> > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_joren`:**
-> > > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_joren_a`:**
-> > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_joren_b`:**
-> > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_joren_a`:**
-> > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_zyrthar`:**
-> > > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_zyrthar_a`:**
-> > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_zyrthar_b`:**
-> > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `perma_panchi`:**
-> > > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `res_panchi_a`:**
-> > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_panchi_b`:**
-> > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > — El que escarba —
-> > > 
-> > > **▸ Si `gusano_abismal`:**
-> > > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `gusano_colosal`:**
-> > > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `gusano_adulto`:**
-> > > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > — Los arcos se cierran —
-> > > 
-> > > **▸ Si `romain_peso_santo`:**
-> > > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `romain_peso_verdugo`:**
-> > > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `romain_peso_duda`:**
-> > > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `pact_rinde`:**
-> > > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `pact_asume`:**
-> > > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `rabb_rompe`:**
-> > > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `rabb_firma`:**
-> > > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `rabb_reescribe`:**
-> > > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `velshara_mata`:**
-> > > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `velshara_expone`:**
-> > > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `velshara_perdona`:**
-> > > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `panchi_cierra`:**
-> > > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > > 
-> > > **▸ Si no:**
-> > > > **▸ Si `panchi_perdona`:**
-> > > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `panchi_guarda`:**
-> > > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > 
-> > > **▸ Si `qadir_golem`:**
-> > > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > > 
+> > > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > > 
 > > > #### FIN · Fin · El Trono de Arena
 > > > El Simurg sigue dividido y hambriento. Pero la ciudad ya no se queja: no queda nadie que se atreva.
@@ -5780,339 +5161,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > > > **▸ Si `final_liberar`:**
 > > > > Liberación del Simurg. Los fragmentos giran y se funden en un ave de luz cálida que despliega las alas sobre toda Zaryab. Los djinns esclavos rompen sus cadenas una a una. La ciudad, sin dueño, empieza a llorar.
 > > > > 
-> > > > — Epílogo de la compañía —
-> > > > 
-> > > > **▸ Si `perma_romain`:**
-> > > > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `farid_roto`:**
-> > > > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `romain_voz`:**
-> > > > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `farid_sellado`:**
-> > > > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_pact`:**
-> > > > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `pact_recuerda`:**
-> > > > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `pact_corona`:**
-> > > > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_rabb`:**
-> > > > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `rabb_activado`:**
-> > > > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_joren`:**
-> > > > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `joren_perdona`:**
-> > > > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `joren_mata`:**
-> > > > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_zyrthar`:**
-> > > > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `zyr_sombra_acepta`:**
-> > > > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_panchi`:**
-> > > > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `conoce_ellie`:**
-> > > > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > — Quiénes fueron —
-> > > > 
-> > > > **▸ Si `perma_romain`:**
-> > > > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_romain_a`:**
-> > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_romain_b`:**
-> > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_romain_a`:**
-> > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_pact`:**
-> > > > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_pact_a`:**
-> > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_pact_b`:**
-> > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_pact_a`:**
-> > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_rabb`:**
-> > > > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_rabb_a`:**
-> > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_rabb_b`:**
-> > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_joren`:**
-> > > > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_joren_a`:**
-> > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_joren_b`:**
-> > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_joren_a`:**
-> > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_zyrthar`:**
-> > > > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_zyrthar_a`:**
-> > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_zyrthar_b`:**
-> > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `perma_panchi`:**
-> > > > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `res_panchi_a`:**
-> > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_panchi_b`:**
-> > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > — El que escarba —
-> > > > 
-> > > > **▸ Si `gusano_abismal`:**
-> > > > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `gusano_colosal`:**
-> > > > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `gusano_adulto`:**
-> > > > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > — Los arcos se cierran —
-> > > > 
-> > > > **▸ Si `romain_peso_santo`:**
-> > > > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `romain_peso_verdugo`:**
-> > > > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `romain_peso_duda`:**
-> > > > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `pact_rinde`:**
-> > > > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `pact_asume`:**
-> > > > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `rabb_rompe`:**
-> > > > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `rabb_firma`:**
-> > > > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `rabb_reescribe`:**
-> > > > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `velshara_mata`:**
-> > > > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `velshara_expone`:**
-> > > > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `velshara_perdona`:**
-> > > > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `panchi_cierra`:**
-> > > > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > > > 
-> > > > **▸ Si no:**
-> > > > > **▸ Si `panchi_perdona`:**
-> > > > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `panchi_guarda`:**
-> > > > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > 
-> > > > **▸ Si `qadir_golem`:**
-> > > > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > > > 
+> > > > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > > > 
 > > > > #### FIN · Fin · El Simurg Libre
 > > > > Zaryab cae, y con ella los muros que mantenían a los djinns. Algunos tardarán años en decidir si les convenía.
@@ -6121,339 +5170,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > > > > **▸ Si `final_silencio`:**
 > > > > > El Silencio. Los fragmentos duermen bajo piedra y arena. Los djinns eligen quedarse o irse. El Vizir, si sobrevivió, ya no recuerda por qué se levantaba cada mañana.
 > > > > > 
-> > > > > — Epílogo de la compañía —
-> > > > > 
-> > > > > **▸ Si `perma_romain`:**
-> > > > > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `farid_roto`:**
-> > > > > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `romain_voz`:**
-> > > > > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `farid_sellado`:**
-> > > > > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_pact`:**
-> > > > > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `pact_recuerda`:**
-> > > > > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `pact_corona`:**
-> > > > > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_rabb`:**
-> > > > > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `rabb_activado`:**
-> > > > > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_joren`:**
-> > > > > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `joren_perdona`:**
-> > > > > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `joren_mata`:**
-> > > > > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `zyr_sombra_acepta`:**
-> > > > > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_panchi`:**
-> > > > > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `conoce_ellie`:**
-> > > > > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > — Quiénes fueron —
-> > > > > 
-> > > > > **▸ Si `perma_romain`:**
-> > > > > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_romain_a`:**
-> > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_romain_b`:**
-> > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_romain_a`:**
-> > > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_pact`:**
-> > > > > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_pact_a`:**
-> > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_pact_b`:**
-> > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_pact_a`:**
-> > > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_rabb`:**
-> > > > > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_rabb_a`:**
-> > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_rabb_b`:**
-> > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_joren`:**
-> > > > > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_joren_a`:**
-> > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_joren_b`:**
-> > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_joren_a`:**
-> > > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_zyrthar_a`:**
-> > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_zyrthar_b`:**
-> > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `perma_panchi`:**
-> > > > > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `res_panchi_a`:**
-> > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_panchi_b`:**
-> > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > — El que escarba —
-> > > > > 
-> > > > > **▸ Si `gusano_abismal`:**
-> > > > > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `gusano_colosal`:**
-> > > > > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `gusano_adulto`:**
-> > > > > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > — Los arcos se cierran —
-> > > > > 
-> > > > > **▸ Si `romain_peso_santo`:**
-> > > > > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `romain_peso_verdugo`:**
-> > > > > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `romain_peso_duda`:**
-> > > > > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `pact_rinde`:**
-> > > > > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `pact_asume`:**
-> > > > > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `rabb_rompe`:**
-> > > > > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `rabb_firma`:**
-> > > > > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_reescribe`:**
-> > > > > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `velshara_mata`:**
-> > > > > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `velshara_expone`:**
-> > > > > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `velshara_perdona`:**
-> > > > > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `panchi_cierra`:**
-> > > > > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > > > > 
-> > > > > **▸ Si no:**
-> > > > > > **▸ Si `panchi_perdona`:**
-> > > > > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `panchi_guarda`:**
-> > > > > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > **▸ Si `qadir_golem`:**
-> > > > > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > > > > 
+> > > > > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > > > > 
 > > > > > #### FIN · Fin · El Silencio
 > > > > > «Zaryab no necesita un dios. Necesita silencio suficiente para decidir sola.»
@@ -6462,339 +5179,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > > > > > **▸ Si `final_destruir`:**
 > > > > > > Destrucción. Los fragmentos se parten y la ciudad tiembla. Zahir se desvanece sin un grito. Zaryab sobrevive herida: sin djinns, sin dios, con la culpa de haberlo hecho.
 > > > > > > 
-> > > > > > — Epílogo de la compañía —
-> > > > > > 
-> > > > > > **▸ Si `perma_romain`:**
-> > > > > > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `farid_roto`:**
-> > > > > > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `romain_voz`:**
-> > > > > > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `farid_sellado`:**
-> > > > > > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_pact`:**
-> > > > > > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `pact_recuerda`:**
-> > > > > > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `pact_corona`:**
-> > > > > > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_rabb`:**
-> > > > > > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_activado`:**
-> > > > > > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_joren`:**
-> > > > > > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `joren_perdona`:**
-> > > > > > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `joren_mata`:**
-> > > > > > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `zyr_sombra_acepta`:**
-> > > > > > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_panchi`:**
-> > > > > > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `conoce_ellie`:**
-> > > > > > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — Quiénes fueron —
-> > > > > > 
-> > > > > > **▸ Si `perma_romain`:**
-> > > > > > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_romain_a`:**
-> > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_romain_b`:**
-> > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_romain_a`:**
-> > > > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_pact`:**
-> > > > > > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_pact_a`:**
-> > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_pact_b`:**
-> > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_pact_a`:**
-> > > > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_rabb`:**
-> > > > > > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_rabb_a`:**
-> > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_rabb_b`:**
-> > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_joren`:**
-> > > > > > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_joren_a`:**
-> > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_joren_b`:**
-> > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_joren_a`:**
-> > > > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_zyrthar_a`:**
-> > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_zyrthar_b`:**
-> > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_panchi`:**
-> > > > > > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_panchi_a`:**
-> > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_panchi_b`:**
-> > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — El que escarba —
-> > > > > > 
-> > > > > > **▸ Si `gusano_abismal`:**
-> > > > > > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `gusano_colosal`:**
-> > > > > > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `gusano_adulto`:**
-> > > > > > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — Los arcos se cierran —
-> > > > > > 
-> > > > > > **▸ Si `romain_peso_santo`:**
-> > > > > > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `romain_peso_verdugo`:**
-> > > > > > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `romain_peso_duda`:**
-> > > > > > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `pact_rinde`:**
-> > > > > > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `pact_asume`:**
-> > > > > > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `rabb_rompe`:**
-> > > > > > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_firma`:**
-> > > > > > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `rabb_reescribe`:**
-> > > > > > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `velshara_mata`:**
-> > > > > > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `velshara_expone`:**
-> > > > > > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `velshara_perdona`:**
-> > > > > > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `panchi_cierra`:**
-> > > > > > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `panchi_perdona`:**
-> > > > > > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `panchi_guarda`:**
-> > > > > > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `qadir_golem`:**
-> > > > > > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > > > > > 
+> > > > > > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > > > > > 
 > > > > > > #### FIN · Fin · Los Fragmentos Rotos
 > > > > > > Zaryab sobrevive. Pero la biblioteca se llena de nombres, y ninguno de ellos es el de un dios.
@@ -6802,339 +5187,7 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > > > > > **▸ Si no:**
 > > > > > > Equilibrio. Ni dios ni tirano. Zahir queda en la biblioteca, vigilado por los seguidores; el Vizir, si vive, gobierna con una promesa. El Gusano duerme. La ciudad es frágil, pero está entera.
 > > > > > > 
-> > > > > > — Epílogo de la compañía —
-> > > > > > 
-> > > > > > **▸ Si `perma_romain`:**
-> > > > > > > Romain: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `farid_roto`:**
-> > > > > > > > Romain: Ellie rompió la canción. Farid ríe otra vez en la casa de Aisha. Romain mide almas por las noches, y por fin sueña sin balanzas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `romain_voz`:**
-> > > > > > > > > Romain: no vuelve a hablar. Le basta con una mirada, y una libreta, y las manos de Farid sobre las suyas.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `farid_sellado`:**
-> > > > > > > > > > Romain: guarda el alma de Farid en una balanza que nunca pesa lo mismo. A veces la mira. A veces no.
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_pact`:**
-> > > > > > > Pact: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `pact_recuerda`:**
-> > > > > > > > Pact: lleva el nombre de Azuran sin cargarlo. Cuenta que a veces el aire huele a plumas y no pregunta por qué.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `pact_corona`:**
-> > > > > > > > > Pact: las alas le salen negras por la espalda. Dice que no las pidió. Nadie le cree, y él tampoco.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Pact: cortó el hilo con Azuran. Sigue sin recordar, pero duerme tranquilo.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_rabb`:**
-> > > > > > > Rabb: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_activado`:**
-> > > > > > > > Rabb: la espada ya no susurra. Habla. Y Rabb la escucha con una calma que no tenía.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `rabb_rechaza_pacto`:**
-> > > > > > > > > Rabb: guarda la espada en un cofre y no la abre. Dice que ya sabe quién es. Nadie le pregunta.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_joren`:**
-> > > > > > > Joren: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `joren_perdona`:**
-> > > > > > > > Joren: volvió a Medinat a sentarse junto al muerto que respira. No hablan. Es la mejor conversación de su vida.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `joren_mata`:**
-> > > > > > > > > Joren: cobró su deuda. Dice que no cambió nada. Hace tres semanas que no duerme.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Joren: dejó vivir a Kaelen y se llevó a Abril a ver el desierto de noche.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > > Zyr'thar: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `zyr_sombra_acepta`:**
-> > > > > > > > Zyr'thar: la sombra lo precede ahora. Dicen que es la mejor ladrona de Zaryab, y que su dueño apenas aparece.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `zyr_sombra_fragmento`:**
-> > > > > > > > > Zyr'thar: guarda la pluma de su sombra en un frasco. Ya no se escapa, aunque a veces canta.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Zyr'thar: se quedó con su sombra a un paso de distancia. Prefiere así.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_panchi`:**
-> > > > > > > Panchi: en la mesa larga de la biblioteca hay una silla que nadie usa. Farid la limpia los viernes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `conoce_ellie`:**
-> > > > > > > > Panchi: volvió a Medinat con la Venda de Ellie en la muñeca. Perdió el torneo. Está entrenando el siguiente.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > Panchi: se queda a cuidar la biblioteca. Un golem, rebautizado «Defectuoso», le trae el té.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — Quiénes fueron —
-> > > > > > 
-> > > > > > **▸ Si `perma_romain`:**
-> > > > > > > Romain: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_romain_a`:**
-> > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_romain_b`:**
-> > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_romain_a`:**
-> > > > > > > > > > Romain: terminó siendo el Juez compasivo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_romain_b`:**
-> > > > > > > > > > > Romain: terminó siendo el Verdugo. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_pact`:**
-> > > > > > > Pact: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_pact_a`:**
-> > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_pact_b`:**
-> > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_pact_a`:**
-> > > > > > > > > > Pact: terminó siendo el Redentor. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_pact_b`:**
-> > > > > > > > > > > Pact: terminó siendo el Tirano. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_rabb`:**
-> > > > > > > Rabb: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_rabb_a`:**
-> > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_rabb_b`:**
-> > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_rabb_a`:**
-> > > > > > > > > > Rabb: terminó siendo el Autor de sí mismo. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_rabb_b`:**
-> > > > > > > > > > > Rabb: terminó siendo la Herramienta. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_joren`:**
-> > > > > > > Joren: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_joren_a`:**
-> > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_joren_b`:**
-> > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_joren_a`:**
-> > > > > > > > > > Joren: terminó siendo el Protector. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_joren_b`:**
-> > > > > > > > > > > Joren: terminó siendo el Cazador. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_zyrthar`:**
-> > > > > > > Zyr'thar: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_zyrthar_a`:**
-> > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_zyrthar_b`:**
-> > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_zyrthar_a`:**
-> > > > > > > > > > Zyr'thar: terminó siendo la Guardiana. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_zyrthar_b`:**
-> > > > > > > > > > > Zyr'thar: terminó siendo la Sombra. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `perma_panchi`:**
-> > > > > > > Panchi: no llegó al final. Dio su aliento para que otro lo tuviera.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `res_panchi_a`:**
-> > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `res_panchi_b`:**
-> > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > **▸ Si `arq_panchi_a`:**
-> > > > > > > > > > Panchi: terminó siendo el Maestro. No porque lo decidiera una vez, sino porque lo decidió muchas.
-> > > > > > > > > > 
-> > > > > > > > > **▸ Si no:**
-> > > > > > > > > > **▸ Si `arq_panchi_b`:**
-> > > > > > > > > > > Panchi: terminó siendo la Llama. Quienes lo conocieron antes dicen que se le notaba desde el principio, en cómo callaba.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — El que escarba —
-> > > > > > 
-> > > > > > **▸ Si `gusano_abismal`:**
-> > > > > > > Bajo Zaryab, a medianoche, la tierra se arquea con una calma que no es de este mundo. El Gusano de Cabeza de Martillo es ahora mayor que las murallas y todos lo saben, y nadie lo dice. Se cuenta que cada generación le deja una ofrenda en la puerta del Bajo. Se cuenta también que, cuando la ofrenda no llega, llega él.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `gusano_colosal`:**
-> > > > > > > > El Gusano sigue ahí abajo, más grande de lo que nadie quiso. Los niños lo dibujan en la tiza y los viejos lo rezan en voz baja. No hay ciudad en el desierto que no tenga su monstruo; Zaryab ha aprendido a convivir con el suyo.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `gusano_adulto`:**
-> > > > > > > > > A veces, en las noches de viento, la arena se mueve sola bajo una calle del Bajo. Los perros ladran. El Gusano no ha muerto: nadie lo ha matado. Es una de las pocas cosas que Zaryab sabe de sí misma con certeza.
-> > > > > > > > > 
-> > > > > > > > **▸ Si no:**
-> > > > > > > > > Una vez, en el Bajo, un niño juró haber visto una cabeza plana asomar entre dos casas. Nadie le creyó. Esa noche, el niño durmió con una luz encendida, y la luz no se apagó por la mañana.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > — Los arcos se cierran —
-> > > > > > 
-> > > > > > **▸ Si `romain_peso_santo`:**
-> > > > > > > Romain: pesó a Razul con compasión y la balanza se inclinó a su favor. Desde entonces pesa las almas sin miedo, y a veces, de noche, enciende una vela por una niña llamada Yasmin.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `romain_peso_verdugo`:**
-> > > > > > > > Romain: pesó a Razul sin piedad. La balanza ya no está vacía: pesa lo que pesó. Dicen que desde entonces los hombres de Zaryab tiemblan al oírlo hablar de justicia.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `romain_peso_duda`:**
-> > > > > > > > > Romain: no quiso pesar a Razul. La balanza vacía de Kelemvor sigue vacía, y por primera vez eso no le duele.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `pact_rinde`:**
-> > > > > > > Pact: rindió la corona. No tiene alas ni juicio, pero tiene una casa al borde de la ciudad y un niño llamado Farid que le pregunta cada noche cómo se vuela.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `pact_asume`:**
-> > > > > > > > Pact: asumió la corona. Ahora es un ángel de la verdad, y a veces una voz doble le susurra qué es verdad y qué no. No lo lleva mal: lo lleva en dos.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `rabb_rompe`:**
-> > > > > > > Rabb: rompió el pacto. La espada ya no habla, ni miente, ni recuerda. Rabb sigue sin saber quién fue, y ha empezado a decidir quién quiere ser.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `rabb_firma`:**
-> > > > > > > > Rabb: firmó un contrato nuevo con su propio nombre. La espada lo repite al amanecer, con voz bajita, para que no se olvide.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `rabb_reescribe`:**
-> > > > > > > > > Rabb: se dejó reescribir. Ahora recuerda una vida completa. A veces, de noche, duda de que sea la suya.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `velshara_mata`:**
-> > > > > > > Zyr'thar: cobró la deuda de la Casa Vel'Shara. Su sombra ahora la sigue a un paso de distancia, quieta.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `velshara_expone`:**
-> > > > > > > > Zyr'thar: expuso a Vel'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `velshara_perdona`:**
-> > > > > > > > > Zyr'thar: perdonó a su hermana. Es el único cuchillo que nunca ha lanzado, y el que más pesa.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `panchi_cierra`:**
-> > > > > > > Panchi: cerró el puño. Es el golpe más lento y más preciso de su vida. Después, abrió la mano y no la volvió a cerrar durante un mes.
-> > > > > > > 
-> > > > > > **▸ Si no:**
-> > > > > > > **▸ Si `panchi_perdona`:**
-> > > > > > > > Panchi: abrió la mano. Ellie le pone la venda cada mañana, y los dos fingen que no se miran.
-> > > > > > > > 
-> > > > > > > **▸ Si no:**
-> > > > > > > > **▸ Si `panchi_guarda`:**
-> > > > > > > > > Panchi: guardó su rabia. La conserva como quien guarda una piedra en el bolsillo: no para tirarla, sino para recordar su peso.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > 
-> > > > > > 
-> > > > > > **▸ Si `qadir_golem`:**
-> > > > > > > Qadir-Kalmah: el golem Defectuoso volvió al claustro. Los monjes lo llaman «hijo» y le han dado un nombre nuevo.
-> > > > > > > 
+> > > > > > *↺ (23 bloques iguales a los de más arriba: el epílogo de la compañía se lee igual en todos los finales)*
 > > > > > > 
 > > > > > > #### FIN · Fin · La Balanza
 > > > > > > Un orden frágil que depende de que ninguno de ustedes se canse primero.
@@ -7146,9 +5199,11 @@ El Simurg del Eclipse se desploma entre llamas doradas. Las plumas flotan como c
 > 
 
 
-# Parte II · Misiones personales y secundarias
+# Parte II · Misiones personales y secundarias (opcionales)
 
-## El Precio de la Salvación  ·  `s_lago` (side)
+Todo lo de esta parte es opcional: aparece en el mapa de la ciudad y se juega cuando el jugador quiera. Las misiones personales se abren desde el Cap. II y son el giro del arco de cada personaje. El Inventario de Maunator (el Cubo que se mueve) es una aventura opcional larga; si no se juega, sus personajes (Seraphel, Kethras) sólo aparecen en variantes.
+
+## El Precio de la Salvación  ·  `s_lago` (opcional)
 
 ### El Precio de la Salvación — *Lago de los Silencios · el milagro que envenena*
 
@@ -7263,7 +5318,7 @@ La mujer ciega, a la que los demás llaman la Madre del Pozo, escucha toda la hi
 *[Misión cumplida: El Precio de la Salvación. — marca: q_s_lago]*
 
 
-## El Té Envenenado  ·  `s_te` (side)
+## El Té Envenenado  ·  `s_te` (opcional)
 
 ### El Té Envenenado — *Jardín de los Suspiros · la fiesta de las máscaras*
 
@@ -7345,7 +5400,7 @@ Salen del jardín entre aplausos y murmullos, o entre silencios, según. Rabb se
 *[Misión cumplida: El Té Envenenado. — marca: q_s_te]*
 
 
-## Niños y Escorpiones  ·  `s_ninos` (side)
+## Niños y Escorpiones  ·  `s_ninos` (opcional)
 
 ### Niños y Escorpiones — *Bajo Zaryab*
 
@@ -7426,7 +5481,7 @@ Por la tarde, en el patio de la biblioteca, Aisha reparte pan a los niños y a s
 *[Misión cumplida: Niños y Escorpiones. — marca: q_s_ninos]*
 
 
-## El Templo Quemado  ·  `p_romain` (personal, romain)
+## El Templo Quemado  ·  `p_romain` (misión personal · opcional, pero es el giro del arco, romain)
 
 ### El Templo Quemado — *Arco de Romain · La Fe Rota*
 
@@ -7558,7 +5613,7 @@ Romain enciende el fuego con una viga del templo quemado. Dice que la madera ya 
 > Pact baja la mano y se queda cerca, sin decir nada. Romain pesa toda la noche. Al amanecer la balanza sigue vacía y él tiene la cara de piedra.
 > 
 
-## El Golem Defectuoso  ·  `p_panchi` (personal, panchi)
+## El Golem Defectuoso  ·  `p_panchi` (misión personal · opcional, pero es el giro del arco, panchi)
 
 ### El Golem Defectuoso — *Arco de Panchi · La Ira del Monje*
 
@@ -7680,7 +5735,7 @@ La biblioteca tiene agujeros nuevos en las paredes. Panchi los tapa con barro, u
 > Romain no le discute. Le pasa el último puñado de barro. Panchi lo aprieta tan fuerte que se le escurre entre los dedos.
 > 
 
-## La Corona Invertida  ·  `p_pact` (personal, pact)
+## La Corona Invertida  ·  `p_pact` (misión personal · opcional, pero es el giro del arco, pact)
 
 ### La Corona Invertida — *Arco de Pact Risen · El Nombre Sellado*
 
@@ -7785,7 +5840,7 @@ Vuelven del templete sin techo con cenizas doradas en las botas. Pact no habló 
 > Romain no contesta. Recoge las tazas. Pact se queda mirando las cenizas doradas hasta que se apagan solas.
 > 
 
-## El Nombre en el Arma  ·  `p_rabb` (personal, rabb)
+## El Nombre en el Arma  ·  `p_rabb` (misión personal · opcional, pero es el giro del arco, rabb)
 
 ### El Nombre en el Arma — *Arco de Rabb Locke · La Memoria Robada*
 
@@ -7907,7 +5962,7 @@ La biblioteca está a oscuras salvo por una vela. Rabb tiene la espada desenvain
 > Rabb envaina. La espada ronronea. Zyr'thar lo mira con una decepción que no se molesta en ocultar, y se va a dormir.
 > 
 
-## El Manifiesto de La Marca  ·  `p_joren` (personal, joren)
+## El Manifiesto de La Marca  ·  `p_joren` (misión personal · opcional, pero es el giro del arco, joren)
 
 ### El Manifiesto de La Marca — *Arco de Joren Hell · El Crimen que No Cometió*
 
@@ -8051,7 +6106,7 @@ Joren no vuelve a la biblioteca. Panchi lo encuentra en un tejado del Zoco, con 
 > El papel arde rápido. Joren tensa la cuerda del arco otra vez. Panchi no dice nada, pero no se va: se queda hasta que Joren baja del tejado.
 > 
 
-## Los Cuchillos de Vel'Shara  ·  `p_zyr` (personal, zyrthar)
+## Los Cuchillos de Vel'Shara  ·  `p_zyr` (misión personal · opcional, pero es el giro del arco, zyrthar)
 
 ### Los Cuchillos de Vel'Shara — *Arco de Zyr'thar · La Traición de la Casa*
 
@@ -8181,7 +6236,7 @@ Zyr'thar limpia un cuchillo que no usó. Joren la mira desde el otro lado del fu
 > Ella asiente, como quien confirma un precio. Hacen guardia los dos, toda la noche, cada uno mirando hacia un lado distinto.
 > 
 
-## La Herencia de Cyric  ·  `o_cyric` (side)
+## La Herencia de Cyric  ·  `o_cyric` (opcional)
 
 ### La Herencia de Cyric — *Medinat al-Rih · bajo el Oráculo*
 
@@ -8218,7 +6273,7 @@ Durante generaciones, el Oráculo de las Mil Lenguas dijo lo contrario de lo que
 Ahora alguien ha tocado el espejo. Por la mañana, en el Zoco, los vendedores de augurios han abierto sus puestos con la cara de los que no saben qué venden.
 
 
-## El Niño y el Escorpión  ·  `m_nino` (side)
+## El Niño y el Escorpión  ·  `m_nino` (opcional)
 
 ### El Niño y el Escorpión — *Bajo Zaryab · una picadura*
 
@@ -8253,7 +6308,7 @@ Un niño yace en el suelo del callejón, la pierna hinchada y negra. Otro, de ro
 *[Misión cumplida: El Niño y el Escorpión. — marca: q_m_nino]*
 
 
-## El Djinn Esclavizado  ·  `m_djinn` (side)
+## El Djinn Esclavizado  ·  `m_djinn` (opcional)
 
 ### El Djinn Esclavizado — *Zoco de los Mil Soplos*
 
@@ -8307,7 +6362,7 @@ En el tenderete de un comerciante gordo cuelga una lámpara de mercurio. Dentro,
 *[Misión cumplida: El Djinn Esclavizado. — marca: q_m_djinn]*
 
 
-## El Pacto con el Marid  ·  `m_marid` (side)
+## El Pacto con el Marid  ·  `m_marid` (opcional)
 
 ### El Pacto con el Marid — *Lago de los Silencios*
 
@@ -8350,7 +6405,7 @@ El agua se alza sin viento. De ella emerge un rostro de espuma, enorme, antiquí
 *[Misión cumplida: El Pacto con el Marid. — marca: q_m_marid]*
 
 
-## El Juicio del Pueblo  ·  `m_juicio` (side)
+## El Juicio del Pueblo  ·  `m_juicio` (opcional)
 
 ### El Juicio del Pueblo — *Bajo Zaryab · una soga*
 
@@ -8429,7 +6484,7 @@ Cae la noche sobre el Bajo Zaryab. En la plaza del acueducto quedan una soga, un
 *[Misión cumplida: El Juicio del Pueblo. — marca: q_m_juicio]*
 
 
-## El Jann Engañador  ·  `s_jann` (side)
+## El Jann Engañador  ·  `s_jann` (opcional)
 
 ### El Jann Engañador — *Zoco de los Mil Soplos · una estatua que mira*
 
@@ -8482,7 +6537,7 @@ En un rincón del Zoco hay una estatua de arena que nadie recuerda haber visto. 
 *[Misión cumplida: El Jann Engañador. — marca: q_s_jann]*
 
 
-## La Caravana Perdida  ·  `f_caravana` (faction)
+## La Caravana Perdida  ·  `f_caravana` (de facción · opcional)
 
 ### La Caravana Perdida — *Los Mercaderes del Zoco*
 
@@ -8512,7 +6567,7 @@ Las ruinas huelen a podrido y a incienso rancio. Siete personas, la mitad herida
 *[Misión cumplida: La Caravana Perdida. — marca: q_f_caravana]*
 
 
-## Los Padres Enfermos  ·  `r_padres` (side)
+## Los Padres Enfermos  ·  `r_padres` (opcional)
 
 ### Los Padres Enfermos — *Bajo Zaryab · cinco camas*
 
@@ -8538,7 +6593,7 @@ Cinco niños arden de fiebre en una choza de adobe. Cinco madres los miran. Aish
 *[Misión cumplida: Los Padres Enfermos. — marca: q_r_padres]*
 
 
-## Los Monjes de Kelemvor  ·  `r_monjes` (side)
+## Los Monjes de Kelemvor  ·  `r_monjes` (opcional)
 
 ### Los Monjes de Kelemvor — *Bajo Zaryab · una cripta*
 
@@ -8570,7 +6625,7 @@ Detrás de una puerta de carbón, nueve monjes con la cabeza afeitada rezan en v
 *[Misión cumplida: Los Monjes de Kelemvor. — marca: q_r_monjes]*
 
 
-## Los Ladrones del Zoco  ·  `r_ladrones` (side)
+## Los Ladrones del Zoco  ·  `r_ladrones` (opcional)
 
 ### Los Ladrones del Zoco — *Zoco de los Mil Soplos*
 
@@ -8596,7 +6651,7 @@ Detrás de una puerta de carbón, nueve monjes con la cabeza afeitada rezan en v
 *[Misión cumplida: Los Ladrones del Zoco. — marca: q_r_ladrones]*
 
 
-## El Nido del Roc  ·  `s_tigre` (side)
+## El Nido del Roc  ·  `s_tigre` (opcional)
 
 ### El Nido del Roc — *Pico del Viento · los Nómadas del Vacío*
 
@@ -8652,7 +6707,7 @@ El tigre, herido, se encorva entre las ruinas del nido. Respira con dificultad. 
 *[Misión cumplida: El Nido del Roc. — rep. nomadas +1 · marca: q_s_tigre]*
 
 
-## El Cementerio Olvidado  ·  `s_cementerio` (side)
+## El Cementerio Olvidado  ·  `s_cementerio` (opcional)
 
 ### El Cementerio Olvidado — *Los muertos marchan en formación*
 
@@ -8688,7 +6743,7 @@ Cuando cae el último, en el silencio del campo, un caballero osario se queda de
 *[Misión cumplida: El Cementerio Olvidado. — rep. hijos 0 · marca: q_s_cementerio]*
 
 
-## El Inventario de Maunator  ·  `o_maunator` (side)
+## El Inventario de Maunator  ·  `o_maunator` (opcional)
 
 ### El Inventario de Maunator — *Operación · Zoco de los Mil Soplos*
 
@@ -9384,3 +7439,50 @@ El Inquisidor al que convencieron vuelve. Esta vez trae a doce guardias y una li
 
 *[La Alerta sube. Esto no ha terminado. — alerta +2 · rep. conclave -1]*
 
+
+# Apéndice · Los sistemas y sus umbrales
+
+## Corrupción y Devoción (0 a 10)
+
+- El juego las guarda con decimales y muestra el entero. Las decisiones no dicen cuánto suman: el jugador sólo ve moverse el medidor.
+- Cada suba rinde menos cerca del tope (se multiplica por 1 − valor/12, con un mínimo de 0,3), y subir una baja la otra 0,35 por punto.
+- Milagros en combate: Devoción ≥ 2 Bendición de las Arenas, ≥ 4 Muro de Virtud, ≥ 6 Renacimiento Puro; Corrupción ≥ 2 Grito de la Tormenta, ≥ 4 Pacto con el Abismo, ≥ 6 Eclipse de Zahir.
+- Voz en combate: con Corrupción ≥ 7 (y más de un punto sobre Devoción) la compañía habla en tono oscuro; con Devoción ≥ 7 (y más de un punto sobre Corrupción), en tono luminoso.
+- Seguidores: el escéptico pierde fe si Corrupción ≥ 6; el fanático gana fe si Corrupción ≥ 4.
+
+## Ruta (se fija al cerrar el Cap. VIII)
+
+- Sombra si Corrupción ≥ 7 y Devoción ≤ 4. Fe si Devoción ≥ 7 y Corrupción ≤ 4. Balanza si las dos están entre 4 y 6, o si se eligió la postura del Orden en el Cap. V.
+- Si no se cumple ninguna, gana la ruta con más puntos acumulados en las decisiones (Orden → Balanza, Pueblo → Fe, Sombra → Sombra).
+
+## Puntos de Fe y Sello
+
+- Los PF se ganan con decisiones, sermones, ofrendas y combates, y se gastan en milagros y rituales.
+- El Sello cuenta todos los PF ganados en la campaña; gastarlos no lo baja. Mide cuánto alimentaron al cristal.
+
+## Alerta del Conclave (0 a 10)
+
+- ≥ 4: una patrulla viene a buscarlos. ≥ 7: asaltan la biblioteca. ≥ 10: cacería (salvo que hayan construido la Torre).
+- En combate, la Alerta alta los pone en desventaja: −4 con Alerta ≥ 7 y −8 con ≥ 10.
+
+## Fragmentos del Simurg
+
+- Cinco fragmentos atados a alguien: Dahhak (Farid), Marid (Zyr'thar), Al-Mazhar (Aisha), Gul-Amarat (Samira) y Razul (Zaryab).
+- Cada uno se cede a Zahir (Sombra +1), se guarda (+6 PF) o se rompe (−6 PF, Devoción +1, y Zahir llega más débil al ritual).
+
+## Finales (Cap. XIII)
+
+- Liberar: Devoción ≥ 7, Sello ≤ 30 y al menos 3 fragmentos resueltos (guardados, cedidos o rotos).
+- Gobernar: Corrupción ≥ 7.
+- Espiral: Sello ≥ 60, o haber devorado a Dahhak.
+- Silencio: la vía del Silencio con Razul, o los huérfanos de Al-Mazhar en paz más el fragmento de Gul-Amarat resuelto.
+- Equilibrio: Corrupción y Devoción entre 4 y 6.
+- Destruir: siempre disponible.
+- Pacto Roto: haber conocido a Ellie y usar su venda en el ritual; reemplaza al resto.
+
+## Muertes permanentes
+
+- La noche de la fiebre (Cap. IX): si alguien da su aliento por Farid. El séptimo cuerpo (Cap. XIII): si alguien ocupa el lugar de Farid.
+- En combate, desde el Cap. III, sólo con la opción de muerte permanente activada; si no, el caído vuelve con +1 Corrupción.
+- Toda muerte permanente se confirma antes de elegirla. El ritual del cristal (12 PF) revive a los caídos en combate, nunca a quien dio su aliento.
+- Un muerto para siempre ya no habla ni protagoniza opciones; las escenas que dependían de él tienen su variante.

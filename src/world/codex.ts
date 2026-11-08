@@ -168,7 +168,7 @@ export const CODEX: Entry[] = [
   { id: 'velshara', cat: 'Facciones', title: 'La Casa Vel\'Shara', unlock: or(q('p_zyr'), f('q_p_zyr', 'zyr_info', 'zyr_mensaje', 'zyr_eliminada')),
     text: 'Casa drow de cuchillos y contratos, con agentes en tres continentes y ninguna dirección conocida. Zyr\'thar creció en ella y huyó de ella; ellos no la olvidaron. Sus espías se reconocen por un anillo que no brilla y por la costumbre de sentarse de espaldas a la pared. Vel\'Shara no perdona la traición: la cobra con intereses, a veces durante generaciones. Su lema, que nadie dice en voz alta: «La sombra paga».',
     more: [
-      { when: f('cap12_done'), text: 'Nythra Vel\'Shara, la hermana mayor de Zyr\'thar, vendía venenos al Vizir desde la Ciudadela. El reencuentro no fue largo.' },
+      { when: f('cap11_done'), text: 'Nythra Vel\'Shara, la hermana mayor de Zyr\'thar, vendía venenos al Vizir desde la Ciudadela. El reencuentro no fue largo.' },
       { when: f('velshara_mata'), text: 'Zyr\'thar cobró la deuda de la Casa. Su sombra ahora la sigue a un paso de distancia, quieta.' },
       { when: f('velshara_expone'), text: 'Zyr\'thar expuso a Vel\'Shara ante toda Zaryab. La Casa arde sin que ella haya tocado un cuchillo.' },
       { when: f('velshara_perdona'), text: 'Zyr\'thar perdonó a su hermana. Es el único cuchillo que nunca lanzó, y el que más pesa.' },
@@ -405,7 +405,7 @@ export const CODEX: Entry[] = [
       { when: f('joren_perdona'), text: 'Joren lo dejó vivir. Kaelen se quedó de pie en el balcón mucho después, con la orden sin cumplir en la mano.' },
       { when: f('joren_captura'), text: 'Lo capturaron para llevarlo ante un juez, no en una bolsa. Kaelen no entiende por qué.' },
     ] },
-  { id: 'nythra', cat: 'Personas', title: 'Nythra Vel\'Shara', unlock: f('cap12_done'),
+  { id: 'nythra', cat: 'Personas', title: 'Nythra Vel\'Shara', unlock: f('cap11_done'),
     text: 'Hermana mayor de Zyr\'thar y envenenadora de la Casa Vel\'Shara, al servicio del Vizir en la Ciudadela. Escribe sus recetas en pergaminos perfumados y firma con una gota de cera negra. Enseñó a Zyr\'thar a caminar sin ruido cuando eran niñas, y a no confiar en nadie, ella incluida. Es la sombra que Zyr\'thar habría sido si se hubiera quedado.',
     more: [
       { when: f('velshara_mata'), text: 'Cayó sobre sus pergaminos con una sonrisa casi amable. Un frasco rodó hasta el borde de la mesa y no se rompió.' },

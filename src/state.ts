@@ -65,6 +65,23 @@ export function soul(c: Campaign, dc = 0, dd = 0) {
 }
 /** Valor mostrado del medidor (entero) */
 export const meterShow = (v: number) => Math.round(v);
+const PC_NOMBRE: Record<string, string> = { romain: 'Romain', pact: 'Pact', rabb: 'Rabb', joren: 'Joren', zyrthar: "Zyr'thar", panchi: 'Panchi' };
+const FRAG_NOMBRE: Record<string, string> = { dahhak: 'de Dahhak', marid: 'del Marid', mazhar: 'de Al-Mazhar', gusano: 'de Gul-Amarat', razul: 'de Razul' };
+/** Texto corto y literal para las marcas que cambian la partida (fragmentos, pactos, pérdidas). */
+function flagNote(f: string): string | null {
+  let m: RegExpExecArray | null;
+  if ((m = /^fragmento_(\d|marid|razul|fe)$/.exec(f))) return 'Obtienen un fragmento del meteorito';
+  if ((m = /^frag_(\w+?)_zahir$/.exec(f))) return `El fragmento ${FRAG_NOMBRE[m[1]] ?? ''} queda en manos de Zahir`;
+  if ((m = /^frag_(\w+?)_guardado$/.exec(f))) return `Guardan el fragmento ${FRAG_NOMBRE[m[1]] ?? ''} en el santuario`;
+  if ((m = /^frag_(\w+?)_roto$/.exec(f))) return `El fragmento ${FRAG_NOMBRE[m[1]] ?? ''} queda roto: un hueco en el ritual`;
+  const N: Record<string, string> = {
+    cristal_zahir: 'Llevan el cristal de Zahir en el pecho', sacrificio_voz: 'Pagan con la voz durante un día', romain_voz: 'Romain pierde la voz',
+    razul_pacto: 'Firman un pacto con Razul', farid_zahir: 'Zahir sostiene a Farid desde adentro', farid_libre: 'Farid queda libre de Zahir',
+    farid_tomado: 'Farid queda como recipiente de Zahir', farid_sellado: 'El alma de Farid queda sellada', rabb_silaba: 'Rabb recupera una sílaba de su nombre',
+    rabb_pierde_recuerdo: 'Rabb pierde un recuerdo', pacto_roto: 'El pacto con Zahir queda roto', aisha_maldice: 'Aisha los maldice',
+  };
+  return N[f] ?? null;
+}
 export function applyEffect(c: Campaign, e?: Effect): string[] {
   if (!e) return [];
   const out: string[] = [];
@@ -82,7 +99,9 @@ export function applyEffect(c: Campaign, e?: Effect): string[] {
   for (const [k, n] of Object.entries(e.items ?? {})) { c.inv[k] = Math.max(0, (c.inv[k] ?? 0) + n); out.push(`${n > 0 ? '+' : ''}${n} ${k}`); }
   if (e.food) { c.food = Math.max(0, c.food + e.food); out.push(`${e.food > 0 ? '+' : ''}${e.food} víveres`); }
   for (const [k, v] of Object.entries(e.ruta ?? {})) c.ruta[k] = (c.ruta[k] ?? 0) + v;
-  for (const d of e.dead ?? []) if (!c.dead.includes(d)) { c.dead.push(d); out.push(`Muere para siempre: ${d}`); }
+  for (const d of e.dead ?? []) if (!c.dead.includes(d)) { c.dead.push(d); out.push(`${PC_NOMBRE[d] ?? d} muere para siempre`); }
+  // un ancla clara para lo que la prosa cuenta con imágenes: qué se ganó, qué se perdió
+  for (const f of e.flags ?? []) { const t = flagNote(f); if (t) out.push(t); }
   if (e.recruits) { for (let i = 0; i < e.recruits; i++) c.followers.push(randomRecruit(c.day)); out.push(`+${e.recruits} seguidores`); }
   for (const x of e.echo ?? []) c.ecos.push({ id: x.id, due: c.day + x.in });
   if (e.eclipse) { c.eclipseDay = c.day + e.eclipse; for (const [id, at] of [['eclipse_aviso1', e.eclipse - 30], ['eclipse_aviso2', e.eclipse - 10], ['eclipse_llega', e.eclipse]] as const) c.ecos.push({ id, due: c.day + at }); out.push(`El Eclipse llegará en ${e.eclipse} días.`); }

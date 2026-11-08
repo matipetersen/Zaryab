@@ -8,6 +8,10 @@ const N = (text: string): Node => ({ t: 'narr', text });
 const S = (who: string, text: string, tone?: string): Node => ({ t: 'say', who, text, tone });
 const T = (title: string, sub: string, bg: string): Node => ({ t: 'chapter', title, sub, bg });
 const IF = (flag: string, then: Node[], els?: Node[]): Node => ({ t: 'if', flag, then, else: els });
+const FX_SEED: Node = { t: 'fx', e: { flags: ['nana_desague'] } };
+
+/** Dónde va la escena si no es al cierre: antes del título de escena indicado. */
+export const NIVEL_AT: Record<string, string> = { m_cap11: 'Nivel 4 — El Corazón' };
 
 export const NIVEL: Record<string, Node[]> = {
   // ── Cap. I: despiertan en el callejón (Zyr'thar, Panchi y Joren estaban ausentes) ──
@@ -119,6 +123,13 @@ export const NIVEL: Record<string, Node[]> = {
       { label: 'Joren: dejarlo ir, por ahora', hint: 'Pact lo pide. El nombre puede esperar.', e: { d: 1, flags: ['joren_espera_marca'] }, result: [`Joren saca la mano del carcaj. Pact no se mueve hasta que el Qilaat desaparece. Después se sientan en el escalón, los dos, sin hablar, hasta que amanece.`] },
       { label: 'Joren: seguirlo y hacerlo hablar', hint: 'Riesgo de que el Conclave sepa dónde viven.', e: { c: 1, alert: 2, flags: ['joren_interroga_marca', 'kaelen_pista'] }, result: [`Joren vuelve a la madrugada con los nudillos rotos y un nombre que no dice. Pact le venda la mano sin preguntar. Cuando termina, Joren le dice «gracias» y algo más que Pact no alcanza a oír.`] },
     ] },
+    T('La nana del desagüe', 'El Bajo, de madrugada', 'bajo'),
+    N(`Ya casi amanece cuando Aisha baja a buscar agua y se queda quieta en la mitad de la escalera. Por la rejilla del desagüe sube una canción. Una nana, cantada muy despacio por una voz de hombre, cascada y cálida.`),
+    S('Aisha', `Esa la cantaba mi marido. Así, con esa voz. Hace tres inviernos que lo enterré.`, 'con el balde vacío en la mano'),
+    N(`Romain se arrodilla junto a la rejilla. La canción viene de muy abajo, de debajo del cementerio, y va y viene como si alguien la estuviera probando. En la calle de al lado, una madre golpea las puertas: su hijo salió anoche detrás de una música y no volvió.`),
+    S('Romain', `No es un fantasma. Los fantasmas no ensayan. Alguien está aprendiendo a cantar con la voz de otro.`, 'con la oreja contra el hierro frío'),
+    S('Aisha', `No le digan nada a Farid. Por favor. Si la oye, va a querer bajar.`, 'subiendo la escalera sin el agua'),
+    FX_SEED,
   ],
 
   // ── Cap. X: los frascos de La Marca y la cara del vendedor (Pact y Joren ausentes; Rabb, clímax débil) ──
