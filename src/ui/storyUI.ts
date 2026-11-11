@@ -53,6 +53,7 @@ export class StoryUI {
    *  `mapLater`: el próximo nodo es un 'stage' que elige el mapa, así que acá solo se cambia el fondo pintado y la música. */
   setBg(id: string, scene = false, mapLater = false) {
     this.pendingFoes = undefined;
+    if (scene) audio.theme(null);
     if (scene) { if (this.ov) { this.ov.style.transition = 'none'; this.ov.style.opacity = '0'; } if (this.stage) this.stage.focusUid = -1; }
     const MOOD: Record<string, Mood> = { dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
     const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
@@ -110,7 +111,7 @@ export class StoryUI {
       else if ('hide' in c) st?.hide(c.hide);
       else if ('focus' in c) { st?.focus(c.focus, c.zoom); await wait(500); }
       else if ('wait' in c) await wait(c.wait);
-      else if ('music' in c) (audio as any).theme?.(c.music);
+      else if ('music' in c) audio.theme(c.music);
       else if ('sfx' in c) audio.sfx(c.sfx as any);
     }
   }
@@ -139,7 +140,7 @@ export class StoryUI {
       // El mapa y la compañía aparecen ya; los enemigos pedidos, con la línea siguiente (la que los presenta).
       case 'stage': this.bg.style.background = BG.limbo; await this.stage?.set(n.map, this.cast(), []); this.stage?.clear(true); this.pendingFoes = n.foes?.length ? n.foes : undefined; return;
       case 'narr': this.revealFoes(); await this.show(null, n.text); await this.pause(); return;
-      case 'say': if (this.deadSpeaker(n.who)) return; this.revealFoes(); await this.show(n.who, n.text, n.tone); await this.pause(); return;
+      case 'say': if (this.deadSpeaker(n.who)) return; if (/^Zahir/.test(n.who) && !audio.th) audio.theme(has(this.camp, 'cap12_done') ? 'zahir_roto' : 'zahir'); this.revealFoes(); await this.show(n.who, n.text, n.tone); await this.pause(); return;
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }
       case 'if': { const ok = has(this.camp, n.flag); await this.play(ok ? n.then : n.else ?? []); return; }
       case 'choice': return this.choice(n.prompt, n.options);

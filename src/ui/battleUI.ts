@@ -19,6 +19,7 @@ import type { P } from '../engine/grid';
 type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; w: Weapon } | { k: 'weapon'; w: Weapon } | { k: 'ability'; id: string; lvl: number } | { k: 'busy' } | { k: 'deploy' };
 export interface BattleResult { chem?: Record<string, number>; result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number>; bonus?: { text: string; reward: Reward }[] }
 
+import { BOSS_THEME } from './audio';
 import { audio } from './audio';
 import { objectiveStatus, type Reward } from '../engine/twists';
 import { bark, BarkGate, shortBark, type BarkEv } from '../story/barks';
@@ -37,7 +38,7 @@ export class BattleUI {
 
   async run(b: Battle, mapId: string, intro: string): Promise<BattleResult> {
     this.b = b; this.stopped = false; this.gate = new BarkGate(); this.lowSaid = new Set(); this.downSeen = new Set(); this.lastStandSaid = false; this.root.innerHTML = ''; (window as any).__ui = this; (window as any).__b = b;
-    this.mapId = mapId; audio.setMood(b.units.some(u => u.traits.includes('boss')) ? 'boss' : 'battle'); const map = MAPS[mapId];
+    this.mapId = mapId; audio.setMood(b.units.some(u => u.traits.includes('boss')) ? 'boss' : 'battle'); { const boss = b.units.find(u => u.side === 'foe' && BOSS_THEME[u.id]); audio.theme(boss ? BOSS_THEME[boss.id] : null); } const map = MAPS[mapId];
     this.canvas = h('canvas', { id: 'board' }); this.left = h('aside', { id: 'left', class: 'side' }); this.right = h('aside', { id: 'right', class: 'side' });
     this.bar = h('div', { id: 'actionbar' }); this.logEl = h('div', { id: 'log' }); this.tracker = h('div', { id: 'tracker' }); this.tip = h('div', { id: 'tooltip', class: 'hidden' });
     const stage = h('div', { id: 'stage' }, this.canvas, this.tracker, (this.objEl = h('div', { id: 'objective' }, h('b', {}, map.name), h('div', {}, map.objective))), this.logEl);
@@ -195,6 +196,7 @@ export class BattleUI {
       }
     }
     if (this.stopped) return;
+    audio.theme(null);
     await this.flush();
     if (b.result === 'victory') { const up = b.units.filter(p => p.pcId && !p.dead && !p.down); if (this.say(up[Math.floor(Math.random() * up.length)], 'win')) await sleep((window as any).__fast ? 0 : 1600); }
     await sleep(700);

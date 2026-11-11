@@ -7,6 +7,32 @@ const SCALE = [0, 1, 4, 5, 7, 8, 10]; // frigio dominante sobre la tónica
 const ROOT = 146.83; // D3
 const hz = (deg: number, oct = 0) => { const n = SCALE[((deg % 7) + 7) % 7] + 12 * (Math.floor(deg / 7) + oct); return ROOT * Math.pow(2, n / 12); };
 
+// ───── temas (leitmotivs): melodías escritas que vuelven en los momentos clave ─────
+// Cada nota es [semitonos desde re4, pulsos]; null = silencio. `bass` es una nota grave por compás.
+type Note = [number | null, number];
+interface Theme { bpm: number; beats: number; inst: 'box' | 'warm' | 'saw' | 'bright'; mel: Note[]; bass: number[]; vol: number }
+const NANA: Note[] = [[7, 1], [3, 1], [5, 1], [7, 2], [8, 1], [7, 1], [5, 1], [3, 1], [5, 3], [3, 1], [5, 1], [7, 1], [10, 2], [8, 1], [7, 1], [5, 1], [2, 1], [0, 3]];
+const ZAHIR: Note[] = [[0, 1], [4, 1], [7, 1], [9, 1], [7, 2], [4, 1], [5, 1], [7, 1], [9, 1], [12, 2], [11, 1], [9, 1], [7, 2], [9, 1], [7, 1], [4, 1], [5, 1], [4, 2], [1, 1], [0, 1], [4, 1], [7, 1], [5, 1], [4, 1], [0, 4]];
+const RAZUL: Note[] = [[12, 2], [10, 2], [8, 3], [7, 1], [5, 2], [3, 1], [5, 1], [7, 4], [8, 2], [7, 2], [5, 2], [3, 2], [2, 2], [1, 1], [2, 1], [0, 4]];
+const map = (ns: Note[], m: Record<number, number>, shift = 0): Note[] => ns.map(([n, d]) => [n == null ? null : (m[((n % 12) + 12) % 12] != null ? n - (n % 12) + m[n % 12] : n) + shift, d]);
+const THEMES: Record<string, Theme> = {
+  // la nana de Farid: re menor, caja de música, en 3/4
+  nana: { bpm: 76, beats: 3, inst: 'box', mel: NANA, bass: [-12, -16, -14, -17, -9, -16, -17, -12], vol: .1 },
+  // la nana resuelta en mayor: el final luminoso
+  final_luz: { bpm: 80, beats: 3, inst: 'bright', mel: map(NANA, { 3: 4, 8: 9, 10: 11 }), bass: [-12, -15, -13, -17, -8, -15, -17, -12], vol: .1 },
+  // la nana como canto del Lich: más rápida y en sierra, sobre los tambores del jefe
+  nana_lich: { bpm: 104, beats: 3, inst: 'saw', mel: map(NANA, {}, -12), bass: [-24, -28, -26, -29, -21, -28, -29, -24], vol: .07 },
+  // Zahir: cálido, casi mayor; sólo al final se le escapa el mi bemol del frigio
+  zahir: { bpm: 88, beats: 4, inst: 'warm', mel: ZAHIR, bass: [-12, -19, -15, -17, -15, -11, -17, -12], vol: .09 },
+  // el mismo tema, roto: todo baja al frigio y se arrastra
+  zahir_roto: { bpm: 62, beats: 4, inst: 'saw', mel: map(ZAHIR, { 2: 1, 9: 8, 11: 10 }), bass: [-12, -12, -11, -12, -11, -12, -11, -12], vol: .08 },
+  final_sombra: { bpm: 70, beats: 4, inst: 'saw', mel: map(ZAHIR, { 2: 1, 9: 8, 11: 10 }, -12), bass: [-24, -24, -23, -24, -23, -24, -23, -24], vol: .08 },
+  // Razul: un lamento grave que baja como el agua de un pozo
+  razul: { bpm: 54, beats: 4, inst: 'saw', mel: map(RAZUL, {}, -12), bass: [-24, -28, -31, -27, -28, -31, -26, -24], vol: .08 },
+};
+/** Tema de cada jefe en combate (los demás usan sólo el clima de jefe). */
+export const BOSS_THEME: Record<string, string> = { al_mazhar: 'nana_lich', simurg_eclipse: 'zahir_roto', razul_final: 'razul' };
+
 class AudioEngine {
   ctx?: AudioContext; master?: GainNode; music?: GainNode; fx?: GainNode; verb?: ConvolverNode; analyser?: AnalyserNode;
   mood: Mood = 'off'; muted = false; started = false; private timer = 0; private step = 0; private noiseBuf?: AudioBuffer; private drones: { o: OscillatorNode; g: GainNode }[] = []; private windG?: GainNode; private pending: Mood = 'off';
@@ -23,7 +49,7 @@ class AudioEngine {
       this.verb = c.createConvolver(); this.verb.buffer = this.impulse(2.4); const vg = c.createGain(); vg.gain.value = .35; this.verb.connect(vg); vg.connect(this.master);
       this.music.connect(this.master); this.music.connect(this.verb); this.fx.connect(this.master);
       const n = c.sampleRate * 2, b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; this.noiseBuf = b;
-      this.started = true; void c.resume(); this.setMood(this.pending);
+      this.started = true; void c.resume(); this.setMood(this.pending); if (this.pendingTheme) this.theme(this.pendingTheme);
     } catch { /* sin audio */ }
   }
   private impulse(sec: number) { const c = this.ctx!, n = c.sampleRate * sec, b = c.createBuffer(2, n, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); } return b; }
@@ -44,7 +70,7 @@ class AudioEngine {
   private stopDrones() { const c = this.ctx!; for (const { o, g } of this.drones) { try { g.gain.setTargetAtTime(0, c.currentTime, .4); (o as any).stop?.(c.currentTime + 1.5); } catch { /* */ } } this.drones = []; }
   private tick(beat: number) {
     const c = this.ctx; if (!c || document.hidden || this.muted) { this.step++; return; } const t = c.currentTime + .03, s = this.step++, m = this.mood, r = Math.random;
-    const pluck = (f: number, v = .12, len = 1.1, type: OscillatorType = 'triangle') => this.tone(f, t, len, v, type, 1800);
+    const pluck = (f: number, v = .12, len = 1.1, type: OscillatorType = 'triangle') => { if (!this.th) this.tone(f, t, len, v, type, 1800); };
     if (m === 'menu' || m === 'desert' || m === 'sacred') { if (s % 8 === 0 && r() < .8) pluck(hz(Math.floor(r() * 5), 1), .09, 3.2, 'sine'); if (s % 16 === 6 && r() < .6) pluck(hz(2 + Math.floor(r() * 4), 2), .06, 2.6, 'sine'); if (m === 'menu' && r() < .5) this.crackle(t); }
     else if (m === 'city') { const pat = [0, 2, 4, 3, 2, 1, 0, 4]; if (s % 2 === 0) pluck(hz(pat[(s / 2) % 8], 1), .1, .55); if (s % 8 === 0) this.drum(t, 'low'); if (s % 8 === 4) this.drum(t, 'hi'); if (s % 4 === 2) this.drum(t, 'tick'); }
     else if (m === 'tense') { if (s % 16 === 0) pluck(hz(1, 0), .1, 3.5, 'sine'); if (s % 16 === 8 && r() < .7) pluck(hz(0 + (r() < .5 ? 1 : 0), 1), .06, 3, 'sine'); if (s % 4 === 0) this.drum(t, 'heart'); }
@@ -85,6 +111,34 @@ class AudioEngine {
       case 'coin': this.tone(1320, t, .12, .07, 'square', 3500, F); this.tone(1760, t + .07, .25, .07, 'square', 3500, F); break;
       case 'levelup': for (let i = 0; i < 5; i++) this.tone(hz(i, 2), t + i * .1, .6, .08, 'triangle', 4500, F); break;
     }
+  }
+  // ───── temas ─────
+  th?: { name: string; timer: number }; private pendingTheme: string | null = null;
+  /** Hace sonar un tema en bucle sobre el clima actual (que deja de improvisar melodía mientras tanto). null lo apaga. */
+  theme(name: string | null) {
+    this.pendingTheme = name; if (this.th?.name === name) return;
+    if (this.th) { clearTimeout(this.th.timer); this.th = undefined; }
+    if (!name || !THEMES[name] || !this.started || !this.ctx) return;
+    const T = THEMES[name]; const beat = 60 / T.bpm; const loopBeats = T.mel.reduce((a, [, d]) => a + d, 0);
+    const D4 = 293.66, f = (n: number) => D4 * Math.pow(2, n / 12);
+    const play = () => {
+      const c = this.ctx; if (!c || !this.th || this.th.name !== name) return; let t = c.currentTime + .08, b = 0;
+      if (!this.muted && !document.hidden) {
+        for (const [n, d] of T.mel) {
+          if (n != null) {
+            const len = d * beat;
+            if (T.inst === 'box') { this.tone(f(n), t, Math.max(.9, len * 1.3), T.vol, 'sine', 4200); this.tone(f(n + 12), t, .6, T.vol * .35, 'sine', 6000); }
+            else if (T.inst === 'bright') { this.tone(f(n), t, Math.max(.8, len * 1.2), T.vol, 'triangle', 5000); this.tone(f(n + 12), t, .5, T.vol * .3, 'sine', 6000); }
+            else if (T.inst === 'warm') this.tone(f(n), t, len * 1.25, T.vol, 'triangle', 2600);
+            else this.tone(f(n), t, len * .98, T.vol, 'sawtooth', 900);
+          }
+          t += d * beat; b += d;
+        }
+        const bar = T.beats * beat; T.bass.forEach((bn, i) => this.tone(f(bn), c.currentTime + .08 + i * bar, bar * .95, T.vol * .7, 'sine', 500));
+      }
+      this.th = { name, timer: window.setTimeout(play, Math.max(200, loopBeats * beat * 1000 - 60)) };
+    };
+    this.th = { name, timer: 0 }; play();
   }
   /** Nivel de señal (0–1) para verificar que suena algo. */
   level() { if (!this.analyser) return 0; const d = new Uint8Array(this.analyser.fftSize); this.analyser.getByteTimeDomainData(d); let s = 0; for (const v of d) s += ((v - 128) / 128) ** 2; return Math.sqrt(s / d.length); }
