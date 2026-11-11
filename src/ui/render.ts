@@ -37,13 +37,14 @@ import { assetImg, hasAssets } from './assets';
 import { audio } from './audio';
 import { TRAP_ICON } from '../engine/traps';
 import { drawPC } from './pcSprites';
-import { dioramaFor, pixelWidth, quantize, palFor, pixFor, bodyFor, templateFor, drawFigure, drawPixText } from './diorama';
+import { PROPS, drawProp, drawBackdrop } from './props';
+import { dioramaFor, pixelWidth, quantize, palFor, pixFor, bodyFor, templateFor, drawFigure, drawPixText, lookOf } from './diorama';
 import { floorTex, blockTex } from './textures';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
 
 export class Renderer {
   /** Modo diorama (pixel art de paleta cerrada, ver diorama.ts). */ pixel = false; pix: Record<string, string> = pixFor();
-  setPixel(on: boolean) { this.pixel = on; this.pix = pixFor(this.map?.theme); this.pal = on ? palFor(this.map?.theme) : (PALS[this.map?.theme ?? ''] ?? PALS.alley); this.gcache = undefined; this.canvas.style.imageRendering = on ? 'pixelated' : ''; this.resize(); }
+  setPixel(on: boolean) { this.pixel = on; this.pix = pixFor(lookOf(this.map)); this.pal = on ? palFor(lookOf(this.map)) : (PALS[this.map?.theme ?? ''] ?? PALS.alley); this.gcache = undefined; this.canvas.style.imageRendering = on ? 'pixelated' : ''; this.resize(); }
   /** Modo escena: sin barras de PG ni anillos de bando (se usa en las cutscenes sobre mapa). */ cine = false;
   weather = new Weather(); lighting = new Lighting(); amb: Ambience = ambienceFor(''); flashes: Flash[] = []; freeze = 0;
   ctx: CanvasRenderingContext2D; b?: Battle; map?: MapDef; pal: Pal = PALS.alley;
@@ -120,7 +121,7 @@ export class Renderer {
     const g = this.b?.grid; if (!g) return null; const s = this.scale();
     const cand: { x: number; y: number; d: number }[] = [];
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
-      const t = g.tiles[y][x]; const hgt = t.kind === 'high' ? ELEV : 0; const p = this.proj(x, y, hgt);
+      const t = g.tiles[y][x]; if (t.kind === 'void') continue; const hgt = t.kind === 'high' ? ELEV : 0; const p = this.proj(x, y, hgt);
       const dx = Math.abs(mx - p.x) / (TW / 2 * s), dy = Math.abs(my - (p.y + TH / 2 * s)) / (TH / 2 * s);
       if (dx + dy <= 1) { const v = this.rv(x, y); cand.push({ x, y, d: v.x + v.y }); }
     }
@@ -260,6 +261,8 @@ export class Renderer {
     g0.addColorStop(0, (this.pal.bg0)); g0.addColorStop(1, this.pal.bg1); c.fillStyle = g0; c.fillRect(0, 0, this.W, this.H);
     c.fillStyle = this.pixel ? this.pix.e : 'rgba(255,230,180,.25)'; for (const d of this.dust) { c.beginPath(); c.arc(d.x * this.W, (d.y * this.H + this.time * 6 * d.s) % this.H, d.s, 0, 6.28); c.fill(); }
     if (!this.b) return; const b = this.b, g = b.grid, s = this.scale();
+    if (this.map) { const q = [this.proj(0, 0), this.proj(g.w - 1, 0), this.proj(0, g.h - 1), this.proj(g.w - 1, g.h - 1)]; const cx = (Math.min(...q.map(p => p.x)) + Math.max(...q.map(p => p.x))) / 2, top = Math.min(...q.map(p => p.y));
+      c.save(); c.globalAlpha = this.pixel ? 1 : .8; drawBackdrop(c, this.map.id, cx, top, this.W, this.H, s, this.pix, this.time); c.restore(); }
     if (this.shake > 0) c.translate((Math.random() - .5) * 6 * this.shake, (Math.random() - .5) * 6 * this.shake);
     // suelo: la capa estática (baldosas + sombras de bloques) se pinta una vez y se reutiliza mientras no cambie la vista ni el terreno
     this.drawGround(s); if (this.pixel) this.drawSandFall(s);
@@ -305,10 +308,10 @@ export class Renderer {
       if (this.pixel) { if (c.globalAlpha > .35) drawPixText(c, f.text, (p.x + f.dx) * this.dpr, yy * this.dpr, f.cls === 'crit' ? 2 : 1, f.cls === 'heal' ? this.pix.g : f.cls === 'crit' ? this.pix.f : f.cls === 'miss' ? this.pix.A : f.cls === 'status' ? this.pix.v : this.pix.r); continue; }
       c.lineWidth = 4; c.strokeStyle = 'rgba(0,0,0,.8)'; c.strokeText(f.text, p.x + f.dx, yy); c.fillStyle = col; c.fillText(f.text, p.x + f.dx, yy); } c.globalAlpha = 1;
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    if (this.pixel) quantize(c, this.canvas.width, this.canvas.height, this.map?.theme);
+    if (this.pixel) quantize(c, this.canvas.width, this.canvas.height, lookOf(this.map));
   }
   drawFloor(x: number, y: number, kind: string, s: number, mode: 'all' | 'base' | 'dyn' = 'all') {
-    if (mode === 'dyn' && kind !== 'water' && kind !== 'hazard' && kind !== 'mark') return;
+    if (kind === 'void' || (mode === 'dyn' && kind !== 'water' && kind !== 'hazard' && kind !== 'mark')) return;
     const P = this.pal, h = kind === 'high' ? ELEV : 0; const p = this.proj(x, y, h);
     if (kind === 'wall' || kind === 'cover' || kind === 'door') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.f2, .6)); return; }
     if (kind === 'high') { const q = this.proj(x, y, 0); this.diamond(q.x, q.y, s, shade(P.high, .6)); return; } // el bloque elevado se dibuja ordenado por profundidad (drawHigh)
@@ -348,6 +351,8 @@ export class Renderer {
   }
   drawBlock0(x: number, y: number, kind: string, s: number) {
     const P = this.pal; const p = this.proj(x, y, 0);
+    { const g = this.b!.grid, t = g.at(x, y)!; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; const pk = !rim && this.map ? PROPS[this.map.id]?.[t.ch] : undefined;
+      if (pk) { drawProp(this.ctx, pk, p.x, p.y, s, this.pix, this.time, x, y); if (t.hp != null && t.maxHp && t.hp < t.maxHp) { const c = this.ctx; c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p.x - 6 * s, p.y + 4 * s); c.lineTo(p.x + 2 * s, p.y + 14 * s); c.lineTo(p.x - 3 * s, p.y + 22 * s); c.stroke(); } return; } }
     if (kind === 'door') { this.box(p.x, p.y, s, WALL - 6, '#7a4a2c', '#3a2216', '#4e2f1c'); return; }
     if (kind === 'wall') { const g = this.b!.grid; const brittle = g.at(x, y)!.ch === 'x'; const rim = x === 0 || y === 0 || x === g.w - 1 || y === g.h - 1; if (rim) { this.box(p.x, p.y, s, RIM, shade(P.wallT, .9), shade(P.wallL, .8), shade(P.wallR, .8)); return; } this.box(p.x, p.y, s, WALL, brittle ? shade(P.wallT, .85) : P.wallT, brittle ? shade(P.wallL, .9) : P.wallL, brittle ? shade(P.wallR, .9) : P.wallR); const c = this.ctx; if (brittle) { c.strokeStyle = 'rgba(0,0,0,.65)'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x - 12 * s, p.y + 4 * s); c.lineTo(p.x - 4 * s, p.y + 14 * s); c.lineTo(p.x - 9 * s, p.y + 24 * s); c.lineTo(p.x + 2 * s, p.y + 34 * s); c.moveTo(p.x + 12 * s, p.y + 8 * s); c.lineTo(p.x + 5 * s, p.y + 20 * s); c.stroke(); } c.strokeStyle = 'rgba(0,0,0,.18)'; for (let i = 1; i < 3; i++) { const yy = p.y + TH * s - (WALL / 3) * i * s; c.beginPath(); c.moveTo(p.x - TW / 2 * s, yy - TH / 2 * s); c.lineTo(p.x, yy); c.lineTo(p.x + TW / 2 * s, yy - TH / 2 * s); c.stroke(); } }
     else {
@@ -374,33 +379,38 @@ export class Renderer {
     }
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(gc.cv, 0, 0); c.restore();
   }
-  /** Diorama: los bordes delanteros del mapa caen como un acantilado al vacío, con estratos. */
-  private drawCliff(s: number) {
-    const c = this.ctx, vd = this.vdims(), D = 56 * s;
+  /** Diorama: cada borde delantero de la isla (el del mapa o el que da a una casilla de vacío) cae como un acantilado, con estratos. */
+  private cliffFace(x: number, y: number, s: number) {
+    const g = this.b!.grid, vd = this.vdims(), v = this.rv(x, y), c = this.ctx, D = 56 * s;
+    const open = (vx: number, vy: number) => { if (vx < 0 || vy < 0 || vx >= vd.w || vy >= vd.h) return true; const q = this.rinv(vx, vy); return g.tiles[q.y][q.x].kind === 'void'; };
     const face = (ax: number, ay: number, bx: number, by: number, col: string, dark: string) => {
       c.fillStyle = col; c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.lineTo(bx, by + D); c.lineTo(ax, ay + D); c.closePath(); c.fill();
       for (let k = 1; k < 5; k++) { const yy = k * D / 5 + (k % 2 ? 2 : -1) * s; c.strokeStyle = dark; c.lineWidth = 2 * s; c.beginPath(); c.moveTo(ax, ay + yy); c.lineTo(bx, by + yy); c.stroke(); }
     };
-    for (let vx = 0; vx < vd.w; vx++) { const q = this.rinv(vx, vd.h - 1); const p = this.proj(q.x, q.y); face(p.x - TW / 2 * s, p.y + TH / 2 * s, p.x, p.y + TH * s, this.pix.s, this.pix.e); }
-    for (let vy = 0; vy < vd.h; vy++) { const q = this.rinv(vd.w - 1, vy); const p = this.proj(q.x, q.y); face(p.x, p.y + TH * s, p.x + TW / 2 * s, p.y + TH / 2 * s, this.pix.S, this.pix.s); }
+    const p = this.proj(x, y);
+    if (open(v.x, v.y + 1)) face(p.x - TW / 2 * s, p.y + TH / 2 * s, p.x, p.y + TH * s, this.pix.s, this.pix.e);
+    if (open(v.x + 1, v.y)) face(p.x, p.y + TH * s, p.x + TW / 2 * s, p.y + TH / 2 * s, this.pix.S, this.pix.s);
   }
-  /** Arena que se escurre por el borde del acantilado (se dibuja cada cuadro, fuera de la caché). */
+  /** Arena que se escurre por los bordes de la isla (se dibuja cada cuadro, fuera de la caché). */
   private drawSandFall(s: number) {
-    const c = this.ctx, vd = this.vdims(), D = 56 * s; c.fillStyle = this.pix.t;
-    for (let vx = 1; vx < vd.w; vx += 3) { const q = this.rinv(vx, vd.h - 1); const p = this.proj(q.x, q.y); const x = p.x - TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vx * 13 + i * 19) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
-    for (let vy = 2; vy < vd.h; vy += 3) { const q = this.rinv(vd.w - 1, vy); const p = this.proj(q.x, q.y); const x = p.x + TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vy * 17 + i * 23) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
+    const g = this.b!.grid, c = this.ctx, vd = this.vdims(), D = 56 * s; c.fillStyle = this.pix.t;
+    const open = (vx: number, vy: number) => { if (vx < 0 || vy < 0 || vx >= vd.w || vy >= vd.h) return true; const q = this.rinv(vx, vy); return g.tiles[q.y][q.x].kind === 'void'; };
+    for (let vy = 0; vy < vd.h; vy++) for (let vx = 0; vx < vd.w; vx++) {
+      const q = this.rinv(vx, vy); if (g.tiles[q.y][q.x].kind === 'void' || (vx * 7 + vy * 5) % 3) continue; const p = this.proj(q.x, q.y);
+      if (open(vx, vy + 1)) { const x = p.x - TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vx * 13 + i * 19) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
+      else if (open(vx + 1, vy)) { const x = p.x + TW / 4 * s, y0 = p.y + TH * .75 * s + D; for (let i = 0; i < 3; i++) { const t = (this.time * 40 + vy * 17 + i * 23) % 60; c.fillRect(x, y0 + t * s, 2 * s, 3 * s); } }
+    }
   }
   private drawGroundLive(s: number) {
     const g = this.b!.grid, vd = this.vdims();
-    if (this.pixel) this.drawCliff(s);
-    for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); this.drawFloor(q.x, q.y, g.tiles[q.y][q.x].kind, s, 'base'); }
+    for (let d = 0; d < vd.w + vd.h - 1; d++) for (let vy = 0; vy < vd.h; vy++) { const vx = d - vy; if (vx < 0 || vx >= vd.w) continue; const q = this.rinv(vx, vy); const k = g.tiles[q.y][q.x].kind; if (k === 'void') continue; if (this.pixel) this.cliffFace(q.x, q.y, s); this.drawFloor(q.x, q.y, k, s, 'base'); }
     this.drawBlockShadows(s);
   }
   drawFloorFog(s: number) {
     const g = this.b!.grid, c = this.ctx;
     for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) {
       const t = g.tiles[y][x];
-      const a = this.fogA[y * g.w + x]; if (a < .02 || t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door' || t.kind === 'high') continue; const p = this.proj(x, y, 0); this.diamond(p.x, p.y, s, `rgba(6,2,16,${a})`);
+      const a = this.fogA[y * g.w + x]; if (a < .02 || t.kind === 'wall' || t.kind === 'cover' || t.kind === 'door' || t.kind === 'high' || t.kind === 'void') continue; const p = this.proj(x, y, 0); this.diamond(p.x, p.y, s, `rgba(6,2,16,${a})`);
     }
   }
   /** Silueta del bloque para cubrirlo con niebla. */

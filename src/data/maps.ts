@@ -365,3 +365,50 @@ Object.assign(ENCOUNTERS, {
   varreth: { scale: { hp: 0.8, atk: -1 }, map: 'zoco', intro: 'Varreth abre los ojos y grita. Se cubre con Armadura de Mago y desaparece de la vista de ustedes.', foes: [{ id: 'varreth', slot: 0 }] },
   kethras_quemarropa: { survive: 4, soft: true, scale: { hp: 0.6, atk: -1 }, map: 'tuneles_b', intro: 'El trato se rompió. Kethras los ataca a quemarropa: Bola de Fuego, Rayo de Frío, sin una palabra más.', foes: [{ id: 'kethras', slot: 0 }] },
 } as Record<string, Encounter>);
+
+// ───── Silueta de cada mapa: no todos son el mismo rectángulo con borde. El vacío (' ') recorta la isla. ─────
+const nz = (x: number, y: number) => ((((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000) / 1000;
+const KEEP = /[1-6eaw*D]/;
+/** Recorta el mapa: `cut(x, y, w, h)` = true deja esa casilla en el vacío. Con `rim: false` el muro exterior desaparece y el borde es un acantilado. */
+function shape(id: string, cut: (x: number, y: number, w: number, h: number) => boolean, rim = true) {
+  const m = MAPS[id]; const h = m.rows.length, w = m.rows[0].length;
+  m.rows = m.rows.map((row, y) => [...row].map((ch, x) => {
+    const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+    if (KEEP.test(ch)) return ch;
+    if (cut(x, y, w, h) || (!rim && edge)) return ' ';
+    return ch;
+  }).join(''));
+  // un muro de borde que quedó suelto junto al vacío también cae
+  if (!rim) return;
+}
+const ell = (x: number, y: number, w: number, h: number, k = 1) => { const u = (x - (w - 1) / 2) / ((w - 1) / 2), v = (y - (h - 1) / 2) / ((h - 1) / 2); return u * u + v * v > k; };
+// Dunas: isla de arena de bordes ondulados, sin muro
+shape('dunas', (x, y, w, h) => { const d = Math.min(x, y, w - 1 - x, h - 1 - y); return d < 1 + Math.round(1.6 * (Math.sin(x * .9) + Math.cos(y * 1.3)) / 2 + nz(x, y)); }, false);
+// Pico del Viento: la cima, redonda y sin baranda
+shape('nido', (x, y, w, h) => ell(x, y, w, h, .92 + nz(x, y) * .12), false);
+// Eclipse: el círculo ritual de las catacumbas
+shape('eclipse', (x, y, w, h) => ell(x, y, w, h, 1.0), false);
+// Lago de los Silencios: una caverna de bordes irregulares
+shape('pozo', (x, y, w, h) => ell(x, y, w, h, .95 + nz(x, y) * .25));
+// Mina: galería de roca mordida
+shape('mina', (x, y, w, h) => { const d = Math.min(x, y, w - 1 - x, h - 1 - y); return d < Math.floor(nz(x * 3, y * 5) * 2.4); });
+// Cementerio: una loma sin muro, comida por los bordes
+shape('cementerio', (x, y, w, h) => { const d = Math.min(x, y, w - 1 - x, h - 1 - y); return d < 1 + Math.floor(nz(x, y * 7) * 1.8); }, false);
+// Iglesia: planta en cruz (nave y crucero)
+shape('iglesia', (x, y, w, h) => (x < 4 || x > w - 5) && (y > 9));
+// Cripta: una sala larga y angosta, con la mesa en el medio
+shape('cripta', (x, y, w, h) => (x < 3 || x > w - 4) && y > 4);
+// Ciudadela: el balcón del trono sin baranda (el frente cae al vacío)
+shape('ciudadela', (x, y, w, h) => (y > 11 && (x < 5 || x > w - 6)) || (y === h - 1), true);
+// Arena del torneo: ring octogonal
+shape('arena', (x, y, w, h) => Math.min(x, w - 1 - x) + Math.min(y, h - 1 - y) < 2, false);
+// Cubo de los Mil Reflejos: el cubo flota, sin muro
+shape('cubo', () => false, false);
+// Templo de Kelemvor: una esquina derrumbada por el incendio
+shape('templo', (x, y, w, h) => x + (h - 1 - y) < 4 + nz(x, y) * 2 || (x > w - 5 && y > h - 4));
+// Plaza: le falta el ala que se llevó el Coloso
+shape('plaza', (x, y, w, h) => x > w - 6 && y > h - 6 && x + y > w + h - 9);
+// Mercado de las Sombras: los puestos se desparraman sin muro, con un rincón hundido
+shape('zoco', (x, y, w, h) => (x > w - 6 && y < 5) || (x < 2 && y > h - 4), false);
+// Acueducto: las esquinas se desmoronaron al vacío; el canal sigue
+shape('acueducto', (x, y, w, h) => (x < 5 || x > w - 6) && (y < 4 || y > h - 4) && !(y === h - 2));

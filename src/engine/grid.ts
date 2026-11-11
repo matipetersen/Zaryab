@@ -15,6 +15,7 @@ export const LEGEND: Record<string, Omit<Tile, 'ch'>> = {
   '*': { kind: 'mark', h: 0, cost: 1, blocked: false },
   'D': { kind: 'door', h: 2, cost: 1, blocked: false },   // puerta cerrada: tapa la vista y se abre al cruzarla
   'd': { kind: 'floor', h: 0, cost: 1, blocked: false },  // puerta abierta
+  ' ': { kind: 'void', h: 0, cost: 99, blocked: true },   // vacío: el mapa es una isla con forma propia (no tapa la vista)
 };
 export interface P { x: number; y: number }
 

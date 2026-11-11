@@ -20,14 +20,38 @@ const RAMPS: Record<string, [string, string, string, string, string]> = {
   aqueduct: ['#2f4446', '#44595a', '#5d7270', '#7c8f88', '#a3b2a8'],
   mirror: ['#3a3c58', '#555a7a', '#7a80a0', '#a4aac6', '#cdd2e6'],
   tavern: ['#4a3022', '#634030', '#80553c', '#a0714e', '#c49a6c'],
-  plaza: ['#5a2e2a', '#7a4436', '#9a6048', '#b88060', '#d6a882'],
   garden: ['#2e3e2c', '#3f5338', '#566c48', '#74885a', '#9aaa78'],
   crater: ['#2a2338', '#3b3150', '#54476a', '#74668a', '#9c8fb0'],
   market: ['#5a3a2c', '#7a5236', '#9a6e44', '#bc905a', '#dcb680'],
   ruins: ['#3e3836', '#554d48', '#6e655c', '#8c8274', '#b0a594'],
   sanctum: ['#3a2c48', '#4e3c60', '#685280', '#866ca0', '#a890c0'],
   mine: ['#34343e', '#48485a', '#626278', '#828298', '#a8a8bc'],
+  // ── rampa propia de cada mapa: ninguno comparte color con otro ──
+  callejon: ['#2e2228', '#44323a', '#5e4650', '#7c5e68', '#a08088'],   // ladrillo mojado del Bajo
+  acueducto: ['#22403e', '#335a54', '#4a766a', '#689482', '#92b4a0'],  // piedra con musgo y agua
+  cubo: ['#3a3c58', '#555a7a', '#7a80a0', '#a4aac6', '#dde2f2'],       // espejo frío
+  plaza: ['#5a2420', '#7e3628', '#a24e34', '#c46e48', '#e49a6a'],      // terracota del Capitolio
+  pozo: ['#141826', '#222a3e', '#34405a', '#4f5e7c', '#7488a8'],       // cristal negro de la caverna
+  dunas: ['#6a5e5a', '#8c7e76', '#b0a296', '#d2c6b8', '#f4eee4'],      // arena y rocas blancas
+  medinat: ['#5e4a24', '#80662f', '#a4863e', '#c8a854', '#ecd488'],    // ocre de la ciudad del viento
+  arena: ['#3a2418', '#5a3820', '#7e522c', '#a4703a', '#cc9850'],      // tablones y aserrín del torneo
+  iglesia: ['#2a1420', '#40202e', '#5a2e40', '#784258', '#9e5c76'],    // vitral de vino viejo
+  cripta: ['#1c1e14', '#2c3020', '#424830', '#5e6644', '#8a9062'],     // moho y hueso
+  mina: ['#4a4e5c', '#6a6e7e', '#9094a4', '#bcc0cc', '#eaecf2'],       // alabastro
+  ciudadela: ['#16141c', '#24202e', '#363044', '#4e465e', '#6e6482'],  // basalto de la Ciudadela
+  eclipse: ['#200c0c', '#341414', '#4e2020', '#6c3030', '#944c48'],    // ceniza roja del Eclipse
+  nido: ['#2e3e52', '#44586e', '#5e768e', '#8098b0', '#b0c8dc'],       // roca del pico y cielo
+  cementerio: ['#1e2628', '#2e3a3c', '#425254', '#5c6e6e', '#82948e'], // lápidas en la niebla
+  jardin: ['#20321e', '#2e4628', '#406036', '#5a7c46', '#86a464'],     // cipreses
+  zoco: ['#3a2236', '#55304c', '#74446a', '#96608a', '#bc86ae'],       // toldos violetas del Mercado
+  templo: ['#1e1814', '#30261e', '#46382a', '#605038', '#86744e'],     // carbón y ceniza
+  santuario: ['#3a2c48', '#4e3c60', '#685280', '#866ca0', '#a890c0'],  // la Biblioteca
+  cubo_maunator: ['#2e2416', '#4a3a20', '#6a542c', '#8e7240', '#b6985c'], // latón del Cubo de Maunator
 };
+/** Agua de cada mapa (si no figura, azul de pozo). */
+const WATER: Record<string, string> = { crater: '#4e2a8a', pozo: '#1c4f86', acueducto: '#2a6a7a', jardin: '#2e5a6a', medinat: '#2a5a7a', eclipse: '#5e0b19', cubo_maunator: '#2a4a5a' };
+/** Clave de aspecto de un mapa: su id si tiene rampa propia, si no su tema. */
+export const lookOf = (map?: { id: string; theme: string }) => !map ? 'alley' : RAMPS[map.id] ? map.id : map.theme;
 const pixCache = new Map<string, Record<string, string>>();
 /** Colores con nombre de una letra (los mismos que usan las figuras) para un tema. */
 export function pixFor(theme = 'alley'): Record<string, string> {
@@ -37,7 +61,7 @@ export function pixFor(theme = 'alley'): Record<string, string> {
 /** Paleta del renderer (suelo, muros, cobertura…) para un tema en modo diorama. */
 export function palFor(theme = 'alley') {
   const P = pixFor(theme);
-  return { bg0: '#000000', bg1: '#000000', f1: P.t, f2: P.t, diff: P.S, wallT: P.A, wallL: P.D, wallR: P.s, cov: P.a, water: theme === 'crater' ? P.V : '#24485e', hazard: P.r, high: P.a, mark: P.v, edge: 'rgba(11,8,16,.35)' };
+  return { bg0: '#000000', bg1: '#000000', f1: P.t, f2: P.t, diff: P.S, wallT: P.A, wallL: P.D, wallR: P.s, cov: P.a, water: WATER[theme] ?? '#24485e', hazard: P.r, high: P.a, mark: P.v, edge: 'rgba(11,8,16,.35)' };
 }
 
 const toRGB = (h: string): [number, number, number] => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];

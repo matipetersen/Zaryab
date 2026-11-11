@@ -283,7 +283,7 @@ export class Battle {
   // ---------- movimiento ----------
   blockedFor(u: Unit, x: number, y: number) {
     const t = this.grid.at(x, y); if (!t) return true;
-    if (t.kind === 'wall') return true;
+    if (t.kind === 'wall' || t.kind === 'void') return true;
     if (t.kind === 'cover' && !u.fly) return true;
     return false;
   }
