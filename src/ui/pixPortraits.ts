@@ -498,6 +498,114 @@ const D: Record<string, Def> = {
     ],
     ex: { enojo: [[9, 10, 'r'], [14, 10, 'r']], tristeza: [[9, 11, 'r'], [9, 12, 'r'], [14, 9, 'k']], sorpresa: [[9, 10, 'w'], [14, 10, 'w']] },
   },
+  // ── los que hablaban sin cara ──
+  // Si'lat — sacerdotisa del Simurg: velo violeta con ribete de oro, kohl, tatuajes vivos en la frente.
+  silat: {
+    look: { eyes: 'lash', eyeC: 'f', brows: 'arched', nose: 'small', mouth: 'small' },
+    theme: 'tavern', bg: 'd', glow: 'V', map: { X: 'A', Y: 'a', Z: 't', P: 'V', Q: 'd', O: 'f' }, face: FACE,
+    layers: [
+      body(BODY_SLIM), head(HEAD_F),
+      [4, 1, ['.....kkkkkk.....', '....kffvvvvk....', '...kfvvvvvvvk...', '..kfvvvvvvvvvk..', '.kfvkkkkkkkkvvk.', '.kfvk......kvvk.',
+        '.kfvk......kvvk.', '.kfvk........kvk', '.kfvk........kvk', '.kfv..........vk', '.kfv..........vk', '.kfv..........vk',
+        '.kfvk........kvk', '.kfvvk......kvvk', '.kfvvk......kvvk', '.kfvvvk....kvvvk', '.kfvvvvkkkkvvvvk', 'kffvvvvvvvvvvvvk']],
+      [10, 6, ['f..f']], [11, 7, ['ff']],
+      [8, 13, ['.kVVVVVVk.', 'kVVfVVfVVk', 'kVVVVVVVVk', '.kVVfVVVk.', '..kVVVVk..']],
+    ],
+  },
+  // El Marid — un rostro de espuma y agua que cambia: cresta de espuma, barba que se derrama, ojos de luz.
+  marid: {
+    look: { eyes: 'glow', eyeC: 'w', brows: 'heavy', browC: 'b', nose: 'broad', mouth: 'wide' },
+    theme: 'tavern', bg: 'k', glow: 'W', map: { X: 'b', Y: 'W', Z: 'V', P: 'W', Q: 'V', O: 'b' }, face: FACE,
+    layers: [
+      body(['.....kkkkkkYZkkkkkk.....', '...kkWWbWkkYZkkWbWWkk...', '..kWWbWWWWbkkWWWbWWWVk..', '.kWbWWWbWWWWVWWWWbWWVVk.', '.kWWWbWWWWbWWVWbWWWWVVk.', 'kbWWWWWbWWWWVVWWWbWWVVVk']),
+      head(HEAD_R),
+      [4, 0, ['.w..b...b..w....', 'wbw.bwb.bwbbw.w.', 'bwbwbbwbbwbbwbw.', '.kbbbbbbbbbbbbk.']],
+      [3, 8, ['kb', 'bw', 'kb', '.b']], [19, 8, ['bk', 'wb', 'bk', 'b.']],
+      [7, 14, ['b.w....w.b', 'wbwb..bwbw', '.bwbwwbwb.', '..bwbbwb..', '...bwwb...', '....bb....']],
+    ],
+  },
+  // Al-Mazhar — el Lich de las Trece Caras: espalda curva, anteojos de alambre y máscaras colgando detrás del cuello.
+  al_mazhar: {
+    look: { eyes: 'tired', brows: 'heavy', browC: 'b', nose: 'long', mouth: 'small', extra: ['wrinkles'] },
+    theme: 'ruins', bg: 'k', glow: 'D', map: { X: 'A', Y: 'a', Z: 't', P: 'D', Q: 'd', O: 'f' }, face: FACE,
+    layers: [
+      [0, 4, ['.ff.', 'fkkf', 'ffff', '.kk.']], [20, 4, ['.ff.', 'fkkf', 'ffff', '.kk.']], [0, 10, ['.tt.', 'tkkt', 'tttt', '.kk.']],
+      [20, 10, ['.tt.', 'tkkt', 'tttt', '.kk.']], [1, 16, ['.ff.', 'fkkf', 'ffff']], [19, 16, ['.ff.', 'fkkf', 'ffff']],
+      [3, 2, ['k', 'k', 'k']], [20, 2, ['k', 'k', 'k']],
+      body(BODY_HUNCH), head(HEAD_G),
+      [6, 4, ['b.........b.', 'bb........bb']],
+      [8, 9, ['bbbb.bbbb'], false], [8, 10, ['b..b.b..b']], [8, 11, ['bbbb.bbbb']], [12, 10, ['b']],
+    ],
+  },
+  // Nythra Vel'Shara — la hermana mayor: drow de moño blanco con alfileres de oro, ojos rojos, sonrisa de quien vende.
+  nythra: {
+    look: { eyes: 'almond', brows: 'raised', browC: 'w', nose: 'small', mouth: 'smirk' },
+    theme: 'crater', bg: 'd', glow: 'R', map: { X: 'a', Y: 't', Z: 'S', P: 'R', Q: 'd', O: 'f' }, face: { ...FACE, brow: 'w' },
+    layers: [
+      body(BODY_SLIM),
+      head(HEAD_G),
+      [1, 8, ['kk...', 'kak..', '.kaak', '..kkk']], [18, 8, ['...kk', '..kSk', 'kSSk.', 'kkk..']],
+      [7, 0, ['..f.kkkk.f', '...kwwwwk.', '..kwwbbwwk', '.kwwwwwwwwk']], [6, 4, ['kwwwwwwwwwwk', 'kwwbbbbbbwwk']],
+      [9, 10, ['r']], [14, 10, ['r']], [5, 12, ['f']], [18, 12, ['f']],
+    ],
+  },
+  // Azuran — el que Pact fue: piel de luz, ojos blancos, la corona de fuego invertido con las llamas hacia abajo.
+  azuran: {
+    look: { eyes: 'glow', eyeC: 'w', brows: 'thin', browC: 'f', nose: 'long', mouth: 'tight' },
+    theme: 'market', bg: 'D', glow: 'f', map: { X: 'w', Y: 'b', Z: 'A', P: 'f', Q: 'A', O: 'w' }, face: FACE,
+    layers: [
+      [0, 8, ['.....k', '....kw', '...kwb', '..kwbb', '.kwbbf', 'kwbbfk', 'kwbfkw', 'kbfkwb', 'kfkwbf', 'kkwbfk', '.kbfk.']],
+      [18, 8, ['k.....', 'fk....', 'bfk...', 'bbfk..', 'fbbfk.', 'kfbbfk', 'wkfbfk', 'bwkffk', 'fbwkfk', 'kfbwkk', '.kfbk.']],
+      body(), head(), ...EARS,
+      [6, 3, ['..kkkkkkkk..', '.kbbbbbbbbk.', 'kbbbbbbbbbbk']],
+      [5, 0, ['ffffffffffffff', '.frfrfrfrfrfr.', '..r.r.r.r.r...']],
+    ],
+  },
+  // El arma de Rabb — la voz de la espada: una hoja con runas y un ojo violeta en la guarda.
+  arma: {
+    theme: 'sanctum', bg: 'k', glow: 'V', generic: false, exprs: ['neutral'],
+    layers: [
+      [10, 0, ['.kk.', 'kbwk', 'kbwk', 'kbak', 'kvak', 'kbak', 'kbwk', 'kvak', 'kbak', 'kbwk', 'kvak', 'kbak', 'kbwk', 'kbak', 'kbak', 'kbak']],
+      [5, 16, ['kkkkkkkkkkkkkk', 'kfffffwvffffffk'.slice(0, 14), 'kkkkkkkkkkkkkk']],
+      [10, 19, ['kddk', 'kdDk', 'kddk', 'kdDk']], [10, 23, ['kffk']],
+      [11, 17, ['wv']],
+    ],
+  },
+  // Abril — la chica de la mina con el cuaderno: pañuelo rojo, polvo de alabastro en la cara, ojos grandes.
+  abril: {
+    look: { eyes: 'big', brows: 'thin', nose: 'button', mouth: 'small', extra: ['freckles'] },
+    theme: 'tavern', bg: 'd', glow: 'e', map: { X: 'A', Y: 'a', Z: 't', P: 's', Q: 'S', O: 'r' }, face: FACE,
+    layers: [
+      body(BODY_SLIM), head(HEAD_F), ...EARS,
+      [6, 2, ['..kkkkkkkk..', '.krrrrrrrRk.', 'krrrrrrrrRRk', 'kRRRRRRRRRRk']], [17, 5, ['kr', 'kRk', '.kRk']],
+      [8, 12, ['b']], [15, 13, ['b', 'b']],
+      [13, 18, ['kkkkkk', 'kbbbbk', 'kbkkbk', 'kbbbbk', 'kbkkbk', 'kkkkkk']],
+    ],
+  },
+  // Seraphel — la liberada de Maunator: pelo plateado corto, venda en la frente, manos vendadas.
+  seraphel: {
+    look: { eyes: 'iris', eyeC: 'W', brows: 'arched', browC: 'A', nose: 'small', mouth: 'small' },
+    theme: 'mirror', bg: 'd', glow: 'W', map: { X: 'w', Y: 'b', Z: 'A', P: 'b', Q: 'A', O: 'W' }, face: FACE,
+    layers: [
+      body(BODY_SLIM), head(HEAD_F), ...EARS,
+      [6, 2, ['..kkkkkkkk..', '.kAAbbbbAAk.', 'kAAbbbbbbAAk', 'kAbAAAAAAbAk']],
+      [6, 6, ['kwwwwwwwwwwk']], [15, 6, ['R']],
+      [3, 18, ['kkk', 'kwk', 'wRw', 'kwk']], [18, 18, ['kkk', 'kwk', 'wRw', 'kwk']],
+    ],
+  },
+  // Riyam — la hija del Marid: una mujer hecha de lluvia, el pelo cayendo como agua.
+  riyam: {
+    look: { eyes: 'lash', eyeC: 'b', brows: 'arched', browC: 'b', nose: 'small', mouth: 'full' },
+    theme: 'tavern', bg: 'd', glow: 'W', map: { X: 'b', Y: 'W', Z: 'V', P: 'W', Q: 'V', O: 'b' }, face: FACE,
+    layers: [
+      [1, 2, ['b', '.', 'b']], [21, 5, ['b', '.', 'b']], [2, 13, ['b']], [22, 15, ['b']], [20, 1, ['b']],
+      body(BODY_SLIM),
+      [4, 5, ['kWb', 'kWb', 'kbW', 'kWb', 'kbW', 'kWb', 'kbW', 'kWb', 'kbW', 'kWb', 'kbW', 'kWb', 'kbW', 'kWb', '.kb']],
+      [17, 5, ['bWk', 'Wbk', 'bWk', 'Wbk', 'bWk', 'Wbk', 'bWk', 'Wbk', 'bWk', 'Wbk', 'bWk', 'Wbk', 'bWk', 'Wbk', 'bk.']],
+      head(HEAD_F),
+      [6, 2, ['..kkkkkkkk..', '.kbbWWWWbbk.', 'kbWWWWWWWWbk', 'kWbbbbbbbbWk']],
+    ],
+  },
 };
 
 /** Fila espejada: la mitad izquierda tal cual y la derecha reflejada con la paleta de sombra. */
@@ -591,6 +699,8 @@ const BY_NAME: [RegExp, string][] = [
   [/^pact|pact risen/, 'pact'], [/romain/, 'romain'], [/rabb/, 'rabb'], [/joren/, 'joren'], [/zyr.?thar/, 'zyrthar'], [/panchi/, 'panchi'],
   [/aisha/, 'aisha'], [/eanassr|ea nassr/, 'eanassr'], [/sifra|ellie/, 'sifra'], [/^nadir\b/, 'nadir'], [/kethras/, 'kethras'],
   [/samira/, 'samira'], [/nafisa/, 'nafisa'], [/^farid/, 'farid'],
+  [/si.?lat/, 'silat'], [/riyam/, 'riyam'], [/^(el )?marid/, 'marid'], [/al.?mazhar/, 'al_mazhar'], [/nythra/, 'nythra'], [/azuran/, 'azuran'],
+  [/arma de pacto|^la espada|^la hoja/, 'arma'], [/^abril/, 'abril'], [/seraphel/, 'seraphel'],
   // genéricos por pistas del nombre
   [/acolito|mascara|cantor|adorador|culto|sacerdote|inquisidor/, 'acolito'],
   [/guardia|capitan|soldado|qilaat|centinela|veterano|recaudador/, 'guardia'],
