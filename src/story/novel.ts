@@ -72,7 +72,7 @@ export const NOVEL: Record<string, Node[]> = {
     N('Dobló la carta, la metió en la manga y miró por la ventana: la ciudad entera cambiaba de lugar otra vez, como si no se atreviese a quedarse quieta. Pensó que a veces también le pasaba a la gente.'),
   ],
   m_cap7: [
-    T('Entreacto', 'Las plumas del Simurg', 'limbo'),
+    T('Entreacto', 'Las plumas del Simurg', 'vacio'),
     N('Después de que Dahhak cayera, las Si\'lats recogieron los cuellos que habían quedado sobre las losas. Los lavaron, los envolvieron, los enterraron. Era la única manera que conocían de decir «lo sentimos» a un dios al que habían rezado y que las había devorado.'),
     S('Zahir', 'Cuando era pájaro, tenía veintitrés plumas de oro. Ahora no recuerdo cuántas son mías.', 'sin dirigirse a nadie'),
     N('Una pluma cayó, lenta, desde algún lugar sin techo. No llegó a tocar el suelo. En el aire, quedó convertida en polvo dorado. Las Si\'lats, que estaban recogiendo, no lo vieron. Alguien más sí.'),
@@ -104,7 +104,7 @@ export const NOVEL: Record<string, Node[]> = {
 
   // ───────────────────────── ACTO III ─────────────────────────
   acto3: [
-    T('ACTO III', 'El Eclipse', 'limbo'),
+    T('ACTO III', 'El Eclipse', 'vacio'),
     N('Una mañana el sol salió con un borde mordido. Fue un instante, nada más, y casi nadie levantó la cabeza. Pero los niños lo señalaron, y los ancianos del Zoco se tocaron la frente con los dedos, como si temieran haber olvidado algo.'),
     S('Zahir', 'Cuento los días porque es lo único que me queda por hacer. Si no los cuento, ¿qué soy? ¿Un pájaro que espera?', 'con la voz más humana que ha tenido nunca'),
     S('Zahir', 'Farid me preguntó hoy si los pájaros sueñan. Le dije que sí. Que sueñan con tener manos. Se rió mucho. Yo no entendí el chiste.', 'con algo parecido a la alegría'),

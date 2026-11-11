@@ -83,7 +83,7 @@ export const CAP9: Node[] = [
   S("Panchi", "Ah.", "con una gentileza que no le sale con nadie más"),
   N("Se quedan así, dos hombres duros sentados en un banco, hasta que Cabernet llega con un odre de vino y rompe el hechizo con un chiste de pésimo gusto."),
   fragChoice("marid"),
-  BG("limbo"),
+  BG("vacio"),
   S("Zahir", "Hay algo que no les conté. No los elegí por suerte. Los elegí por sus heridas. Los sanos nunca me habrían entendido: sólo el que perdió algo sabe lo que cuesta volver a tenerlo.", "en voz baja, como quien confiesa algo de lo que no se avergüenza"),
   S("Zahir", "Esta noche quiero que descansen. Se lo ganaron.", "y, por una vez, suena a que lo dice en serio"),
   ...FIEBRE,

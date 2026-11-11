@@ -3,6 +3,7 @@ import { pixPortrait } from './pixPortraits';
 import { dioramaPref } from './diorama';
 import { h, sleep, avatar } from './dom';
 import { rollDie } from './dice';
+import { paintBg } from './bgPix';
 import { scrubSoul } from './scrub';
 import type { Node, Opt, Cue } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
@@ -30,10 +31,11 @@ const BG: Record<string, string> = {
   cubo: 'radial-gradient(ellipse at 50% 50%, #e4e6f4 0%, #8e95bd 40%, #1c1a3a 100%)',
   plaza: 'radial-gradient(ellipse at 50% 90%, #b0402a 0%, #5a1a1a 45%, #120505 100%)',
   oraculo: 'radial-gradient(ellipse at 50% 35%, #7a4fb0 0%, #2a1850 45%, #07040f 100%)',
+  vacio: 'radial-gradient(ellipse at 50% 30%, #f2eee4 0%, #b9b2d6 40%, #3b3260 85%, #120d24 100%)',
 };
 
 export class StoryUI {
-  stage?: StageView; el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; ov!: HTMLElement; camp!: Campaign; hud!: () => void;
+  stage?: StageView; el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; ov!: HTMLElement; stopBg?: () => void; camp!: Campaign; hud!: () => void;
   battle!: (enc: string, foeCount?: number, foes?: any[]) => Promise<boolean>;
   onTop?: (i: number) => void;
 
@@ -55,8 +57,10 @@ export class StoryUI {
     this.pendingFoes = undefined;
     if (scene) audio.theme(null);
     if (scene) { if (this.ov) { this.ov.style.transition = 'none'; this.ov.style.opacity = '0'; } if (this.stage) this.stage.focusUid = -1; }
-    const MOOD: Record<string, Mood> = { dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
+    const MOOD: Record<string, Mood> = { vacio: 'sacred', dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
     const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
+    // sin mapa, el fondo se pinta en pixel art (y se anima); con mapa, el lienzo pintado se retira
+    this.stopBg?.(); this.stopBg = undefined; if (!art && !BG_MAP[id] && dioramaPref()) this.stopBg = paintBg(this.bg, id);
     if (mapLater) return;
     const m = art ? undefined : BG_MAP[id]; if (m && this.stage) { void this.stage.set(m, this.cast(), []); if (scene) this.stage.clear(true); } else { this.stage?.clear(true); this.stage?.show(false); }
   }

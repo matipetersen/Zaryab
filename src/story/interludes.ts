@@ -32,7 +32,7 @@ export const INTERLUDES: Record<string, Node[]> = {
       { label: '«Es verdad, y no sé si podré con ello.»', e: { d: 1, flags: ['joren_abierto'] }, result: ['Zyr\'thar le pasa la cantimplora otra vez. Es una forma de decir «aquí estoy».'] },
       { label: '«No hablo de eso.»', e: {}, result: ['Zyr\'thar asiente. Los dos han vivido de callar. Callan.'] },
     ] }], [N('Joren se encoge de hombros y mira las estrellas, que esta noche sí se ven.')]),
-    BG('limbo'),
+    BG('vacio'),
     S('Zahir', 'Los veo reír. No esperaba que me gustara.', 'una voz suave, sin el eco habitual'),
     S('Zahir', 'Un uso de mi poder me sobra. Puedo devolver a Pact una de sus memorias: el nombre de quien le cosió las alas. Sólo tienen que pedirlo.', 'casi tímido'),
     { t: 'choice', prompt: 'Zahir ofrece un regalo sin precio visible.', options: [
@@ -79,7 +79,7 @@ export const INTERLUDES: Record<string, Node[]> = {
     ] },
     S('Rabb Locke', 'Mi espada dejó de susurrar hoy. Eso me asusta más que cuando susurraba.', 'afilando una hoja que no necesita ser afilada'),
     IF('rabb_activado', [N('Rabb sabe lo que significa. No lo dice. Su arma tiene el filo de un recuerdo que no es suyo, y es suyo.')], [N('Rabb envaina la espada, despacio, como quien cierra un libro que no quiere leer todavía.')]),
-    BG('limbo'),
+    BG('vacio'),
     S('Zahir', 'Uno de mis fragmentos se rompió esta noche. Lo sentí en los huesos. No sabía que podía doler.', 'una voz muy baja'),
     S('Zahir', 'Gracias por liberar a esos niños. Lo digo en serio. Es la primera vez que le digo gracias a alguien.', 'casi confuso'),
     { t: 'choice', prompt: 'Zahir está distinto. Más humano. Más peligroso.', options: [
@@ -110,7 +110,7 @@ export const INTERLUDES: Record<string, Node[]> = {
       { label: 'A Panchi, vendándose los puños', e: { flags: ['vispera_panchi'] }, result: ['Panchi sonríe con medio labio. «Traelo o no vengas. Voy a ir.»'] },
       { label: 'A Aisha y a Farid, que no fueron a dormir', hint: 'Lo que dejan atrás.', e: { d: 1, pf: 3, flags: ['vispera_aisha'] }, result: ['Aisha los abraza sin una palabra. Farid les da un dibujo: un pájaro, muy torcido, con seis personas encima.'] },
     ] },
-    BG('limbo'),
+    BG('vacio'),
     S('Zahir', 'Mañana suben hasta el Vizir. Les ofrezco algo que no pedí a ninguna otra compañía: una promesa.', 'serio'),
     S('Zahir', 'Cuando los fragmentos estén juntos, Farid estará sano; la corona de Pact, perdonada; el nombre de Rabb, devuelto; el hijo de nadie, un hijo de alguien. Todo.', 'sin apartar la vista'),
     { t: 'choice', prompt: 'Es la oferta más generosa que Zahir ha hecho nunca. Eso es lo que la hace sospechosa.', options: [

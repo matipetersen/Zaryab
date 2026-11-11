@@ -54,7 +54,7 @@ export const FIEBRE: Node[] = [
   S('Aisha', `Cantaba la nana de su padre. Nadie se la enseñó. Tenía dos años cuando lo enterramos. ¿De dónde la sacó?`, 'apretándole la mano, que está helada'),
   { t: 'if', flag: 'nana_desague', then: [N(`Romain y Aisha se miran. Los dos piensan en la rejilla del desagüe y ninguno lo dice.`)] },
   S('Romain', `El corazón todavía late. Lejos. Como alguien que golpea una puerta desde la otra punta de la casa.`, 'con dos dedos en el cuello del niño'),
-  BG('limbo'),
+  { t: 'cue', do: [{ tint: 'rgba(224,184,74,.18)', ms: 1500 }] },
   S('Zahir', `Puedo sostenerlo.`, 'muy bajo; es la primera vez que no espera a que le pregunten'),
   S('Zahir', `No es un milagro. Es lo que hice con ustedes en el desierto: entro un poco, sostengo desde adentro lo que se cae, y cuando él pueda solo, me corro. Lo hice seis veces. Sé hacerlo.`, 'con una paciencia que nunca le habían oído'),
   S('Zahir', `Pero tienen que dejarme. No entro donde no me abren.`, 'mirando a Aisha, no a ustedes'),

@@ -130,7 +130,7 @@ export const CAP11: Node[] = [
     { label: `Perdonarla`, hint: `Lo más difícil.`, e: { d: 2, flags: [`velshara_perdona`] }, result: [`«No sos mi hermana», dice Zyr'thar. «Pero tampoco tengo por qué ser la tuya.» Se da la vuelta. Nythra no la sigue.`, `Desde el pasillo, Zyr'thar oye que su hermana empieza a ordenar los frascos otra vez, uno por uno, en fila perfecta. Por el sonido sabe que ahora son dieciséis. Uno rodó hasta la puerta; Zyr'thar lo pisa sin mirar, y sigue.`] },
   ] },
 
-  BG(`limbo`),
+  BG(`vacio`),
   S(`Zahir`, `Lo que han visto en esa mina es lo que le pasa a un dios que se parte. No es un gusano: es un pedazo que se quedó sin nadie que le cantara.`, `con la voz quebrada`),
   S(`Zahir`, `Entréguenme los fragmentos y los dejaré ir. A todos. Se lo juro por quien fui antes de ser un fragmento.`, `suplicando casi`),
   { t: `choice`, prompt: `Zahir ya no ordena. Ruega.`, options: [
@@ -237,7 +237,7 @@ export const CAP12: Node[] = [
     { label: `Aliarse con Razul contra Zahir`, hint: `Persuasión CD 18. Una alianza imposible que cambia el final.`, check: { skill: `persuasion`, dc: 18 }, e: { flags: [`razul_aliado`], ruta: { orden: 3 }, rep: { conclave: 3 } }, result: [`«Todos los dioses empiezan con una voz amable», dice Razul. «Si me demuestran que el suyo no lo hace, los escucharé.» Extiende la mano. Es la primera vez que le ofrece algo a alguien desde Yasmin.`, `La mano está fría y seca, como papel dentro de un cajón. Se la estrechan de a uno, sin ceremonia. Cuando le toca el turno a Panchi, Razul le dice: «Con cuidado», y Panchi responde que es el modo en que estrecha las manos de todos.`, `El fragmento del Vizir queda entre ellos, sobre el balcón, esperando que alguien diga qué hacer con él.`], then: [fragChoice(`razul`)], fail: { e: { alert: 2 }, result: [`Razul niega con la cabeza. «No lo suficiente.» Alza el bastón.`], then: [{ t: `battle`, enc: `razul_final` }, FX({ flags: [`razul_muerto`], pf: 14 }, `El Vizir cae. Su rostro se desvanece capa a capa hasta que no queda nada debajo.`), fragChoice(`razul`)] } },
     { label: `Luchar contra Razul`, hint: `El Vizir cae. Zaryab queda sin dueño.`, e: {}, result: [`Razul levanta el bastón. «Pelear contra mí es lo único honesto que me queda por hacer. Gracias por no pedirme otra cosa.»`], then: [{ t: `battle`, enc: `razul_final` }, FX({ flags: [`razul_muerto`], pf: 14 }, `El Vizir cae. Su rostro se desvanece capa a capa hasta que no queda nada debajo.`), fragChoice(`razul`)] },
   ] },
-  BG(`limbo`),
+  BG(`vacio`),
   S(`Zahir`, `Han oído lo que dijo de mí. Lo que no les dijo es que yo estaba allí cuando murió Yasmin. Yo no la salvé. Podría haberlo hecho. No sé por qué no.`, `una voz que se quiebra por primera vez`),
   S(`Zahir`, `Yo era un pájaro en un tejado. Tenía alas y agua en el pico: la había traído de un pozo lejano, para no sé quién. Vi a una niña morir de sed con el agua en mi pico. No bajé. Sentí lo que se siente cuando uno se parte: me pareció que no podía decidir cuál de las dos mitades iba a bajar.`, `sin tono, casi sin aire`),
   S(`Zahir`, `Ese día me partí un poco más. Les dije que el Simurg se dividió solo, por voluntad. Una parte de eso es cobardía, y pensé que debían saberlo antes de entrar en las Catacumbas.`, `bajo, un susurro`),

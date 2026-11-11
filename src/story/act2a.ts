@@ -97,7 +97,7 @@ export const CAP7: Node[] = [
   fragChoice('dahhak'),
 
   // ───── Zahir ─────
-  BG('limbo'),
+  BG('vacio'),
   S('Zahir (Caído)', 'Uno menos. Hay tantos otros fragmentos. ¿Se han preguntado alguna vez por qué los necesito todos?', 'el cristal se enfría'),
   { t: 'choice', prompt: 'Zahir dejó una pregunta en el aire: «¿Se han preguntado alguna vez por qué los necesito todos?»', options: [
     { label: '«Porque te faltan fragmentos para ser el Simurg»', hint: 'Arcanos CD 14.', check: { skill: 'arcanos', dc: 14 }, e: { flags: ['sabe_fragmentos'], d: 1 }, result: ['Zahir ríe, una risa breve. «Casi.» No dice más, pero el cristal se enfría un grado, como si hubiera dejado una puerta entreabierta y se hubiera arrepentido a medias.'], fail: { e: {}, result: ['Zahir los mira en silencio. «No era una pregunta para ahora.» El cristal late dos veces más despacio de lo que acostumbra.'] } },
@@ -215,7 +215,7 @@ export const CAP8: Node[] = [
     S('Panchi', 'Yo pensé que la escoba era para el final del día. No para recibir a un dios.', 'ayudando a Apu a incorporarse'),
     N('Cabernet, con la cara sucia de harina, descorcha lo que le quedaba. Nadie le dice que no. Nadie lo había visto reírse así desde que llegaron a Zaryab.'),
   ]),
-  BG('limbo'),
+  BG('vacio'),
   S('Zahir', 'Sabía que vendría. No se lo dije porque quería que lo vieran sin mi voz en su cabeza. Quería que lo juzgaran con sus propios ojos.', 'lentamente'),
   S('Zahir', 'No es un monstruo. Es peor: tiene razón en casi todo. Cree que ustedes son como los que vinieron antes. En eso se equivoca. Lo sé porque los conozco por dentro.', 'con una dulzura inesperada'),
   FX({ flags: ['cap8_done'] }, 'Capítulo VIII completado. Ahora el juego calcula su Ruta.'),

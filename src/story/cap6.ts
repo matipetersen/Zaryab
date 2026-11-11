@@ -86,7 +86,7 @@ export const CAP6: Node[] = [
   FX({ items: { venda_ellie: 1 }, flags: ['conoce_ellie', 'torneo_perdido'], d: 0 }, 'Panchi pierde el combate y recibe la Venda de Ellie. Ellie sabe romper pactos.'),
 
   // ───── Cierre ─────
-  { t: 'bg', id: 'limbo' },
+  { t: 'bg', id: 'vacio' },
   S('Zahir (Caído)', 'Ya han visto lo que Medinat guarda. Un pueblo que no necesita a ningún dios. Los odiará si se acercan demasiado… y los adorará si se alejan lo justo.', 'el cristal late más despacio'),
   S('Zahir (Caído)', 'Dahhak se esconde en la Iglesia del Simurg, al oeste. Las Si\'lats los guiarán. Y Pact… Pact tendrá que enfrentarse a lo que no recuerda.', 'una pausa demasiado larga'),
   N('Medinat al-Rih se queda atrás, un resplandor naranja en el horizonte. Detrás de ustedes, la ciudad que nadie quiso decide cómo sobrevivir sin ustedes.'),

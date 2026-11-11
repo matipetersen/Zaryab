@@ -30,7 +30,7 @@ export const EVENTS: Record<string, Node[]> = {
     ] },
   ],
   zahir_llama: [
-    { t: 'bg', id: 'limbo' },
+    { t: 'bg', id: 'vacio' },
     { t: 'if', flag: 'cap11_done', then: [S('Zahir', 'Quedan pocos fragmentos y poco cristal. Les estoy pidiendo que corran, no que paseen.', 'sin aliento, casi suplicando')], else: [{ t: 'if', flag: 'cap7_done', then: [S('Zahir', 'He esperado siglos, pero ahora sé contar los días. Y cada día que pasean me roba uno.', 'con una calma que asusta')], else: [S('Zahir', 'No les di la segunda vida para que la gasten paseando.', 'tras demasiados días de silencio'), S('Zahir', 'El cristal se enfría. Cada día sin hacer lo que prometieron es un latido menos.', 'serio, casi triste')] }] },
     { t: 'fx', e: { pf: -3, fe: -1 }, note: 'Zahir les descuenta fe por su tardanza: −3 PF, y los seguidores dudan. Avancen la historia.' },
   ],
