@@ -202,7 +202,9 @@ export const CAP12: Node[] = [
 
   BG(`coliseo`),
   { t: `cue`, do: [{ music: `razul` }, { tint: `rgba(60,20,10,.25)`, ms: 1500 }] },
+  { t: `stage`, map: `ciudadela`, foes: [`razul_final`] },
   N(`El trono de Razul no está en una sala: está en un balcón sin barandilla que da a toda la ciudad. Desde allí se ven las plazas, el Zoco, la biblioteca, las Catacumbas. Razul tiene la espalda recta y las manos a la espalda. Sin girarse, los saluda.`),
+  { t: `cue`, do: [{ focus: `razul_final`, zoom: 2.3 }] },
   S(`Vizir Razul`, `Han llegado más lejos que los otros. Eso sólo significa que serán olvidados más tarde.`, `su rostro es una máscara con otra máscara detrás`),
   S(`Vizir Razul`, `Me llamé Razul ibn Tameer antes de llamarme Vizir. Fui arcanista, copista y un poco poeta. Tenía una casa pequeña con un pozo en el patio y una vecina viuda que me traía lentejas los jueves. La vecina tenía una hija, Yasmin.`, `sin mirar atrás`),
   N(`Mira la ciudad un rato largo. Parece que la cuenta de memoria, calle por calle.`),

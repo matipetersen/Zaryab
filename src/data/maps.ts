@@ -399,7 +399,7 @@ shape('iglesia', (x, y, w, h) => (x < 4 || x > w - 5) && (y > 9));
 // Cripta: una sala larga y angosta, con la mesa en el medio
 shape('cripta', (x, y, w, h) => (x < 3 || x > w - 4) && y > 4);
 // Ciudadela: el balcón del trono sin baranda (el frente cae al vacío)
-shape('ciudadela', (x, y, w, h) => (y > 11 && (x < 5 || x > w - 6)) || (y === h - 1), true);
+shape('ciudadela', (x, y, w, h) => y > 10 && (x < 4 || x > w - 5) && y < h - 1, true);
 // Arena del torneo: ring octogonal
 shape('arena', (x, y, w, h) => Math.min(x, w - 1 - x) + Math.min(y, h - 1 - y) < 2, false);
 // Cubo de los Mil Reflejos: el cubo flota, sin muro

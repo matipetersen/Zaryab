@@ -31,7 +31,7 @@ export class StageView {
   /** Cámara de cutscene: si hay foco, encuadra a esa figura (más cerca). */
   focusUid = -1; focusZoom = 2.2;
   /** Figura en escena por id de la compañía o por nombre visible. */
-  unit(who: string): Unit | undefined { const b = this.b; if (!b) return; const w = who.toLowerCase(); return b.units.find(u => !u.dead && (u.pcId === who || u.name.toLowerCase() === w || u.name.toLowerCase().startsWith(w + ' '))); }
+  unit(who: string): Unit | undefined { const b = this.b; if (!b) return; const w = who.toLowerCase(); return b.units.find(u => !u.dead && (u.pcId === who || u.id === who || u.name.toLowerCase() === w || u.name.toLowerCase().startsWith(w + ' '))); }
   focus(who: string | null, zoom = 2.2) { const u = who ? this.unit(who) : undefined; this.focusUid = u ? u.uid : -1; this.focusZoom = zoom; this.frame(true); }
   fall(who: string) { const u = this.unit(who); if (u) { u.down = true; const v = this.r.vis.get(u.uid); if (v) { v.shake = 1; v.flash = 1; } } }
   rise(who: string) { const b = this.b; const u = b?.units.find(x => x.pcId === who || x.name.toLowerCase().startsWith(who.toLowerCase())); if (u) { u.down = false; const v = this.r.vis.get(u.uid); if (v) v.bounce = 1; } }
@@ -43,15 +43,15 @@ export class StageView {
     const x = u ? u.x : Math.round(b.grid.spawns.pc.reduce((a, q) => a + q.x, 0) / Math.max(1, b.grid.spawns.pc.length)), y = u ? u.y : Math.round(b.grid.spawns.pc.reduce((a, q) => a + q.y, 0) / Math.max(1, b.grid.spawns.pc.length));
     const r = this.r as any;
     if (kind === 'boom' || kind === 'burst') r.fx({ t: 'fx', kind, x, y });
-    else if (kind === 'ring') r.rings.push({ x, y, t: 0, color: color ?? '#e0b84a', max: 3 });
-    else if (kind === 'sparks') r.sparks(x, y, 30, color ?? '#ffd23f');
-    else if (kind === 'wisps') r.wisps(x, y);
+    else if (kind === 'ring') { r.rings.push({ x, y, t: 0, color: color ?? '#e0b84a', max: 3 }); setTimeout(() => r.rings.push({ x, y, t: 0, color: color ?? '#e0b84a', max: 2 }), 220); }
+    else if (kind === 'sparks') r.sparks(x, y, 70, color ?? '#ffd23f');
+    else if (kind === 'wisps') { r.wisps(x, y); setTimeout(() => r.wisps(x, y), 300); }
   }
   /** Encuadre: deja el mapa un poco arriba para que el cuadro de diálogo no tape a los personajes. */
   private target() {
     const r = this.r, b = this.b; let zoom = r.W < 600 ? 2.4 : 1.6; if (!b) return { zoom, panX: 0, panY: 0 };
     const fu = this.focusUid >= 0 ? b.units.find(u => u.uid === this.focusUid) : undefined;
-    if (fu) { const z = this.focusZoom * (r.W < 600 ? 1.3 : 1); const z0 = r.zoom, x0 = r.panX, y0 = r.panY; r.zoom = z; r.panX = 0; r.panY = 0; const p = r.proj(fu.x, fu.y); r.zoom = z0; r.panX = x0; r.panY = y0; return { zoom: z, panX: r.W / 2 - p.x, panY: r.H * 0.36 - p.y }; }
+    if (fu) { const z = this.focusZoom * (r.W < 600 ? 1.3 : 1); const z0 = r.zoom, x0 = r.panX, y0 = r.panY; r.zoom = z; r.panX = 0; r.panY = 0; const o = ((fu.size ?? 1) - 1) / 2; const p = r.proj(fu.x + o, fu.y + o); r.zoom = z0; r.panX = x0; r.panY = y0; return { zoom: z, panX: r.W / 2 - p.x, panY: r.H * (0.36 + 0.1 * ((fu.size ?? 1) - 1)) - p.y }; }
     const live = b.units.filter(u => !u.dead && u.id !== 'npc');
     const hasFoes = live.some(u => u.side === 'foe'); if (hasFoes) zoom = r.W < 600 ? 1.5 : 1.15;
     const pcs = live.filter(u => hasFoes || u.side === 'pc'); if (!pcs.length) return { zoom, panX: 0, panY: 0 };

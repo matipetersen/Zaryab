@@ -100,12 +100,13 @@ export class StoryUI {
   async pause() { await this.advance(); }
   /** Puesta en escena: los pasos corren en orden; lo que no tiene escena visible se saltea sin trabar nada. */
   async cue(steps: Cue[]) {
+    this.revealFoes(); // quien entra en escena aparece antes de la puesta en escena que lo nombra
     const fast = !!(window as any).__fast; const st = this.stage; const ov = this.ov;
     const wait = (ms: number) => sleep(fast ? 0 : ms);
     for (const c of steps) {
       if ('shake' in c) { if (st) (st.r as any).shake = Math.max((st.r as any).shake, c.shake); this.bg.animate?.([{ transform: 'translate(0,0)' }, { transform: `translate(${4 * c.shake}px,${-3 * c.shake}px)` }, { transform: `translate(${-4 * c.shake}px,${3 * c.shake}px)` }, { transform: 'translate(0,0)' }], { duration: 260, iterations: 2 }); }
       else if ('flash' in c) { ov.style.transition = 'none'; ov.style.background = c.flash; ov.style.opacity = '0.95'; await wait(40); ov.style.transition = `opacity ${c.ms ?? 600}ms ease-out`; ov.style.opacity = '0'; }
-      else if ('fade' in c) { ov.style.transition = `opacity ${c.ms ?? 900}ms ease`; ov.style.background = '#000'; ov.style.opacity = c.fade === 'out' ? '1' : '0'; await wait(c.ms ?? 900); }
+      else if ('fade' in c) { if (c.fade === 'out') this.dlg.classList.add('hidden'); ov.style.transition = `opacity ${c.ms ?? 900}ms ease`; ov.style.background = '#000'; ov.style.opacity = c.fade === 'out' ? '1' : '0'; await wait(c.ms ?? 900); }
       else if ('tint' in c) { ov.style.transition = `opacity ${c.ms ?? 800}ms ease`; if (c.tint) { ov.style.background = c.tint; ov.style.opacity = '1'; } else ov.style.opacity = '0'; }
       else if ('fx' in c) st?.fxAt(c.fx, c.at, c.color);
       else if ('walk' in c) { st?.step(c.walk, c.dx, c.dy); await wait(500); }

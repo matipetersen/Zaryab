@@ -42,7 +42,7 @@ const aliento = (pc: string): Opt => ({
   label: `${PC_NAME[pc]} le da su aliento`, hint: `${PC_NAME[pc]} muere. Para siempre.`, alive: pc,
   e: { d: 2, dead: [pc], flags: ['farid_aliento', `perma_${pc}`], huella: `${PC_NAME[pc]} dio su vida por Farid la noche de la fiebre.` },
   result: ALIENTO[pc],
-  then: [{ t: 'cue', do: [{ fall: pc }, { fx: 'wisps', at: pc }, { flash: '#ffffff', ms: 1600 }, { tint: null, ms: 1500 }] }],
+  then: [{ t: 'cue', do: [{ focus: pc, zoom: 2.6 }, { wait: 500 }, { fall: pc }, { fx: 'wisps', at: pc }, { fx: 'ring', at: pc, color: '#ffffff' }, { wait: 700 }, { flash: '#ffffff', ms: 1600 }, { tint: null, ms: 1500 }, { focus: null }] }],
 });
 
 export const FIEBRE: Node[] = [
@@ -83,7 +83,7 @@ const OCUPA: Record<string, string> = {
 const ocupa = (pc: string): Opt => ({
   label: `${PC_NAME[pc]} ocupa el lugar de Farid`, hint: `${PC_NAME[pc]} no vuelve.`, alive: pc,
   e: { d: 2, dead: [pc], flags: ['farid_libre', `perma_${pc}`, 'sacrificio_farid'] }, result: [OCUPA[pc]],
-  then: [{ t: 'cue', do: [{ fx: 'ring', at: pc, color: '#ffd66b' }, { fall: pc }, { flash: '#ffd23f', ms: 1400 }] }],
+  then: [{ t: 'cue', do: [{ focus: pc, zoom: 2.6 }, { fx: 'ring', at: pc, color: '#ffd66b' }, { fx: 'sparks', at: pc, color: '#ffd66b' }, { wait: 600 }, { fall: pc }, { wait: 500 }, { flash: '#ffd23f', ms: 1400 }, { focus: null }] }],
 });
 
 export const SEPTIMO: Node[] = [
