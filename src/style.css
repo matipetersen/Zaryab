@@ -414,3 +414,6 @@ canvas#board, .stage-cv { image-rendering: pixelated; }
 .cutin-txt b { font-family: var(--f-head); color: var(--secondary); font-size: 14px; }
 @keyframes cutIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @media (max-width: 600px) { .cutin { bottom: 8px; right: 8px; padding: 6px 10px 6px 6px; } .cutin-pic { width: 46px; height: 46px; } .cutin-txt { font-size: 12px; } }
+/* capa de puesta en escena (destellos, fundidos, tintes): sobre el mapa, debajo del diálogo */
+.cue-ov { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: #000; z-index: 1; }
+#story .dialog { z-index: 2; }

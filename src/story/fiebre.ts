@@ -42,11 +42,13 @@ const aliento = (pc: string): Opt => ({
   label: `${PC_NAME[pc]} le da su aliento`, hint: `${PC_NAME[pc]} muere. Para siempre.`, alive: pc,
   e: { d: 2, dead: [pc], flags: ['farid_aliento', `perma_${pc}`], huella: `${PC_NAME[pc]} dio su vida por Farid la noche de la fiebre.` },
   result: ALIENTO[pc],
+  then: [{ t: 'cue', do: [{ fall: pc }, { fx: 'wisps', at: pc }, { flash: '#ffffff', ms: 1600 }, { tint: null, ms: 1500 }] }],
 });
 
 export const FIEBRE: Node[] = [
   BG('choza'),
   N(`Vuelven al Bajo pasada la medianoche. Hay luz en la biblioteca, demasiada, y voces que no deberían estar despiertas a esa hora.`),
+  { t: 'cue', do: [{ music: 'nana' }, { tint: 'rgba(120,40,10,.22)', ms: 1500 }] },
   N(`Farid arde. Aisha lo tiene en brazos sobre la mesa larga de la cena, entre los platos sin levantar, y le habla al oído como se le habla a alguien que se está yendo: con cosas chiquitas, el nombre del perro, el pan de mañana. El niño no contesta. Tiene los labios grises y los ojos abiertos hacia el techo.`),
   S('Aisha', `Se apagó así, de golpe. Estaba cantando y se apagó. Hagan algo. Ustedes volvieron de la muerte, ¿no? Enséñenle.`, 'sin levantar la cabeza'),
   S('Aisha', `Cantaba la nana de su padre. Nadie se la enseñó. Tenía dos años cuando lo enterramos. ¿De dónde la sacó?`, 'apretándole la mano, que está helada'),
@@ -63,7 +65,7 @@ export const FIEBRE: Node[] = [
     { label: 'Dejar que Zahir lo sostenga', hint: 'Aisha lo pidió.', e: { d: 1, flags: ['farid_zahir'], huella: 'Dejaron que Zahir sostuviera a Farid desde adentro.' }, result: [
       `Zahir entra en el niño como entra la luz por una persiana: de a poco, en franjas. Farid tose una vez y después llora, con el llanto furioso de los que vuelven. Aisha llora con él.`,
       `Esa noche Zahir no habla. Por la mañana, Farid cuenta que soñó con un pájaro que lo llevaba en la espalda y que no tuvo miedo. Aisha besa el cristal de cada uno de ustedes, uno por uno, sin pedir permiso. Nunca la vieron tan feliz.`,
-    ] },
+    ], then: [{ t: 'cue', do: [{ fx: 'ring', at: 'center', color: '#ffd66b' }, { flash: '#ffe7a0', ms: 1400 }, { tint: null, ms: 1500 }] }] },
     ...PCS.map(aliento),
   ] },
   N(`Amanece sobre el Bajo. Alguien levanta los platos de la mesa. Alguien barre. Afuera, la ciudad no se enteró de nada.`),
@@ -81,6 +83,7 @@ const OCUPA: Record<string, string> = {
 const ocupa = (pc: string): Opt => ({
   label: `${PC_NAME[pc]} ocupa el lugar de Farid`, hint: `${PC_NAME[pc]} no vuelve.`, alive: pc,
   e: { d: 2, dead: [pc], flags: ['farid_libre', `perma_${pc}`, 'sacrificio_farid'] }, result: [OCUPA[pc]],
+  then: [{ t: 'cue', do: [{ fx: 'ring', at: pc, color: '#ffd66b' }, { fall: pc }, { flash: '#ffd23f', ms: 1400 }] }],
 });
 
 export const SEPTIMO: Node[] = [

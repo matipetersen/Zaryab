@@ -75,6 +75,7 @@ export const NIVEL: Record<string, Node[]> = {
     T('El recuento', 'La Plaza Central, entre los escombros del Coloso', 'plaza'),
     N(`Cuando el polvo baja, la plaza está llena de muertos de los dos lados: Qilaat con las lanzas todavía en la mano, Nasnas con piedras, vecinos que sólo querían ver. Romain camina entre ellos con la balanza. No la usa. No sabe para quién.`),
     N(`Debajo de una viga, Zyr'thar oye una respiración chica. Es una nena, enterrada hasta el pecho, con los ojos abiertos y sin llorar. Pact levanta la viga con la espalda y las alas se le encienden solas, doradas, sin que él lo quiera. Medio barrio lo ve. Esa imagen va a correr por Zaryab antes del anochecer.`),
+    { t: 'cue', do: [{ focus: 'pact', zoom: 2.4 }, { fx: 'ring', at: 'pact', color: '#ffd66b' }, { fx: 'sparks', at: 'pact', color: '#ffd66b' }, { flash: 'rgba(255,214,107,.6)', ms: 900 }, { wait: 900 }, { focus: null }] },
     S('Rabb Locke', `La espada se tomó algo del Coloso cuando cayó. Está más pesada. Más contenta. La última vez que estuvo así de contenta, alguien murió. No me acuerdo quién.`, 'sosteniéndola lejos del cuerpo'),
     { t: 'choice', prompt: 'Medio barrio vio las alas de Pact encenderse. Ya hay gente arrodillada.', options: [
       { label: 'Pact: abrirlas del todo y dejar que miren', hint: 'Un ángel en la plaza. El Conclave también lo va a ver.', e: { alert: 2, recruits: 3, flags: ['pact_alas_plaza'] }, result: [`Pact abre las alas. Son más grandes de lo que nadie esperaba, y una está quemada en la punta. La gente llora. Un Qilaat suelta la lanza. Pact siente algo que no sentía desde antes de caer, y le da tanto miedo como alegría.`] },
@@ -144,6 +145,7 @@ export const NIVEL: Record<string, Node[]> = {
     S('Pact Risen', `Esa cara la conozco. No sé de dónde. Me duele la espalda, donde están las alas, cuando la miro.`, 'sin tocar la máscara'),
     N(`Entre las trece máscaras hay una que no cayó. Sigue colgada de su cuerda, girando sola, y cuando se detiene, mira a Rabb. Tiene su cara. Más joven, sin cicatrices, sonriendo como sonríe alguien que acaba de cerrar un buen negocio.`),
     S('Rabb Locke', `Ese soy yo. Firmando. Nadie me vendió la espada. Yo me vendí a ella.`, 'con la voz rota, de rodillas frente a la máscara'),
+    { t: 'cue', do: [{ focus: 'rabb', zoom: 2.6 }, { flash: 'rgba(154,92,255,.55)', ms: 900 }, { shake: 0.5 }, { wait: 700 }, { focus: null }] },
     S('Panchi', `Rabb. Mirá para acá. Eso es una máscara. Vos sos el que está acá abajo, con nosotros. El otro no vino.`, 'agarrándolo de la nuca, frente contra frente'),
     { t: 'choice', prompt: 'La máscara con la cara de Rabb sigue girando, sonriendo.', options: [
       { label: 'Rabb: partirla con la espada', hint: 'Que la hoja rompa la prueba de su propia venta. Puede que no quiera.', e: { d: 1, flags: ['rabb_rompe_mascara'] }, result: [`Rabb levanta la espada y la hoja se resiste: pesa como una puerta. Grita, la baja igual, y la máscara se parte en dos. De adentro cae un papel doblado, viejo, con una firma que es la suya. Lo quema en una de las velas del Lich sin leerlo. Le sangra la nariz durante una hora.`] },

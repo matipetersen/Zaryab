@@ -4,7 +4,7 @@ import { dioramaPref } from './diorama';
 import { h, sleep, avatar } from './dom';
 import { rollDie } from './dice';
 import { scrubSoul } from './scrub';
-import type { Node, Opt } from '../story/types';
+import type { Node, Opt, Cue } from '../story/types';
 import { SPEAKERS } from '../story/speakers';
 import { applyEffect, has, built, previewEffect, type Campaign, type Effect } from '../state';
 import { MARKS, MARK_ANSWER } from '../story/script';
@@ -33,7 +33,7 @@ const BG: Record<string, string> = {
 };
 
 export class StoryUI {
-  stage?: StageView; el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; camp!: Campaign; hud!: () => void;
+  stage?: StageView; el!: HTMLElement; bg!: HTMLElement; dlg!: HTMLElement; ov!: HTMLElement; camp!: Campaign; hud!: () => void;
   battle!: (enc: string, foeCount?: number, foes?: any[]) => Promise<boolean>;
   onTop?: (i: number) => void;
 
@@ -41,7 +41,7 @@ export class StoryUI {
   mount() {
     this.root.innerHTML = ''; this.root.className = 'screen'; this.root.id = 'story';
     this.bg = h('div', { class: 'bg' }); this.dlg = h('div', { class: 'dialog hidden' });
-    this.stage?.destroy(); this.el = h('div', { style: { position: 'absolute', inset: '0' } }, this.bg, h('div', { class: 'vignette' }), this.dlg);
+    this.stage?.destroy(); this.ov = h('div', { class: 'cue-ov' }); this.el = h('div', { style: { position: 'absolute', inset: '0' } }, this.bg, h('div', { class: 'vignette' }), this.ov, this.dlg);
     this.root.append(this.el); this.stage = new StageView(this.bg); this.stage.show(false); this.setBg('prison');
   }
   /** Quiénes aparecen en escena: la escuadra elegida o toda la compañía viva. */
@@ -53,6 +53,7 @@ export class StoryUI {
    *  `mapLater`: el próximo nodo es un 'stage' que elige el mapa, así que acá solo se cambia el fondo pintado y la música. */
   setBg(id: string, scene = false, mapLater = false) {
     this.pendingFoes = undefined;
+    if (scene) { if (this.ov) { this.ov.style.transition = 'none'; this.ov.style.opacity = '0'; } if (this.stage) this.stage.focusUid = -1; }
     const MOOD: Record<string, Mood> = { dunas: 'desert', tormenta: 'desert', medinat: 'city', zoco: 'city', plaza: 'city', bajo: 'city', taller: 'city', choza: 'sacred', oraculo: 'sacred', limbo: 'sacred', prison: 'tense', coliseo: 'tense', hammam: 'tense', espejos: 'tense', cubo: 'tense', acueducto: 'tense' }; audio.setMood(MOOD[id] ?? 'tense');
     const art = assetUrl('bg', id); this.bg.style.background = art ? `url(${art}) center/cover` : (BG[id] ?? BG.prison);
     if (mapLater) return;
@@ -92,6 +93,27 @@ export class StoryUI {
     await this.type(txt, text);
   }
   async pause() { await this.advance(); }
+  /** Puesta en escena: los pasos corren en orden; lo que no tiene escena visible se saltea sin trabar nada. */
+  async cue(steps: Cue[]) {
+    const fast = !!(window as any).__fast; const st = this.stage; const ov = this.ov;
+    const wait = (ms: number) => sleep(fast ? 0 : ms);
+    for (const c of steps) {
+      if ('shake' in c) { if (st) (st.r as any).shake = Math.max((st.r as any).shake, c.shake); this.bg.animate?.([{ transform: 'translate(0,0)' }, { transform: `translate(${4 * c.shake}px,${-3 * c.shake}px)` }, { transform: `translate(${-4 * c.shake}px,${3 * c.shake}px)` }, { transform: 'translate(0,0)' }], { duration: 260, iterations: 2 }); }
+      else if ('flash' in c) { ov.style.transition = 'none'; ov.style.background = c.flash; ov.style.opacity = '0.95'; await wait(40); ov.style.transition = `opacity ${c.ms ?? 600}ms ease-out`; ov.style.opacity = '0'; }
+      else if ('fade' in c) { ov.style.transition = `opacity ${c.ms ?? 900}ms ease`; ov.style.background = '#000'; ov.style.opacity = c.fade === 'out' ? '1' : '0'; await wait(c.ms ?? 900); }
+      else if ('tint' in c) { ov.style.transition = `opacity ${c.ms ?? 800}ms ease`; if (c.tint) { ov.style.background = c.tint; ov.style.opacity = '1'; } else ov.style.opacity = '0'; }
+      else if ('fx' in c) st?.fxAt(c.fx, c.at, c.color);
+      else if ('walk' in c) { st?.step(c.walk, c.dx, c.dy); await wait(500); }
+      else if ('fall' in c) st?.fall(c.fall);
+      else if ('rise' in c) st?.rise(c.rise);
+      else if ('hop' in c) st?.hop(c.hop);
+      else if ('hide' in c) st?.hide(c.hide);
+      else if ('focus' in c) { st?.focus(c.focus, c.zoom); await wait(500); }
+      else if ('wait' in c) await wait(c.wait);
+      else if ('music' in c) (audio as any).theme?.(c.music);
+      else if ('sfx' in c) audio.sfx(c.sfx as any);
+    }
+  }
   private revealFoes() { const f = this.pendingFoes; if (!f) return; this.pendingFoes = undefined; this.stage?.setFoes(f); }
 
   // ---------- reproducción ----------
@@ -121,6 +143,7 @@ export class StoryUI {
       case 'fx': { const lines = applyEffect(this.camp, n.e); this.hud(); if (n.note || lines.length) { await this.show(null, n.note ?? 'Ha ocurrido algo.', undefined, this.badges(lines)); await this.pause(); } return; }
       case 'if': { const ok = has(this.camp, n.flag); await this.play(ok ? n.then : n.else ?? []); return; }
       case 'choice': return this.choice(n.prompt, n.options);
+      case 'cue': return this.cue(n.do);
       // al volver del combate, los enemigos de la escena previa (briefing) ya no están en el mapa
       case 'battle': { let won = false; while (!won) { won = await this.battle(n.enc, n.foeCount); if (n.soft) break; } this.pendingFoes = undefined; this.stage?.clear(); return; }
       case 'puzzle': return this.marksPuzzle();

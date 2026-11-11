@@ -28,9 +28,30 @@ export class StageView {
   onResize() { this.r.resize(); this.frame(); }
   destroy() { cancelAnimationFrame(this.cam); window.removeEventListener('resize', this.onResize); this.r.destroy(); this.canvas.remove(); this.alive = false; }
   show(on: boolean) { this.canvas.style.display = on ? 'block' : 'none'; }
+  /** Cámara de cutscene: si hay foco, encuadra a esa figura (más cerca). */
+  focusUid = -1; focusZoom = 2.2;
+  /** Figura en escena por id de la compañía o por nombre visible. */
+  unit(who: string): Unit | undefined { const b = this.b; if (!b) return; const w = who.toLowerCase(); return b.units.find(u => !u.dead && (u.pcId === who || u.name.toLowerCase() === w || u.name.toLowerCase().startsWith(w + ' '))); }
+  focus(who: string | null, zoom = 2.2) { const u = who ? this.unit(who) : undefined; this.focusUid = u ? u.uid : -1; this.focusZoom = zoom; this.frame(true); }
+  fall(who: string) { const u = this.unit(who); if (u) { u.down = true; const v = this.r.vis.get(u.uid); if (v) { v.shake = 1; v.flash = 1; } } }
+  rise(who: string) { const b = this.b; const u = b?.units.find(x => x.pcId === who || x.name.toLowerCase().startsWith(who.toLowerCase())); if (u) { u.down = false; const v = this.r.vis.get(u.uid); if (v) v.bounce = 1; } }
+  hop(who: string) { const u = this.unit(who); const v = u && this.r.vis.get(u.uid); if (v) v.bounce = 1; }
+  hide(who: string) { const u = this.unit(who); if (u) this.fadeOut(u); }
+  step(who: string, dx: number, dy: number) { const u = this.unit(who); if (u) this.walk(u, u.x + dx, u.y + dy); }
+  fxAt(kind: string, who: string, color?: string) {
+    const u = who === 'center' ? undefined : this.unit(who); const b = this.b; if (!b) return;
+    const x = u ? u.x : Math.round(b.grid.spawns.pc.reduce((a, q) => a + q.x, 0) / Math.max(1, b.grid.spawns.pc.length)), y = u ? u.y : Math.round(b.grid.spawns.pc.reduce((a, q) => a + q.y, 0) / Math.max(1, b.grid.spawns.pc.length));
+    const r = this.r as any;
+    if (kind === 'boom' || kind === 'burst') r.fx({ t: 'fx', kind, x, y });
+    else if (kind === 'ring') r.rings.push({ x, y, t: 0, color: color ?? '#e0b84a', max: 3 });
+    else if (kind === 'sparks') r.sparks(x, y, 30, color ?? '#ffd23f');
+    else if (kind === 'wisps') r.wisps(x, y);
+  }
   /** Encuadre: deja el mapa un poco arriba para que el cuadro de diálogo no tape a los personajes. */
   private target() {
     const r = this.r, b = this.b; let zoom = r.W < 600 ? 2.4 : 1.6; if (!b) return { zoom, panX: 0, panY: 0 };
+    const fu = this.focusUid >= 0 ? b.units.find(u => u.uid === this.focusUid) : undefined;
+    if (fu) { const z = this.focusZoom * (r.W < 600 ? 1.3 : 1); const z0 = r.zoom, x0 = r.panX, y0 = r.panY; r.zoom = z; r.panX = 0; r.panY = 0; const p = r.proj(fu.x, fu.y); r.zoom = z0; r.panX = x0; r.panY = y0; return { zoom: z, panX: r.W / 2 - p.x, panY: r.H * 0.36 - p.y }; }
     const live = b.units.filter(u => !u.dead && u.id !== 'npc');
     const hasFoes = live.some(u => u.side === 'foe'); if (hasFoes) zoom = r.W < 600 ? 1.5 : 1.15;
     const pcs = live.filter(u => hasFoes || u.side === 'pc'); if (!pcs.length) return { zoom, panX: 0, panY: 0 };
@@ -59,7 +80,7 @@ export class StageView {
       if (wasHidden) { this.r.resize(); this.frame(); }
       this.syncParty(ids); this.setFoes(foes); return;
     }
-    this.mapId = mapId; this.npcs = []; this.party = ids; this.foes = [];
+    this.mapId = mapId; this.npcs = []; this.party = ids; this.foes = []; this.focusUid = -1;
     const grid = new Grid(map.rows, map.objs); const units: Unit[] = [];
     ids.forEach((id, i) => { const p = grid.spawns.pc[i] ?? grid.spawns.pc[0]; if (!p) return; const u = makePC(PARTY_BY_ID[id]); u.x = p.x; u.y = p.y; units.push(u); });
     const b = new Battle(grid, units); this.b = b; this.r.setBattle(b, map); this.r.cine = true; this.r.activeUid = -1; this.frame();
@@ -96,7 +117,7 @@ export class StageView {
     const v = { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha, bounce: bounce ? 1 : 0, dead: 0, wobble: Math.random() * 6 }; this.r.vis.set(u.uid, v);
     if (alpha < 1) { const fade = () => { v.alpha = Math.min(1, v.alpha + .05); if (v.alpha < 1 && this.alive) requestAnimationFrame(fade); }; requestAnimationFrame(fade); }
   }
-  private fadeOut(u: Unit) {
+  fadeOut(u: Unit) {
     const b = this.b; if (!b) return; u.dead = true; const v = this.r.vis.get(u.uid);
     const gone = () => { if (this.b !== b) return; b.units = b.units.filter(x => x !== u); this.r.vis.delete(u.uid); };
     if (!v) { gone(); return; } const fade = () => { if (this.b !== b) return; v.alpha = Math.max(0, v.alpha - .07); if (v.alpha > 0) requestAnimationFrame(fade); else gone(); }; requestAnimationFrame(fade);
