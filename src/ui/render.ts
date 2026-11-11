@@ -26,7 +26,7 @@ const shade = (hex: string, f: number) => {
   return `rgb(${r | 0},${g | 0},${b | 0})`;
 };
 
-interface Vis { x: number; y: number; path: P[]; flash: number; shake: number; alpha: number; bounce: number; dead: number; wobble: number; /** Embestida al atacar (dirección en pantalla y avance 0→1). */ lunge?: { dx: number; dy: number; t: number } }
+interface Vis { x: number; y: number; path: P[]; flash: number; shake: number; alpha: number; bounce: number; dead: number; wobble: number; /** Embestida al atacar (dirección en pantalla y avance 0→1). */ lunge?: { dx: number; dy: number; t: number }; /** Retroceso al recibir un golpe (alejándose de quien pegó). */ recoil?: { dx: number; dy: number; t: number } }
 interface Float { x: number; y: number; text: string; cls: string; t: number; dx: number; life?: number; short?: string }
 interface Part { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number; grav: number; streak?: boolean }
 interface Flash { x: number; y: number; color: string; t: number; r: number }
@@ -142,7 +142,7 @@ export class Renderer {
     for (const e of events) {
       if (e.t === 'move') { const v = this.vis.get(e.uid); if (v) v.path.push(...e.path.slice(1)); audio.sfx('step'); }
       else if (e.t === 'float') { if (e.cls === 'miss') audio.sfx('miss'); else if (e.cls === 'crit') audio.sfx('crit'); const u = this.b!.byUid(e.uid); if (u) { const v = this.vis.get(e.uid)!; this.floats.push({ x: v.x, y: v.y, text: e.text, cls: e.cls, t: 0, dx: (Math.random() - .5) * 18 }); } }
-      else if (e.t === 'hit') { audio.sfx('hit'); const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = 1; this.sparks(v.x, v.y, 12, '#fff2c0'); this.flashes.push({ x: v.x, y: v.y, color: 'rgba(255,200,120,A)', t: 0, r: 1.6 }); } this.shake = Math.max(this.shake, .5); this.freeze = .06; }
+      else if (e.t === 'hit') { audio.sfx('hit'); const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = .6; const lb = this.lastBlow && performance.now() - this.lastBlow.at < 1500 ? this.lastBlow : { dx: 0, dy: -1, at: 0 }; v.recoil = { dx: lb.dx, dy: lb.dy, t: 0 }; this.sparks(v.x, v.y, 12, '#fff2c0'); this.flashes.push({ x: v.x, y: v.y, color: 'rgba(255,200,120,A)', t: 0, r: 1.6 }); } this.shake = Math.max(this.shake, .5); this.freeze = .06; }
       else if (e.t === 'snap') { const v = this.vis.get(e.uid); if (v) { v.x = e.x; v.y = e.y; v.path = []; } this.shake = Math.max(this.shake, .8); }
       else if (e.t === 'death') { audio.sfx('death'); const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) { this.burst(u.x, u.y, '#d8b27a', 18); this.wisps(u.x, u.y); } }
       else if (e.t === 'spawn') { const u = this.b!.byUid(e.uid); if (u) this.vis.set(e.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 1, dead: 0, wobble: 0 }); }
@@ -156,9 +156,10 @@ export class Renderer {
     this.burst(e.x, e.y, col, e.kind === 'boom' ? 30 : 14); if (e.kind === 'boom') { this.rings.push({ x: e.x, y: e.y, t: 0, color: '#ff8a3d', max: 1.6 }); this.shake = 1; } else if (e.kind === 'break') this.shake = Math.max(this.shake, .4);
   }
   /** La figura que ataca desde (x1, y1) se inclina y avanza un paso hacia (x2, y2). */
+  lastBlow?: { dx: number; dy: number; at: number };
   lungeAt(x1: number, y1: number, x2: number, y2: number) {
     const u = this.b?.units.find(q => !q.dead && Math.round(q.x) === x1 && Math.round(q.y) === y1); const v = u && this.vis.get(u.uid); if (!v) return;
-    const a = this.center(x1, y1), z = this.center(x2, y2); const L = Math.hypot(z.x - a.x, z.y - a.y) || 1; v.lunge = { dx: (z.x - a.x) / L, dy: (z.y - a.y) / L, t: 0 };
+    const a = this.center(x1, y1), z = this.center(x2, y2); const L = Math.hypot(z.x - a.x, z.y - a.y) || 1; v.lunge = { dx: (z.x - a.x) / L, dy: (z.y - a.y) / L, t: 0 }; this.lastBlow = { dx: v.lunge.dx, dy: v.lunge.dy, at: performance.now() };
   }
   fx(e: Extract<BEvent, { t: 'fx' }>) {
     audio.sfx(e.kind === 'heal' ? 'heal' : e.kind === 'boom' ? 'boom' : e.kind === 'slash' ? 'slash' : e.kind === 'arrow' ? 'arrow' : e.kind === 'debris' ? 'step' : 'spell');
@@ -223,10 +224,10 @@ export class Renderer {
       if (v.path.length) { const t = v.path[0]; const dx = t.x - v.x, dy = t.y - v.y, d = Math.hypot(dx, dy), sp = 9 * dt; if (d <= sp) { v.x = t.x; v.y = t.y; v.path.shift(); } else { v.x += dx / d * sp; v.y += dy / d * sp; } }
       else if (u && !v.path.length && Math.hypot(u.x - v.x, u.y - v.y) > 0.01 && u.x !== undefined) { /* teletransporte */ v.x = u.x; v.y = u.y; }
       v.flash = Math.max(0, v.flash - dt * 4); v.shake = Math.max(0, v.shake - dt * 3); v.bounce = Math.max(0, v.bounce - dt * 2);
-      if (v.dead > 0) { v.dead += dt * 1.4; v.alpha = Math.max(0, 1 - v.dead); }
+      if (v.dead > 0) { v.dead += dt * 1.4; v.alpha = v.dead < .4 ? 1 : Math.max(0, 1 - (v.dead - .4) * 1.7); } // primero cae, después se desvanece
       v.wobble += dt;
     }
-    for (const v of this.vis.values()) if (v.lunge) { v.lunge.t += dt * 3.2; if (v.lunge.t >= 1) v.lunge = undefined; }
+    for (const v of this.vis.values()) { if (v.lunge) { v.lunge.t += dt * 2.6; if (v.lunge.t >= 1) v.lunge = undefined; } if (v.recoil) { v.recoil.t += dt * 3.4; if (v.recoil.t >= 1) v.recoil = undefined; } }
     for (const f of this.floats) f.t += dt; this.floats = this.floats.filter(f => f.t < (f.life ?? 1.4));
     for (const p of this.parts) { p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; } this.parts = this.parts.filter(p => p.life < p.max);
     for (const p of this.projs) p.t += dt * 4.5; this.projs = this.projs.filter(p => p.t < 1);
@@ -452,11 +453,11 @@ export class Renderer {
     if (u.uid === this.activeUid) { c.strokeStyle = `rgba(255,215,90,${.65 + .3 * Math.sin(this.time * 5)})`; c.lineWidth = 3; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 21 * k, 9.5 * k, 0, 0, 6.28); c.stroke(); }
     if (u.uid === this.selUid) { c.strokeStyle = 'rgba(160,210,255,.9)'; c.lineWidth = 2; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 24 * k, 11 * k, 0, 0, 6.28); c.stroke(); }
     if (!this.cine) if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }
-    const down = u.down; const deadK = v.dead > 0 ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
+    const down = u.down; const deadK = v.dead > 0 && !this.pixel ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
     c.save(); c.translate(sx, sy - bounce); c.scale(k * deadK, k * deadK);
     if (down) { c.rotate(-1.35); c.translate(-8, 4); }
     if (!this.pixel) this.sprite(u); c.restore();
-    if (this.pixel) { const cell = Math.max(1, Math.round(3.4 * k * deadK * this.dpr)); const [bd, dk] = bodyFor(u.side, u.sprite, this.pix); const ln = v.lunge ? Math.sin(Math.PI * Math.min(1, v.lunge.t)) : 0; drawFigure(c, templateFor(u.pcId, u.id, u.sprite), (sx + (v.lunge?.dx ?? 0) * ln * 10 * s) * this.dpr, (sy - bounce + (v.lunge?.dy ?? 0) * ln * 6 * s) * this.dpr, cell, { pix: this.pix, body: bd, dark: dk, flip: u.side !== 'pc', lean: ln * 2 * Math.sign(v.lunge?.dx ?? 0), down, flash: v.flash > .3, bob: !down && !u.dead && Math.floor(this.time * 2.2 + u.uid * .7) % 2 ? 1 : 0 }); }
+    if (this.pixel) { const cell = Math.max(1, Math.round(3.4 * k * deadK * this.dpr)); const [bd, dk] = bodyFor(u.side, u.sprite, this.pix); const lt = v.lunge ? Math.min(1, v.lunge.t) : 0; const ln = v.lunge ? (lt < .25 ? -.35 * Math.sin(Math.PI * lt / .25) : Math.sin(Math.PI * (lt - .25) / .75)) : 0; const rc = v.recoil ? Math.sin(Math.PI * Math.min(1, v.recoil.t)) * (1 - v.recoil.t * .3) : 0; const rx = (v.recoil?.dx ?? 0) * rc * 7 * s, ry = (v.recoil?.dy ?? 0) * rc * 4 * s; drawFigure(c, templateFor(u.pcId, u.id, u.sprite), (sx + (v.lunge?.dx ?? 0) * ln * 10 * s + rx) * this.dpr, (sy - bounce + (v.lunge?.dy ?? 0) * ln * 6 * s + ry) * this.dpr, cell, { pix: this.pix, body: bd, dark: dk, flip: u.side !== 'pc', lean: ln * 2 * Math.sign(v.lunge?.dx ?? 0) - rc * 1.5 * Math.sign(v.recoil?.dx ?? 0), down: down || v.dead > 0, flash: v.flash > .3, bob: !down && !u.dead && Math.floor(this.time * 2.2 + u.uid * .7) % 2 ? 1 : 0 }); }
     if (v.flash > 0 && !this.pixel) { c.globalAlpha = v.flash * .5 * v.alpha; c.fillStyle = '#fff'; c.beginPath(); c.ellipse(sx, sy - 22 * k, 11 * k, 20 * k, 0, 0, 6.28); c.fill(); c.globalAlpha = v.alpha; }
     // barra de PG y estados
     if (!u.dead && !this.cine) {
