@@ -20,6 +20,7 @@ type Mode = { k: 'idle' } | { k: 'interact' } | { k: 'move' } | { k: 'terrain'; 
 export interface BattleResult { chem?: Record<string, number>; result: 'victory' | 'defeat'; xp: number; pfSpent: number; survivors: Record<string, number>; downed: string[]; dead: string[]; rounds: number; carry?: string[]; flagsOut?: string[]; cubeAlert?: number; foeHpPct?: number; kills: string[]; used: Record<string, number>; bonus?: { text: string; reward: Reward }[] }
 
 import { BOSS_THEME } from './audio';
+import { gestureFor, victoryGesture } from './acting';
 import { audio } from './audio';
 import { objectiveStatus, type Reward } from '../engine/twists';
 import { bark, BarkGate, shortBark, type BarkEv } from '../story/barks';
@@ -89,6 +90,7 @@ export class BattleUI {
   /** La línea flota sobre el personaje y, abajo, aparece su retrato con la cara que corresponde. */
   speak(u: Unit, line: string, expr: Parameters<typeof pixPortraitUrl>[1]) {
     const name = PARTY_BY_ID[u.pcId!]?.name ?? u.name; this.addLog(`${name}: «${line}»`, 'bark'); this.r.speech(u.uid, line, shortBark(line));
+    { const v = this.r.vis.get(u.uid); if (v) v.gest = { g: gestureFor(u.pcId, ({ enojo: 'gritando', tristeza: 'en voz baja', sonrisa: 'se ríe' } as Record<string, string>)[expr ?? 'neutral'] ?? ''), t: 0 }; }
     const url = pixPortraitUrl(u.pcId!, expr); const stage = this.canvas.parentElement; if (!stage) return;
     stage.querySelector('.cutin')?.remove();
     const el = h('div', { class: 'cutin' }, url ? h('div', { class: 'cutin-pic', style: { backgroundImage: `url(${url})` } }) : null, h('div', { class: 'cutin-txt' }, h('b', {}, name), h('span', {}, line)));
@@ -175,6 +177,7 @@ export class BattleUI {
     await this.deployPhase();
     if (this.coach && !this.coach.el.classList.contains('hidden') && this.coach.i === 0) this.coach.open(1);
     const b = this.b; b.start(); await this.flush();
+    if (!(window as any).__fast) await this.bossIntro();
     { const ps = b.units.filter(p => p.pcId && !p.dead); const boss = b.units.find(u => u.side === 'foe' && u.traits.includes('boss') && BOSS[u.id]);
       const lines = boss ? BOSS[boss.id]! : undefined; const who = lines ? ps.filter(p => lines[p.pcId!]?.length) : [];
       if (lines && who.length) { const p = who[Math.floor(Math.random() * who.length)]; const pool = lines[p.pcId!]!; this.gate.allow('start', b.round); this.speak(p, pool[Math.floor(Math.random() * pool.length)], 'enojo'); }
@@ -198,11 +201,47 @@ export class BattleUI {
     if (this.stopped) return;
     audio.theme(null);
     await this.flush();
+    if (b.result === 'victory' && !(window as any).__fast) await this.finale();
     if (b.result === 'victory') { const up = b.units.filter(p => p.pcId && !p.dead && !p.down); if (this.say(up[Math.floor(Math.random() * up.length)], 'win')) await sleep((window as any).__fast ? 0 : 1600); }
     await sleep(700);
     const pcs = b.units.filter(u => u.pcId);
     const survivors: Record<string, number> = {}; for (const p of pcs) if (!p.dead) survivors[p.pcId!] = p.hp;
     this.finished?.({ result: b.result ?? 'defeat', xp: b.xpValue(), pfSpent: b.pfSpent, survivors, downed: pcs.filter(p => p.down).map(p => p.pcId!), dead: pcs.filter(p => p.dead).map(p => p.pcId!), chem: b.chemGains(), rounds: b.round, carry: Object.keys(b.carry), flagsOut: [...b.storyFlagsOut], cubeAlert: b.cube?.alert, foeHpPct: (() => { const f = b.units.filter(u => u.side === 'foe' && !u.summoned); const mx = f.reduce((a, u) => a + u.maxHp, 0); return mx ? f.reduce((a, u) => a + Math.max(0, u.hp), 0) / mx : 0; })(), kills: b.units.filter(u => u.side === 'foe' && u.dead && !u.summoned && !u.fled).map(u => u.id), used: { ...b.itemsUsed }, bonus: objectiveStatus(b).filter(o => o.state === 'done').map(o => ({ text: o.text, reward: o.reward })) });
+  }
+  /** Presentación del jefe: la cámara va hasta él, ruge, aparece su nombre y vuelve a la compañía. */
+  async bossIntro() {
+    const b = this.b, r = this.r; const boss = b.units.find(u => u.side === 'foe' && !u.dead && u.traits.includes('boss')); const stage = this.canvas.parentElement; if (!boss || !stage) return;
+    const cam = { zoom: r.zoom, panX: r.panX, panY: r.panY }; const o = (boss.size - 1) / 2; const fog = r.fogActive; r.fogActive = false; // se lo ve aunque todavía esté fuera de la línea de visión
+    await r.camTo(Math.max(cam.zoom, 1) * 1.9, boss.x + o, boss.y + o, 700, .5 + .09 * (boss.size - 1));
+    const v = r.vis.get(boss.uid); if (v) v.gest = { g: 'shout', t: 0 }; audio.sfx('boom'); (r as any).shake = .5;
+    const [nm, epit] = boss.name.split(/,\s*/); const card = h('div', { class: 'fin-boss' }, h('b', {}, nm), epit ? h('small', {}, epit) : null); card.style.top = '62%'; stage.append(card);
+    await sleep(1700); card.classList.add('out'); setTimeout(() => card.remove(), 600);
+    const t0 = performance.now(), from = { zoom: r.zoom, panX: r.panX, panY: r.panY };
+    await new Promise<void>(res => { const step = (now: number) => { const k = Math.min(1, (now - t0) / 600), e = k * k * (3 - 2 * k); r.zoom = from.zoom + (cam.zoom - from.zoom) * e; r.panX = from.panX + (cam.panX - from.panX) * e; r.panY = from.panY + (cam.panY - from.panY) * e; if (k < 1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+    r.fogActive = fog;
+  }
+  /** Cierre del combate: cámara lenta sobre el último golpe (más grande si cae un jefe), la cámara vuelve a la compañía,
+   *  cartel de victoria con fanfarria y cada uno festeja a su manera. */
+  async finale() {
+    const b = this.b, r = this.r; const stage = this.canvas.parentElement; const ld = r.lastDeath; const z0 = r.zoom;
+    const overlay = (cls: string, ...kids: (HTMLElement | string)[]) => { const el = h('div', { class: cls }, ...kids); stage?.append(el); return el; };
+    if (ld) {
+      r.timeScale = .3; await r.camTo(Math.max(z0, 1) * 1.9, ld.x, ld.y, 450, ld.boss ? .62 : .5);
+      if (ld.boss) {
+        audio.sfx('boom'); (r as any).shake = 1.4; r.fx({ t: 'fx', kind: 'boom', x: ld.x, y: ld.y } as any); r.sparks(ld.x, ld.y, 90, '#ffd23f'); r.wisps(ld.x, ld.y); r.rings.push({ x: ld.x, y: ld.y, t: 0, color: '#ffd23f', max: 5 } as any);
+        const fl = overlay('fin-flash'); setTimeout(() => fl.remove(), 1400);
+        const card = overlay('fin-boss', h('small', {}, 'cae'), h('b', {}, ld.name.split(',')[0])); setTimeout(() => card.classList.add('out'), 1900); setTimeout(() => card.remove(), 2500);
+        await sleep(1700);
+      } else { r.sparks(ld.x, ld.y, 26, '#ffd6a0'); await sleep(650); }
+      r.timeScale = 1;
+    }
+    const pcs = b.units.filter(p => p.pcId && !p.dead && !p.down); if (!pcs.length) return;
+    const cx = pcs.reduce((a, p) => a + p.x, 0) / pcs.length, cy = pcs.reduce((a, p) => a + p.y, 0) / pcs.length;
+    await r.camTo(Math.max(z0, 1) * 1.45, cx, cy, 650);
+    audio.sfx('levelup'); const fallen = b.units.filter(p => p.pcId && (p.dead || p.down)).length;
+    const ban = overlay('fin-banner', h('b', {}, 'Victoria'), h('small', {}, `${b.round} ${b.round === 1 ? 'ronda' : 'rondas'} · ${fallen ? `${fallen} ${fallen === 1 ? 'caído' : 'caídos'}` : 'sin bajas'}`));
+    pcs.forEach((p, i) => setTimeout(() => { const v = r.vis.get(p.uid); if (v) v.gest = { g: victoryGesture(p.pcId), t: 0 }; if (p.pcId === 'pact' || p.pcId === 'romain') r.sparks(p.x, p.y, 22, '#ffe7a0'); }, 200 + i * 170));
+    await sleep(2100); ban.classList.add('out'); setTimeout(() => ban.remove(), 700);
   }
   endTurn() { if (this.resolveTurn && this.mode.k !== 'busy') { const f = this.resolveTurn; this.resolveTurn = undefined; f(); } }
   get cur(): Unit | undefined { const u = this.b.cur; return u && !u.ai ? u : undefined; }

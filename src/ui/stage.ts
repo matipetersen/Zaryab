@@ -150,7 +150,7 @@ export class StageView {
     if (!who) { this.r.activeUid = -1; return; }
     const u = b.units.find(x => x.name === who && !x.dead) ?? this.npc(who); if (!u) { this.r.activeUid = -1; return; }
     this.r.activeUid = u.uid; const v = this.r.vis.get(u.uid); if (!v) return;
-    const g = gestureFor(u.pcId, tone); v.gest = { g, t: 0 }; // cada uno habla con su gesto (y el tono lo cambia)
+    const g = gestureFor(u.pcId, tone, u.id === 'npc' ? undefined : u.sprite, u.name); v.gest = { g, t: 0 }; // cada uno habla con su gesto (y el tono lo cambia)
     if (g === 'stomp') setTimeout(() => { (this.r as any).shake = Math.max((this.r as any).shake, .25); }, 300);
   }
 }

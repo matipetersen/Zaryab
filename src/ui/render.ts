@@ -47,7 +47,7 @@ export class Renderer {
   /** Modo diorama (pixel art de paleta cerrada, ver diorama.ts). */ pixel = false; pix: Record<string, string> = pixFor();
   setPixel(on: boolean) { this.pixel = on; this.pix = pixFor(lookOf(this.map)); this.pal = on ? palFor(lookOf(this.map)) : (PALS[this.map?.theme ?? ''] ?? PALS.alley); this.gcache = undefined; this.canvas.style.imageRendering = on ? 'pixelated' : ''; this.resize(); }
   /** Modo escena: sin barras de PG ni anillos de bando (se usa en las cutscenes sobre mapa). */ cine = false;
-  weather = new Weather(); lighting = new Lighting(); amb: Ambience = ambienceFor(''); flashes: Flash[] = []; freeze = 0;
+  weather = new Weather(); lighting = new Lighting(); amb: Ambience = ambienceFor(''); flashes: Flash[] = []; freeze = 0; /** Cámara lenta (1 = normal). */ timeScale = 1; /** Última baja enemiga (para el cierre del combate). */ lastDeath?: { uid: number; x: number; y: number; boss: boolean; name: string };
   ctx: CanvasRenderingContext2D; b?: Battle; map?: MapDef; pal: Pal = PALS.alley;
   /** Instante del último arrastre táctil: el toque que lo termina no cuenta como clic. */ lastDrag = 0;
   zoom = 1; panX = 0; panY = 0; W = 0; H = 0; dpr = 1;
@@ -57,7 +57,7 @@ export class Renderer {
   constructor(public canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
     for (let i = 0; i < 40; i++) this.dust.push({ x: Math.random(), y: Math.random(), s: Math.random() * 2 + .5, v: Math.random() * .02 + .005 });
-    const loop = (t: number) => { if (!this.running) return; if (canvas.offsetParent === null) { this.last = t; requestAnimationFrame(loop); return; } const dt = Math.min(.05, (t - this.last) / 1000 || 0); this.last = t; this.time += dt; this.update(dt); this.draw(); requestAnimationFrame(loop); };
+    const loop = (t: number) => { if (!this.running) return; if (canvas.offsetParent === null) { this.last = t; requestAnimationFrame(loop); return; } const dt = Math.min(.05, (t - this.last) / 1000 || 0) * this.timeScale; this.last = t; this.time += dt; this.update(dt); this.draw(); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     // el lienzo puede cambiar de tamaño sin que la ventana lo haga (paneles, barra de acciones): se reajusta solo
     if (typeof ResizeObserver !== 'undefined') { this.ro = new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (r.width > 4 && (Math.abs(r.width - this.W) > .5 || Math.abs(r.height - this.H) > .5)) this.resize(); }); this.ro.observe(canvas); }
@@ -138,6 +138,11 @@ export class Renderer {
     }
     return best ? { x: best.x, y: best.y } : null;
   }
+  /** Desliza la cámara hasta encuadrar la casilla (x, y) con `zoom`, en `ms`. */
+  camTo(zoom: number, x: number, y: number, ms: number, yFrac = .48): Promise<void> {
+    const z0 = this.zoom, x0 = this.panX, y0 = this.panY; this.zoom = zoom; this.panX = 0; this.panY = 0; const p = this.proj(x, y); const tx = this.W / 2 - p.x, ty = this.H * yFrac - p.y; this.zoom = z0; this.panX = x0; this.panY = y0;
+    const t0 = performance.now(); return new Promise(res => { const step = (now: number) => { const k = Math.min(1, (now - t0) / ms), e = k * k * (3 - 2 * k); this.zoom = z0 + (zoom - z0) * e; this.panX = x0 + (tx - x0) * e; this.panY = y0 + (ty - y0) * e; if (k < 1 && this.running) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+  }
   center(x: number, y: number, h = 0): P { const p = this.proj(x, y, h); return { x: p.x, y: p.y + TH / 2 * this.scale() }; }
   // ---------- eventos ----------
   play(events: BEvent[]) {
@@ -146,7 +151,7 @@ export class Renderer {
       else if (e.t === 'float') { if (e.cls === 'miss') audio.sfx('miss'); else if (e.cls === 'crit') audio.sfx('crit'); const u = this.b!.byUid(e.uid); if (u) { const v = this.vis.get(e.uid)!; this.floats.push({ x: v.x, y: v.y, text: e.text, cls: e.cls, t: 0, dx: (Math.random() - .5) * 18 }); } }
       else if (e.t === 'hit') { audio.sfx('hit'); const v = this.vis.get(e.uid); if (v) { v.flash = 1; v.shake = .6; const lb = this.lastBlow && performance.now() - this.lastBlow.at < 1500 ? this.lastBlow : { dx: 0, dy: -1, at: 0 }; v.recoil = { dx: lb.dx, dy: lb.dy, t: 0 }; this.sparks(v.x, v.y, 12, '#fff2c0'); this.flashes.push({ x: v.x, y: v.y, color: 'rgba(255,200,120,A)', t: 0, r: 1.6 }); } this.shake = Math.max(this.shake, .5); this.freeze = .06; }
       else if (e.t === 'snap') { const v = this.vis.get(e.uid); if (v) { v.x = e.x; v.y = e.y; v.path = []; } this.shake = Math.max(this.shake, .8); }
-      else if (e.t === 'death') { audio.sfx('death'); const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u) { this.burst(u.x, u.y, '#d8b27a', 18); this.wisps(u.x, u.y); } }
+      else if (e.t === 'death') { audio.sfx('death'); const v = this.vis.get(e.uid); if (v) v.dead = 0.001; const u = this.b!.byUid(e.uid); if (u && u.side === 'foe') this.lastDeath = { uid: u.uid, x: u.x, y: u.y, boss: u.traits.includes('boss'), name: u.name }; if (u) { this.burst(u.x, u.y, '#d8b27a', 18); this.wisps(u.x, u.y); } }
       else if (e.t === 'spawn') { const u = this.b!.byUid(e.uid); if (u) this.vis.set(e.uid, { x: u.x, y: u.y, path: [], flash: 0, shake: 0, alpha: 1, bounce: 1, dead: 0, wobble: 0 }); }
       else if (e.t === 'fx') this.fx(e);
       else if (e.t === 'tile') this.tileFx(e);
@@ -466,7 +471,7 @@ export class Renderer {
     if (!this.cine) if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }
     const down = u.down; const deadK = v.dead > 0 && !this.pixel ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
     // actuación: cada personaje está quieto a su manera y gesticula al hablar
-    const still = !down && !u.dead && v.dead <= 0 && !v.path.length; const ip = still ? idlePose(u.pcId, this.time, (u.uid * 1.618) % 6.28) : { bob: 0, lean: 0, flip: false, dx: 0, dy: 0, glow: 0 }; const gp = v.gest && still ? gesturePose(v.gest.g, v.gest.t) : undefined;
+    const still = !down && !u.dead && v.dead <= 0 && !v.path.length; const ip = still ? idlePose(u.pcId, this.time, (u.uid * 1.618) % 6.28, u.sprite, u.traits?.includes('boss')) : { bob: 0, lean: 0, flip: false, dx: 0, dy: 0, glow: 0 }; const gp = v.gest && still ? gesturePose(v.gest.g, v.gest.t) : undefined;
     const act = { bob: gp && gp.dy < -1 ? 0 : ip.bob, lean: ip.lean + (gp?.lean ?? 0), flip: ip.flip !== (gp?.flip ?? false), dx: (ip.dx + (gp?.dx ?? 0)) * s * (u.side === 'pc' ? 1 : -1), dy: (ip.dy + (gp?.dy ?? 0)) * s, glow: Math.max(ip.glow, gp?.glow ?? 0) };
     if (act.glow > .05) { c.save(); c.globalAlpha = v.alpha * act.glow * .55; c.fillStyle = this.pixel ? this.pix.f : '#ffd66b'; c.beginPath(); c.ellipse(sx + act.dx, sy + act.dy - 24 * k, 16 * k, 26 * k, 0, 0, 6.28); c.fill(); c.restore(); }
     c.save(); c.translate(sx + act.dx, sy - bounce + act.dy); c.scale(k * deadK, k * deadK);

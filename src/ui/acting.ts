@@ -2,15 +2,16 @@
 // Todo se expresa en celdas del pixel art (lean, bob) y desplazamientos en pantalla (dx, dy en unidades de escena).
 
 export interface Pose { bob: number; lean: number; flip: boolean; dx: number; dy: number; glow: number }
-export type Gesture = 'bow' | 'rise' | 'lunge' | 'turn' | 'flourish' | 'stomp' | 'hop' | 'droop' | 'shout' | 'laugh';
+export type Gesture = 'bow' | 'rise' | 'lunge' | 'turn' | 'flourish' | 'stomp' | 'hop' | 'droop' | 'shout' | 'laugh' | 'cheer' | 'kneel';
 
 const frac = (x: number) => x - Math.floor(x);
 /** Un pulso de 0→1→0 que dura `len` segundos cada `every` segundos (desfasado por personaje). */
 const pulse = (t: number, every: number, len: number, ph: number) => { const k = frac((t + ph * every) / every) * every; return k < len ? Math.sin(Math.PI * k / len) : 0; };
 
 /** Cómo está quieto cada uno. `ph` desfasa a los personajes para que no respiren al unísono. */
-export function idlePose(pcId: string | undefined, t: number, ph: number): Pose {
+export function idlePose(pcId: string | undefined, t: number, ph: number, sprite?: string, boss = false): Pose {
   const p: Pose = { bob: 0, lean: 0, flip: false, dx: 0, dy: 0, glow: 0 };
+  if (!pcId && sprite) { foeIdle(p, sprite, t, ph); if (boss) { p.glow = Math.max(p.glow, .25 + .25 * Math.sin(t * 1.6 + ph)); p.dy -= Math.max(0, Math.sin(t * .8 + ph)) * 1.5; } return p; }
   switch (pcId) {
     case 'romain': // calmo: respira despacio y cada tanto inclina la cabeza, como quien reza
       p.bob = Math.sin(t * 1.5 + ph) > .35 ? 1 : 0; p.lean = Math.round(pulse(t, 9, 1.6, ph) * 1.4); break;
@@ -31,16 +32,41 @@ export function idlePose(pcId: string | undefined, t: number, ph: number): Pose 
   return p;
 }
 
+/** Cómo está quieto cada tipo de enemigo. */
+function foeIdle(p: Pose, sprite: string, t: number, ph: number) {
+  switch (sprite) {
+    case 'undead': // se balancea torcido, arrastrando el peso, con algún espasmo
+      p.lean = Math.round(Math.sin(t * .7 + ph) * 1.6); p.bob = Math.floor(t * 1.3 + ph) % 3 === 0 ? 1 : 0; if (pulse(t, 4.3, .18, ph) > 0) p.dx = (Math.floor(t * 40) % 2 ? 1 : -1) * 2; break;
+    case 'beast': // al acecho: agazapado, respira rápido y amaga
+      p.lean = 1; p.bob = Math.floor(t * 4 + ph) % 2; p.dx = pulse(t, 3.7, .35, ph) * 4; break;
+    case 'serpent': // ondula
+      p.dx = Math.sin(t * 2.2 + ph) * 2.5; p.lean = Math.round(Math.sin(t * 2.2 + ph + 1) * 1.2); break;
+    case 'djinn': case 'elemental': // flota y titila
+      p.dy = -Math.sin(t * 1.7 + ph) * 3 - 3; p.glow = .2 + .2 * Math.sin(t * 3 + ph); break;
+    case 'construct': case 'colossus': case 'pylon': // rígido: no respira; cada tanto se asienta con un golpe seco
+      p.dy = pulse(t, 5, .25, ph) * 2; break;
+    case 'mirror': // un reflejo que no termina de decidir hacia dónde mira
+      p.flip = Math.floor(t * 1.7 + ph * 2) % 4 === 0; p.dx = Math.sin(t * 9 + ph) * .6; break;
+    case 'humanoid': default: // en guardia: respira firme y mira alrededor
+      p.bob = Math.sin(t * 1.9 + ph) > .2 ? 1 : 0; p.flip = Math.floor((t + ph * 4) / 4.2) % 4 === 3; break;
+  }
+}
+
 /** El gesto con el que habla cada uno; el tono de la línea lo puede cambiar. */
-export function gestureFor(pcId: string | undefined, tone = ''): Gesture {
+export function gestureFor(pcId: string | undefined, tone = '', sprite?: string, name = ''): Gesture {
   const t = tone.toLowerCase();
   if (/grit|furi|rugi|golpe|ladr|ruge|exig/.test(t)) return pcId === 'panchi' ? 'stomp' : 'shout';
   if (/llor|triste|baj[oa] |sin mirar|apenas|en voz baja|susurr|quebr|cansad|mirando el suelo/.test(t)) return 'droop';
   if (/r[ií]e|sonr|burl|divertid|carcaj/.test(t)) return 'laugh';
-  return ({ romain: 'bow', pact: 'rise', rabb: 'lunge', joren: 'turn', zyrthar: 'flourish', panchi: 'stomp' } as Record<string, Gesture>)[pcId ?? ''] ?? 'hop';
+  const pc = ({ romain: 'bow', pact: 'rise', rabb: 'lunge', joren: 'turn', zyrthar: 'flourish', panchi: 'stomp' } as Record<string, Gesture>)[pcId ?? ''];
+  if (pc) return pc;
+  const bySprite = ({ undead: 'shout', beast: 'shout', serpent: 'lunge', djinn: 'rise', elemental: 'rise', construct: 'stomp', colossus: 'stomp', mirror: 'flourish' } as Record<string, Gesture>)[sprite ?? ''];
+  if (bySprite) return bySprite;
+  // interlocutores comunes: cada nombre con su manera de hablar, siempre la misma
+  const opts: Gesture[] = ['hop', 'bow', 'lunge', 'turn', 'laugh']; let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return opts[h % opts.length];
 }
 /** Duración de cada gesto (segundos). */
-export const GEST_LEN: Record<Gesture, number> = { bow: 1.1, rise: 1.4, lunge: .7, turn: .9, flourish: 1.0, stomp: .6, hop: .5, droop: 1.6, shout: .8, laugh: 1.0 };
+export const GEST_LEN: Record<Gesture, number> = { bow: 1.1, rise: 1.4, lunge: .7, turn: .9, flourish: 1.0, stomp: .6, hop: .5, droop: 1.6, shout: .8, laugh: 1.0, cheer: 1.4, kneel: 2.2 };
 
 /** Pose que agrega el gesto en curso (t = segundos desde que empezó). */
 export function gesturePose(g: Gesture, t: number): Pose {
@@ -56,6 +82,13 @@ export function gesturePose(g: Gesture, t: number): Pose {
     case 'droop': p.lean = -Math.round(arc * 1.6); p.dy = arc * 2; p.bob = 0; break;            // baja la cabeza
     case 'shout': p.dx = (Math.floor(t * 28) % 2 ? 1 : -1) * 1.5 * arc; p.lean = Math.round(arc * 1.5); p.dy = -arc * 3; break; // tiembla de bronca
     case 'laugh': p.dy = -Math.abs(Math.sin(k * Math.PI * 4)) * 3; break;                       // se sacude de risa
+    case 'cheer': p.dy = -Math.abs(Math.sin(k * Math.PI * 2)) * 10; break;                       // dos saltos de festejo
+    case 'kneel': p.lean = Math.round(Math.min(1, k * 4) * (1 - Math.max(0, k - .8) * 5) * 2.4); p.dy = Math.min(1, k * 4) * (1 - Math.max(0, k - .8) * 5) * 4; break; // se arrodilla a rezar
   }
   return p;
+}
+
+/** La pose de victoria de cada uno al terminar un combate. */
+export function victoryGesture(pcId?: string): Gesture {
+  return ({ romain: 'kneel', pact: 'rise', rabb: 'flourish', joren: 'turn', zyrthar: 'bow', panchi: 'cheer' } as Record<string, Gesture>)[pcId ?? ''] ?? 'hop';
 }
