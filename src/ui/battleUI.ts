@@ -136,6 +136,13 @@ export class BattleUI {
     let best = horiz ? cand(ax, ay) : cand(ay, ax);
     for (let sh = -6; sh <= 6 && best.length < 8; sh++) for (const c2 of [horiz ? cand(ax + sh, ay) : cand(ay + sh, ax)]) if (c2.length > best.length) best = c2; // corre el rectángulo si había obstáculos
     if (best.length < pcs.length) for (const p of sp) if (!best.some(q => q.x === p.x && q.y === p.y)) best.push(p); // zona tapada por obstáculos: se completa con los puntos de salida
+    // si la compañía arranca en ronda (rodeada, alrededor de un altar) el rectángulo no le calza y se iría lejos: la zona son sus puntos y los vecinos libres
+    const has = (a: P[], p: P) => a.some(q => q.x === p.x && q.y === p.y);
+    if (sp.filter(p => has(best, p)).length * 2 < sp.length) {
+      const zone: P[] = sp.filter(p => okTile(p.x, p.y)).map(p => ({ x: p.x, y: p.y }));
+      for (const p of sp) for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) { const q = { x: p.x + dx, y: p.y + dy }; if (zone.length < pcs.length + 3 && okTile(q.x, q.y) && !has(zone, q)) zone.push(q); }
+      return zone;
+    }
     return best;
   }
   async deployPhase() {

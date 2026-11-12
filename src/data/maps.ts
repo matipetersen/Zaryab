@@ -412,3 +412,45 @@ shape('plaza', (x, y, w, h) => x > w - 6 && y > h - 6 && x + y > w + h - 9);
 shape('zoco', (x, y, w, h) => (x > w - 6 && y < 5) || (x < 2 && y > h - 4), false);
 // Acueducto: las esquinas se desmoronaron al vacío; el canal sigue
 shape('acueducto', (x, y, w, h) => (x < 5 || x > w - 6) && (y < 4 || y > h - 4) && !(y === h - 2));
+
+// ---------- Posiciones de inicio ----------
+// Antes, en casi todos los mapas la compañía arrancaba abajo y los enemigos arriba: todos los combates se jugaban igual.
+// Ahora cada mapa tiene su planteo: entrar de costado, quedar rodeados, bajar desde arriba, emboscada en el campamento.
+// Quedan de frente los grandes jefes (Coloso, Dahhak, Al-Mazhar, Razul, el Simurg) y la barricada de Medinat: son una marcha hacia
+// el jefe y su dificultad está calibrada con ese planteo (probado: con otros, Dahhak bajaba de 40% a ~20% y el Simurg subía de 25% a ~80%).
+type XY = [number, number];
+/** Recoloca los puntos de salida. `foes` va en orden de slot (el 0 suele ser el jefe). `waves` reemplaza las entradas de refuerzos. */
+function spawnAt(id: string, pcs: XY[], foes: XY[], waves?: XY[]) {
+  const m = MAPS[id]; const g = m.rows.map(r => [...r]);
+  const clear = waves ? /[1-6ew]/ : /[1-6e]/;
+  for (const row of g) for (let x = 0; x < row.length; x++) if (clear.test(row[x])) row[x] = '.';
+  const put = ([x, y]: XY, ch: string) => { const c = g[y]?.[x]; if (c !== '.' && c !== ',') throw new Error(`${id}: (${x},${y}) es '${c}', no se puede poner '${ch}'`); g[y][x] = ch; };
+  pcs.forEach((p, i) => put(p, String(i + 1))); foes.forEach(p => put(p, 'e')); waves?.forEach(p => put(p, 'w'));
+  m.rows = g.map(r => r.join('')); m.foeOrder = foes.map(([x, y]) => ({ x, y }));
+}
+// Callejón: entran por el pasaje del oeste; el Linyera los espera en su nicho.
+spawnAt('callejon', [[1, 6], [2, 6], [1, 7], [2, 7], [1, 8], [2, 8]], [[11, 4], [17, 6], [12, 2], [14, 8], [14, 10], [17, 8]]);
+// Acueducto: llegan por la orilla oeste; algunos ghuls salen de las piletas de su lado y el resto cruza el canal.
+spawnAt('acueducto', [[2, 5], [3, 5], [2, 6], [3, 6], [1, 7], [2, 7]], [[14, 6], [6, 2], [14, 3], [5, 11], [17, 9], [16, 11], [10, 3]]);
+// Cubo: aparecen en el centro y los reflejos salen de las esquinas.
+spawnAt('cubo', [[5, 6], [9, 6], [5, 8], [9, 8], [7, 5], [7, 9]], [[2, 2], [12, 12], [12, 2], [2, 12], [7, 1]]);
+// Lago: llegan por la orilla oeste; el Marid se levanta en la orilla de enfrente.
+spawnAt('pozo', [[2, 6], [3, 6], [2, 7], [3, 7], [2, 8], [1, 9]], [[14, 7], [12, 3], [17, 5], [16, 11], [12, 2], [17, 9], [12, 12]]);
+// Dunas: es de noche y están acampados en el medio; los rodean desde todas las dunas.
+spawnAt('dunas', [[8, 5], [10, 5], [12, 5], [7, 6], [7, 7], [12, 7]], [[1, 3], [18, 2], [18, 11], [2, 11], [16, 1], [5, 12]]);
+// Torneo: uno frente al otro, de costado.
+spawnAt('arena', [[3, 5], [2, 4], [2, 6], [1, 5], [3, 3], [3, 7]], [[8, 4]]);
+// Mina: entran por la galería oeste; el Gusano abre su espiral en medio de la sala.
+spawnAt('mina', [[2, 6], [3, 6], [1, 7], [2, 7], [2, 9], [3, 9]], [[12, 9], [11, 6], [15, 7], [9, 12], [16, 12]], [[10, 1], [11, 1], [18, 8], [15, 13]]);
+// Nido: están en el nido cuando el tigre cae desde el borde del pico.
+spawnAt('nido', [[7, 5], [12, 5], [7, 7], [12, 7], [9, 8], [10, 8]], [[18, 4]]);
+// Cementerio: llegan por el borde oeste de la loma; los muertos salen de las tumbas de enfrente.
+spawnAt('cementerio', [[1, 6], [2, 6], [1, 7], [2, 7], [1, 8], [2, 8]], [[6, 3], [15, 3], [9, 4], [12, 4], [14, 12], [17, 7]]);
+// Jardín: entran por el rincón noreste y tienen que cruzar el laberinto de cipreses.
+spawnAt('jardin', [[16, 1], [17, 1], [18, 1], [16, 2], [17, 2], [18, 2]], [[7, 7], [14, 9], [4, 9], [8, 12], [13, 13], [3, 12]]);
+// Zoco: entran por el costado oeste del mercado; la mampara del centro parte el combate en dos.
+spawnAt('zoco', [[1, 5], [2, 5], [1, 6], [3, 6], [1, 7], [2, 7]], [[12, 4], [13, 1], [15, 6], [12, 10], [8, 2], [14, 8]]);
+// Templo: entran por el ábside quemado y bajan hacia la puerta, donde los esperan.
+spawnAt('templo', [[4, 2], [6, 2], [9, 2], [11, 2], [5, 3], [10, 3]], [[5, 11], [10, 11], [7, 12], [4, 10], [11, 10]]);
+// Santuario: los toman en su propia casa, junto al altar; entran por las esquinas y los pasillos.
+spawnAt('santuario', [[5, 5], [10, 5], [5, 7], [10, 7], [7, 8], [8, 8]], [[4, 1], [1, 6], [14, 6], [3, 12], [12, 12], [11, 1]]);

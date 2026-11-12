@@ -23,7 +23,7 @@ export class Grid {
   w: number; h: number; tiles: Tile[][] = []; /** Cambia con cada modificación del terreno (invalida la visión en caché). */ ver = 0;
   spawns: { pc: P[]; foe: P[]; ally: P[]; wave: P[] } = { pc: [], foe: [], ally: [], wave: [] };
   marks: P[] = [];
-  constructor(rows: string[], objs: { x: number; y: number; id: string }[] = []) {
+  constructor(rows: string[], objs: { x: number; y: number; id: string }[] = [], foeOrder?: P[]) {
     this.h = rows.length; this.w = rows[0].length;
     const pcSlots: [number, P][] = [];
     rows.forEach((row, y) => {
@@ -42,6 +42,7 @@ export class Grid {
       this.tiles.push(line);
     });
     this.spawns.pc = pcSlots.sort((a, b) => a[0] - b[0]).map(s => s[1]);
+    if (foeOrder) { const key = (p: P) => p.x + ',' + p.y, have = new Set(this.spawns.foe.map(key)); for (const p of foeOrder) if (!have.has(key(p))) throw new Error(`Slot enemigo (${p.x},${p.y}) sin 'e' en el mapa`); const used = new Set(foeOrder.map(key)); this.spawns.foe = [...foeOrder.map(p => ({ ...p })), ...this.spawns.foe.filter(p => !used.has(key(p)))]; } // el orden de los slots (el 0 suele ser el jefe) lo decide el mapa, no la lectura
     for (const o of objs) { const t = this.tiles[o.y]?.[o.x]; if (t) t.obj = o.id; }
   }
   /** Sustituye una casilla (terreno modificable). */

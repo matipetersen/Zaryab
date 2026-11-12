@@ -34,7 +34,7 @@ const nums = new Set(D100.map(e => e.n)); const missing: number[] = []; for (let
 if (D100.length !== nums.size) err('números repetidos en D100');
 console.log(`Oráculo d100: ${D100.length} eventos (faltan: ${missing.join(', ') || 'ninguno'}) · zonales: ${Object.values(ZONES).flat().length}`);
 for (const [id, e] of Object.entries(ENCOUNTERS)) {
-  const m = MAPS[e.map]; if (!m) { err(`encuentro ${id}: mapa ${e.map}`); continue; } const g = new Grid(m.rows);
+  const m = MAPS[e.map]; if (!m) { err(`encuentro ${id}: mapa ${e.map}`); continue; } const g = new Grid(m.rows, m.objs, m.foeOrder);
   for (const f of e.foes) { if (!MONSTERS[f.id]) err(`${id}: monstruo ${f.id}`); if (!g.spawns.foe[f.slot]) err(`${id}: slot ${f.slot} no existe en ${m.id} (${g.spawns.foe.length})`); }
   for (const a of e.ally ?? []) if (!g.spawns.ally[a.slot]) err(`${id}: ally slot ${a.slot}`);
   if (g.spawns.pc.length < 6) err(`${m.id}: sólo ${g.spawns.pc.length} casillas de PJ`);

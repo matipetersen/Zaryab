@@ -82,7 +82,7 @@ export class StageView {
       this.syncParty(ids); this.setFoes(foes); return;
     }
     this.mapId = mapId; this.npcs = []; this.party = ids; this.foes = []; this.focusUid = -1;
-    const grid = new Grid(map.rows, map.objs); const units: Unit[] = [];
+    const grid = new Grid(map.rows, map.objs, map.foeOrder); const units: Unit[] = [];
     ids.forEach((id, i) => { const p = grid.spawns.pc[i] ?? grid.spawns.pc[0]; if (!p) return; const u = makePC(PARTY_BY_ID[id]); u.x = p.x; u.y = p.y; units.push(u); });
     const b = new Battle(grid, units); this.b = b; this.r.setBattle(b, map); this.r.cine = true; this.r.activeUid = -1; this.frame();
     // entrada (una sola vez por mapa): parten del borde del grupo y caminan a su lugar
@@ -123,7 +123,14 @@ export class StageView {
     const gone = () => { if (this.b !== b) return; b.units = b.units.filter(x => x !== u); this.r.vis.delete(u.uid); };
     if (!v) { gone(); return; } const fade = () => { if (this.b !== b) return; v.alpha = Math.max(0, v.alpha - .07); if (v.alpha > 0) requestAnimationFrame(fade); else gone(); }; requestAnimationFrame(fade);
   }
-  private entryTile(i: number) { const g = this.b!.grid; const s = g.spawns.pc[0] ?? { x: 0, y: 0 }; for (let r = 4; r >= 2; r--) for (const [dx, dy] of [[-r, 0], [0, -r], [-r, -r], [-r, r], [r, -r]]) { const t = g.at(s.x + dx + i % 2, s.y + dy); if (t && t.kind !== 'wall' && t.kind !== 'cover') return { x: s.x + dx + i % 2, y: s.y + dy }; } return { x: s.x, y: s.y }; }
+  private entryTile(i: number) { // entran desde el lado opuesto a los enemigos (si los rodean, desde donde haya lugar)
+    const g = this.b!.grid; const s = g.spawns.pc[0] ?? { x: 0, y: 0 }; const pcs = g.spawns.pc, fs = g.spawns.foe;
+    const c = (a: { x: number; y: number }[]) => ({ x: a.reduce((t, p) => t + p.x, 0) / a.length, y: a.reduce((t, p) => t + p.y, 0) / a.length });
+    const dirs: number[][] = [];
+    if (fs.length && pcs.length) { const P = c(pcs), F = c(fs); const dx = P.x - F.x, dy = P.y - F.y; if (Math.hypot(dx, dy) > 2) { const ax = Math.abs(dx) >= Math.abs(dy); dirs.push(ax ? [Math.sign(dx), 0] : [0, Math.sign(dy)], ax ? [Math.sign(dx), Math.sign(dy) || 1] : [Math.sign(dx) || 1, Math.sign(dy)]); } }
+    dirs.push([-1, 0], [0, -1], [-1, -1], [-1, 1], [1, -1], [1, 0], [0, 1]);
+    for (const [ux, uy] of dirs) for (let r = 4; r >= 2; r--) { const x = s.x + ux * r + (uy ? i % 2 : 0), y = s.y + uy * r + (ux && !uy ? i % 2 : 0); const t = g.at(x, y); if (t && t.kind !== 'wall' && t.kind !== 'cover' && t.kind !== 'void') return { x, y }; }
+    return { x: s.x, y: s.y }; }
   /** Camina por el camino más corto (sin atravesar muros). */
   walk(u: Unit, x: number, y: number) {
     const b = this.b; if (!b) return; const v = this.r.vis.get(u.uid); if (!v) return;

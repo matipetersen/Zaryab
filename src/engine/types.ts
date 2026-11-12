@@ -69,7 +69,7 @@ export interface Unit {
 export interface Tile { obj?: string; /** CD para descubrir el objeto (oculto hasta entonces). */ hid?: number; ch: string; kind: 'floor' | 'diff' | 'wall' | 'cover' | 'hazard' | 'water' | 'high' | 'mark' | 'door' | 'void'; h: number; cost: number; blocked: boolean; hp?: number; maxHp?: number; flam?: boolean; boom?: boolean; turns?: number }
 export interface MapDef {
   id: string; name: string; rows: string[]; theme: 'tavern' | 'alley' | 'aqueduct' | 'mirror' | 'plaza' | 'mine' | 'garden' | 'crater' | 'market' | 'ruins' | 'sanctum';
-  intro?: string; objective: string; marks?: string[]; objs?: { x: number; y: number; id: string }[]; /** Trampas sembradas por el enemigo (ocultas hasta que se las busca o se pisan). */ traps?: { x: number; y: number; kind: 'mina' | 'red' | 'foso'; dc?: number; disarm?: number }[];
+  intro?: string; objective: string; marks?: string[]; objs?: { x: number; y: number; id: string }[]; /** Orden explícito de los slots enemigos (si falta, el orden de lectura). */ foeOrder?: { x: number; y: number }[]; /** Trampas sembradas por el enemigo (ocultas hasta que se las busca o se pisan). */ traps?: { x: number; y: number; kind: 'mina' | 'red' | 'foso'; dc?: number; disarm?: number }[];
 }
 export type BEvent =
   | { t: 'log'; text: string; cls?: string }

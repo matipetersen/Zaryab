@@ -14,7 +14,7 @@ import { TWISTS, NO_LAND } from '../data/twists';
 import type { Encounter } from '../data/maps';
 export interface BuildOpts { foes?: Encounter['foes']; grants?: Record<string, Grant>; pf?: number; miracles?: string[]; allies?: string[]; equip?: Record<string, string[]>; level?: number; flags?: string[]; prog?: Record<string, import('../data/progression').Prog>; inv?: Record<string, number>; edge?: number; powerup?: number; chem?: Record<string, number> }
 export function buildBattle(encId: string, partyIds: string[], opts: BuildOpts = {}): Battle {
-  const enc = ENCOUNTERS[encId]; const map = MAPS[enc.map]; const grid = new Grid(map.rows, map.objs);
+  const enc = ENCOUNTERS[encId]; const map = MAPS[enc.map]; const grid = new Grid(map.rows, map.objs, map.foeOrder);
   const units: Unit[] = [];
   partyIds.forEach((id, i) => {
     const u = makePC(PARTY_BY_ID[id], opts.grants?.[id], opts.equip?.[id], opts.prog?.[id]); const p = grid.spawns.pc[i]; if (!p) return;
