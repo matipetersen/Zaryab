@@ -26,7 +26,7 @@ const shade = (hex: string, f: number) => {
   return `rgb(${r | 0},${g | 0},${b | 0})`;
 };
 
-interface Vis { x: number; y: number; path: P[]; flash: number; shake: number; alpha: number; bounce: number; dead: number; wobble: number; /** Embestida al atacar (dirección en pantalla y avance 0→1). */ lunge?: { dx: number; dy: number; t: number }; /** Retroceso al recibir un golpe (alejándose de quien pegó). */ recoil?: { dx: number; dy: number; t: number } }
+interface Vis { /** Gesto de actuación en curso (al hablar en escena). */ gest?: { g: Gesture; t: number }; x: number; y: number; path: P[]; flash: number; shake: number; alpha: number; bounce: number; dead: number; wobble: number; /** Embestida al atacar (dirección en pantalla y avance 0→1). */ lunge?: { dx: number; dy: number; t: number }; /** Retroceso al recibir un golpe (alejándose de quien pegó). */ recoil?: { dx: number; dy: number; t: number } }
 interface Float { x: number; y: number; text: string; cls: string; t: number; dx: number; life?: number; short?: string }
 interface Part { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number; grav: number; streak?: boolean }
 interface Flash { x: number; y: number; color: string; t: number; r: number }
@@ -38,6 +38,7 @@ import { audio } from './audio';
 import { TRAP_ICON } from '../engine/traps';
 import { drawPC } from './pcSprites';
 import { PROPS, drawProp, drawBackdrop } from './props';
+import { idlePose, gesturePose, GEST_LEN, type Gesture } from './acting';
 import { dioramaFor, pixelWidth, quantize, palFor, pixFor, bodyFor, templateFor, drawFigure, drawPixText, lookOf } from './diorama';
 import { floorTex, blockTex } from './textures';
 import { Weather, Lighting, ambienceFor, type Ambience, type Light } from './fx';
@@ -224,7 +225,7 @@ export class Renderer {
       const u = this.b.byUid(uid);
       if (v.path.length) { const t = v.path[0]; const dx = t.x - v.x, dy = t.y - v.y, d = Math.hypot(dx, dy), sp = 9 * dt; if (d <= sp) { v.x = t.x; v.y = t.y; v.path.shift(); } else { v.x += dx / d * sp; v.y += dy / d * sp; } }
       else if (u && !v.path.length && Math.hypot(u.x - v.x, u.y - v.y) > 0.01 && u.x !== undefined) { /* teletransporte */ v.x = u.x; v.y = u.y; }
-      v.flash = Math.max(0, v.flash - dt * 4); v.shake = Math.max(0, v.shake - dt * 3); v.bounce = Math.max(0, v.bounce - dt * 2);
+      v.flash = Math.max(0, v.flash - dt * 4); v.shake = Math.max(0, v.shake - dt * 3); v.bounce = Math.max(0, v.bounce - dt * 2); if (v.gest) { v.gest.t += dt; if (v.gest.t > GEST_LEN[v.gest.g]) v.gest = undefined; }
       if (v.dead > 0) { v.dead += dt * 1.4; v.alpha = v.dead < .4 ? 1 : Math.max(0, 1 - (v.dead - .4) * 1.7); } // primero cae, después se desvanece
       v.wobble += dt;
     }
@@ -464,10 +465,14 @@ export class Renderer {
     if (u.uid === this.selUid) { c.strokeStyle = 'rgba(160,210,255,.9)'; c.lineWidth = 2; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 24 * k, 11 * k, 0, 0, 6.28); c.stroke(); }
     if (!this.cine) if (u.side === 'pc') { c.strokeStyle = 'rgba(80,200,120,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); } else { c.strokeStyle = 'rgba(230,80,70,.7)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(P.x, P.y + 2 * s, 18 * k, 7.5 * k, 0, 0, 6.28); c.stroke(); }
     const down = u.down; const deadK = v.dead > 0 && !this.pixel ? 1 - v.dead * .5 : 1; const bounce = v.bounce * 10;
-    c.save(); c.translate(sx, sy - bounce); c.scale(k * deadK, k * deadK);
+    // actuación: cada personaje está quieto a su manera y gesticula al hablar
+    const still = !down && !u.dead && v.dead <= 0 && !v.path.length; const ip = still ? idlePose(u.pcId, this.time, (u.uid * 1.618) % 6.28) : { bob: 0, lean: 0, flip: false, dx: 0, dy: 0, glow: 0 }; const gp = v.gest && still ? gesturePose(v.gest.g, v.gest.t) : undefined;
+    const act = { bob: gp && gp.dy < -1 ? 0 : ip.bob, lean: ip.lean + (gp?.lean ?? 0), flip: ip.flip !== (gp?.flip ?? false), dx: (ip.dx + (gp?.dx ?? 0)) * s * (u.side === 'pc' ? 1 : -1), dy: (ip.dy + (gp?.dy ?? 0)) * s, glow: Math.max(ip.glow, gp?.glow ?? 0) };
+    if (act.glow > .05) { c.save(); c.globalAlpha = v.alpha * act.glow * .55; c.fillStyle = this.pixel ? this.pix.f : '#ffd66b'; c.beginPath(); c.ellipse(sx + act.dx, sy + act.dy - 24 * k, 16 * k, 26 * k, 0, 0, 6.28); c.fill(); c.restore(); }
+    c.save(); c.translate(sx + act.dx, sy - bounce + act.dy); c.scale(k * deadK, k * deadK);
     if (down) { c.rotate(-1.35); c.translate(-8, 4); }
     if (!this.pixel) this.sprite(u); c.restore();
-    if (this.pixel) { const cell = Math.max(1, Math.round(3.4 * k * deadK * this.dpr)); const [bd, dk] = bodyFor(u.side, u.sprite, this.pix); const lt = v.lunge ? Math.min(1, v.lunge.t) : 0; const ln = v.lunge ? (lt < .25 ? -.35 * Math.sin(Math.PI * lt / .25) : Math.sin(Math.PI * (lt - .25) / .75)) : 0; const rc = v.recoil ? Math.sin(Math.PI * Math.min(1, v.recoil.t)) * (1 - v.recoil.t * .3) : 0; const rx = (v.recoil?.dx ?? 0) * rc * 7 * s, ry = (v.recoil?.dy ?? 0) * rc * 4 * s; drawFigure(c, templateFor(u.pcId, u.id, u.sprite), (sx + (v.lunge?.dx ?? 0) * ln * 10 * s + rx) * this.dpr, (sy - bounce + (v.lunge?.dy ?? 0) * ln * 6 * s + ry) * this.dpr, cell, { pix: this.pix, body: bd, dark: dk, flip: u.side !== 'pc', lean: ln * 2 * Math.sign(v.lunge?.dx ?? 0) - rc * 1.5 * Math.sign(v.recoil?.dx ?? 0), down: down || v.dead > 0, flash: v.flash > .3, bob: !down && !u.dead && Math.floor(this.time * 2.2 + u.uid * .7) % 2 ? 1 : 0 }); }
+    if (this.pixel) { const cell = Math.max(1, Math.round(3.4 * k * deadK * this.dpr)); const [bd, dk] = bodyFor(u.side, u.sprite, this.pix); const lt = v.lunge ? Math.min(1, v.lunge.t) : 0; const ln = v.lunge ? (lt < .25 ? -.35 * Math.sin(Math.PI * lt / .25) : Math.sin(Math.PI * (lt - .25) / .75)) : 0; const rc = v.recoil ? Math.sin(Math.PI * Math.min(1, v.recoil.t)) * (1 - v.recoil.t * .3) : 0; const rx = (v.recoil?.dx ?? 0) * rc * 7 * s, ry = (v.recoil?.dy ?? 0) * rc * 4 * s; drawFigure(c, templateFor(u.pcId, u.id, u.sprite), (sx + act.dx + (v.lunge?.dx ?? 0) * ln * 10 * s + rx) * this.dpr, (sy + act.dy - bounce + (v.lunge?.dy ?? 0) * ln * 6 * s + ry) * this.dpr, cell, { pix: this.pix, body: bd, dark: dk, flip: (u.side !== 'pc') !== act.flip, lean: act.lean * (u.side === 'pc' ? 1 : -1) * (act.flip ? -1 : 1) + ln * 2 * Math.sign(v.lunge?.dx ?? 0) - rc * 1.5 * Math.sign(v.recoil?.dx ?? 0), down: down || v.dead > 0, flash: v.flash > .3, bob: still ? act.bob : 0 }); }
     if (v.flash > 0 && !this.pixel) { c.globalAlpha = v.flash * .5 * v.alpha; c.fillStyle = '#fff'; c.beginPath(); c.ellipse(sx, sy - 22 * k, 11 * k, 20 * k, 0, 0, 6.28); c.fill(); c.globalAlpha = v.alpha; }
     // barra de PG y estados
     if (!u.dead && !this.cine) {

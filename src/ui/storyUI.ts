@@ -85,7 +85,7 @@ export class StoryUI {
 
   async show(who: string | null, text: string, tone?: string, extra?: HTMLElement | null) {
     this.dlg.classList.remove('hidden'); this.dlg.innerHTML = '';
-    const sp = who ? SPEAKERS[who] : undefined; this.stage?.speak(who);
+    const sp = who ? SPEAKERS[who] : undefined; this.stage?.speak(who, tone);
     const txt = h('div', { class: `txt ${who ? '' : 'narr'}` });
     const body = h('div', { style: { flex: '1', minWidth: '0' } }, who ? h('div', { class: 'who' }, who) : null, tone ? h('div', { class: 'tone' }, `(${tone})`) : null, txt);
     const row = h('div', { class: 'row' });

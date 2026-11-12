@@ -5,6 +5,7 @@ import { MAPS } from '../data/maps';
 import { PARTY_BY_ID, makePC } from '../data/party';
 import { makeFoe } from '../data/monsters';
 import { SPEAKERS } from '../story/speakers';
+import { gestureFor } from './acting';
 import type { Unit } from '../engine/types';
 import { sleep } from './dom';
 
@@ -35,7 +36,7 @@ export class StageView {
   focus(who: string | null, zoom = 2.2) { const u = who ? this.unit(who) : undefined; this.focusUid = u ? u.uid : -1; this.focusZoom = zoom; this.frame(true); }
   fall(who: string) { const u = this.unit(who); if (u) { u.down = true; const v = this.r.vis.get(u.uid); if (v) { v.shake = 1; v.flash = 1; } } }
   rise(who: string) { const b = this.b; const u = b?.units.find(x => x.pcId === who || x.name.toLowerCase().startsWith(who.toLowerCase())); if (u) { u.down = false; const v = this.r.vis.get(u.uid); if (v) v.bounce = 1; } }
-  hop(who: string) { const u = this.unit(who); const v = u && this.r.vis.get(u.uid); if (v) v.bounce = 1; }
+  hop(who: string) { const u = this.unit(who); const v = u && this.r.vis.get(u.uid); if (v) v.gest = { g: 'hop', t: 0 }; }
   hide(who: string) { const u = this.unit(who); if (u) this.fadeOut(u); }
   step(who: string, dx: number, dy: number) { const u = this.unit(who); if (u) this.walk(u, u.x + dx, u.y + dy); }
   fxAt(kind: string, who: string, color?: string) {
@@ -89,7 +90,7 @@ export class StageView {
     this.setFoes(foes);
   }
   /** Hace entrar caminando a `u` desde fuera del grupo hasta donde ya está ubicado. */
-  private enter(u: Unit, i: number) { const home = { x: u.x, y: u.y }; const from = this.entryTile(i); const v = this.r.vis.get(u.uid); if (!v) return; u.x = from.x; u.y = from.y; v.x = from.x; v.y = from.y; this.walk(u, home.x, home.y); }
+  private enter(u: Unit, i: number) { const home = { x: u.x, y: u.y }; const from = this.entryTile(i); const v = this.r.vis.get(u.uid); if (!v) return; u.x = from.x; u.y = from.y; v.x = from.x; v.y = from.y; const b = this.b; setTimeout(() => { if (this.b === b) this.walk(u, home.x, home.y); }, i * 170); } // entran de a uno, no en bloque
   /** Ajusta la compañía sin rehacer la escena: quien ya no está se desvanece, quien se suma entra caminando. */
   private syncParty(ids: string[]) {
     const b = this.b!; const same = ids.length === this.party.length && ids.every((id, i) => id === this.party[i]); if (same) return;
@@ -144,11 +145,13 @@ export class StageView {
     this.npcs.push(base); if (this.npcs.length > 3) this.fadeOut(this.npcs.shift()!); return base;
   }
   /** Quien habla se ilumina y da un saltito; si es un NPC, aparece en escena. */
-  speak(who: string | null) {
+  speak(who: string | null, tone?: string) {
     const b = this.b; if (!b || this.canvas.style.display === 'none') return;
     if (!who) { this.r.activeUid = -1; return; }
     const u = b.units.find(x => x.name === who && !x.dead) ?? this.npc(who); if (!u) { this.r.activeUid = -1; return; }
-    this.r.activeUid = u.uid; const v = this.r.vis.get(u.uid); if (v) v.bounce = 1;
+    this.r.activeUid = u.uid; const v = this.r.vis.get(u.uid); if (!v) return;
+    const g = gestureFor(u.pcId, tone); v.gest = { g, t: 0 }; // cada uno habla con su gesto (y el tono lo cambia)
+    if (g === 'stomp') setTimeout(() => { (this.r as any).shake = Math.max((this.r as any).shake, .25); }, 300);
   }
 }
 export { sleep };
