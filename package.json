@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "sim": "tsx scripts/sim.ts",
+    "sim:rivales": "tsx scripts/rivals-sim.ts",
     "build:single": "npm run build && node scripts/inline.mjs",
     "build:artifact": "npm run build:single && node scripts/artifact.mjs"
   },

@@ -34,6 +34,7 @@ import { reactive } from './story/novelReact';
 import { campfire } from './story/campfire';
 import { huntFoes, gusanoScript, interval, hunting, stage, STAGES } from './world/gusano';
 import { worldDay, ensureFronts } from './world/world';
+import { setback } from './world/rivals';
 import type { Node } from './story/types';
 
 class App {
@@ -185,11 +186,11 @@ class App {
       }
       if (a.t === 'roamer') {
         const r = this.camp.roamers.find(x => x.id === a.id); if (!r) continue; const won = await this.runBattle(ROAMER_ENC[r.kind]);
-        if (won) { this.camp.roamers = this.camp.roamers.filter(x => x.id !== r.id); const g = 25 + Math.floor(Math.random() * 30); applyEffect(this.camp, { gold: g, alert: -1, rep: r.kind === 'conclave' ? { conclave: -1 } : {} }); this.camp.journal.push(`Día ${this.camp.day}: abaten a un errante (${r.kind}) en ${DISTRICT_BY_ID[r.district].name}. +${g} PO.`); this.passPhase(); }
+        if (won) { this.camp.roamers = this.camp.roamers.filter(x => x.id !== r.id); { const sb = r.kind === 'conclave' || r.kind === 'culto' ? setback(this.camp, r.kind, 30) : null; if (sb) this.camp.journal.push(`Día ${this.camp.day}: ${sb}`); } const g = 25 + Math.floor(Math.random() * 30); applyEffect(this.camp, { gold: g, alert: -1, rep: r.kind === 'conclave' ? { conclave: -1 } : {} }); this.camp.journal.push(`Día ${this.camp.day}: abaten a un errante (${r.kind}) en ${DISTRICT_BY_ID[r.district].name}. +${g} PO.`); this.passPhase(); }
         saveGame(this.camp); continue;
       }
       if (a.t === 'reinforce') {
-        const c = this.camp; if (c.pf < 3 || !c.front[a.district]) continue; c.pf -= 3; c.front[a.district] = 'libre'; c.journal.push(`Día ${c.day}: refuerzan ${DISTRICT_BY_ID[a.district].name}; vuelve a ser libre.`); this.passPhase(); saveGame(c); continue;
+        const c = this.camp; if (c.pf < 3 || !c.front[a.district]) continue; const was = c.front[a.district]; c.pf -= 3; c.front[a.district] = 'libre'; c.journal.push(`Día ${c.day}: refuerzan ${DISTRICT_BY_ID[a.district].name}; vuelve a ser libre.`); { const sb = was === 'conclave' || was === 'culto' ? setback(c, was, 15) : null; if (sb) c.journal.push(`Día ${c.day}: ${sb}`); } this.passPhase(); saveGame(c); continue;
       }
       if (a.t === 'leave') {
         applyEffect(this.camp, { flags: ['final_desierto'] });

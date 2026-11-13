@@ -3,6 +3,7 @@ import { has } from '../state';
 import { gusanoDay } from './gusano';
 import { DISTRICT_BY_ID } from './districts';
 import { FRONT_DISTRICTS, FRONT_LABEL, HOSTILE, ROAMER_ENC } from './pois';
+import { rivalsDay } from './rivals';
 
 const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 /** Frentes de la guerra civil: arrancan al caer el Capitolio y cambian de manos cada pocos días. */
@@ -35,6 +36,7 @@ export function worldDay(c: Campaign): string[] {
   c.roamerTick++; if (c.roamerTick >= 4) { c.roamerTick = 0; const s = spawnRoamer(c); if (s) out.push(s); }
   const stale = c.roamers.filter(r => c.day - r.since >= 8);
   if (stale.length) { c.roamers = c.roamers.filter(r => !stale.includes(r)); c.alert = Math.min(10, c.alert + stale.length); out.push(`Dejaron a ${stale.length} errante(s) a su aire: +${stale.length} Alerta.`); }
+  out.push(...rivalsDay(c));
   return out;
 }
 export const hostile = (c: Campaign, d: string) => HOSTILE.includes(c.front[d]);

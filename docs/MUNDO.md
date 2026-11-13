@@ -19,5 +19,35 @@
 - **Vínculos 0–5** con Aisha, Farid, EaNassr, Madam Shub, Samira, Nafisa y Abril (`src/world/bonds.ts`): a 3 y a 5 dan una ventaja única.
 - **Frentes**: el color del nodo en el mapa indica quién manda en el distrito. Si lo domina el Conclave o el Culto, los puestos de personajes cierran (salvo vínculo ≥ 3). «Reforzar el frente» (−3 PF, una fase) lo devuelve a Libre.
 
+## La carrera por los fragmentos
+
+Desde la caída del Capitolio (Cap. V) hasta Razul (Cap. XII), otras tres facciones buscan el mismo fragmento que la compañía (`src/world/rivals.ts`):
+
+| Rival | Sale de | Lo acelera | Lo frena |
+|---|---|---|---|
+| ♛ Conclave | Plaza | barrios que domina, Alerta alta | abatir recaudadores, reforzar sus barrios, bajar la Alerta |
+| 🐍 Culto de Dahhak | Acueductos | barrios que domina; se desespera tras la muerte de Dahhak | abatir infiltrados, reforzar sus barrios |
+| ✶ Thay (Kethras) | Zoco | el desorden: barrios en manos de alguien | espiar (sus informantes le venden un mapa falso) |
+
+- **Fragmentos en disputa:** Dahhak (Iglesia, sin el Culto), Marid (Jardín), Al-Mazhar (Bajo), Gul-Amarat (Mina), Razul (Ciudadela, sin el Conclave).
+- **Movimiento:** cada rival avanza un barrio por día por los caminos del mapa hasta el lugar del fragmento.
+- **Excavación:** empieza recién cuando la compañía ya puede jugar ese capítulo; cada día avanza su velocidad × (0,3–1,7) al azar.
+- **Llegar primero:** si un rival llega a 100 antes de que la compañía empiece el capítulo, gana fuerza (+15 % de velocidad), toma un barrio del frente y cobra: Conclave +2 Alerta; Culto −4 PF; Thay −2 rumores y −20 PO. Queda la marca `rival_<frag>` y `rival_<frag>_<facción>`. **El fragmento y el capítulo no cambian** (las variantes de capítulo serían la siguiente etapa).
+- **En el mapa:** fichas de cada rival, su ruta punteada, el ◆ del fragmento en disputa y una franja con el avance (aproximado; exacto por dos días si se espía por 2 rumores).
+
+### Simulación (`npm run sim:rivales`)
+
+Juega campañas día por día con el mundo real (frentes, errantes, Alerta) y cinco ritmos de jugador. Resultado de referencia (600 partidas por ritmo):
+
+| Ritmo | Días libres entre capítulos | Llegadas rivales por partida | Partidas sin ninguna |
+|---|---|---|---|
+| directo | ~1 | 0,00 | 100 % |
+| normal | ~4 | 0,06 | 95 % |
+| explorador | ~7 | 1,49 | 25 % |
+| atento (como explorador, pero caza, refuerza y espía) | ~7 | 0,83 | 45 % |
+| lento | ~11 | 4,7 | 0 % |
+
+Reparto entre facciones (explorador): Conclave ~10 %, Culto ~50 %, Thay ~40 %. El Culto es el más difícil de frenar porque domina pocos barrios y deja pocos errantes.
+
 ## Archivos
 `src/world/{pois,bonds,world,events}.ts`, `src/state.ts` (campos `phase, eclipseDay, found, bond, poiCd, front, roamers`; efectos `eclipse, fe, rumors, bond, found`), `src/ui/hubUI.ts`, `src/main.ts` (`passPhase`, `forceEclipse`).

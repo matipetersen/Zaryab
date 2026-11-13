@@ -4,6 +4,7 @@ import { levelForXp, levelCap, type Prog } from './data/progression';
 import { chemPoints } from './engine/synergy';
 import { BOONS, BOND_NAME } from './world/bonds';
 import { makeFollower, randomRecruit, migrate, type Follower } from './world/followers';
+import type { RivalId, RivalState } from './world/rivals';
 
 export interface Grant { weapons?: Weapon[]; removeWeapons?: string[]; abilities?: string[]; traits?: string[]; res?: Record<string, number> }
 export interface Effect {
@@ -31,6 +32,8 @@ export interface Campaign {
   phase: number; eclipseDay: number; found: string[]; bond: Record<string, number>; poiCd: Record<string, number>;
   gusano: { power: number; next: number; seen: number; grown: number }; arq: Record<string, number>; chem: Record<string, number>;
   front: Record<string, string>; frontTick: number; roamers: { id: string; district: string; kind: string; since: number }[]; roamerTick: number;
+  /** Carrera por los fragmentos (ver world/rivals.ts): posición y avance de cada facción rival, fragmento en disputa y último día que se los espió. */
+  rivals: Record<RivalId, RivalState>; rivalFrag?: string; rivalIntel?: number;
 }
 export const FACTIONS: Record<string, string> = {
   conclave: 'Conclave de los Siete Vientos', hijos: 'Hijos del Simurg', mercaderes: 'Mercaderes del Zoco',
@@ -44,11 +47,12 @@ export const newCampaign = (): Campaign => ({
   main: 0, run: { script: 'cap0', idx: 0 }, battlesWon: 0, xp: 0,
   lvl: 1, picks: {}, squad: [], ruta: { orden: 0, pueblo: 0, sombra: 0 }, ecos: [], huellas: [], gold: START_GOLD, inv: { ...START_INV }, equip: {},
   phase: 0, gusano: { power: 0, next: 0, seen: 0, grown: 0 }, arq: {}, chem: {}, eclipseDay: 0, found: [], bond: {}, poiCd: {}, front: {}, frontTick: 0, roamers: [], roamerTick: 0,
+  rivals: {} as Campaign['rivals'],
 });
 const KEY = 'zaryab.save.v3';
 export function saveGame(c: Campaign) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch { /* sin storage */ } }
 export function loadGame(): Campaign | null {
-  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 1; c.picks ??= {}; c.squad ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; c.found ??= []; c.bond ??= {}; c.poiCd ??= {}; c.front ??= {}; c.roamers ??= []; c.phase ??= 0; c.gusano ??= { power: 0, next: 0, seen: 0, grown: 0 }; c.arq ??= {}; c.chem ??= {}; return c; } catch { return null; }
+  try { const s = localStorage.getItem(KEY); if (!s) return null; const c = { ...newCampaign(), ...JSON.parse(s) }; c.followers = migrate(c.followers); c.inv ??= {}; c.equip ??= {}; c.ecos ??= []; c.lvl ??= 1; c.picks ??= {}; c.squad ??= []; c.ruta ??= { orden: 0, pueblo: 0, sombra: 0 }; c.huellas ??= []; c.found ??= []; c.bond ??= {}; c.poiCd ??= {}; c.front ??= {}; c.roamers ??= []; c.phase ??= 0; c.gusano ??= { power: 0, next: 0, seen: 0, grown: 0 }; c.arq ??= {}; c.chem ??= {}; c.rivals ??= {} as Campaign['rivals']; return c; } catch { return null; }
 }
 export function clearSave() { try { localStorage.removeItem(KEY); } catch { /* */ } }
 export const has = (c: Campaign, f: string) => c.flags.includes(f);

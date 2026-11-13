@@ -14,6 +14,7 @@ import { codexNew } from '../world/codex';
 import { BOND_NAME } from '../world/bonds';
 import { PARTY_BY_ID } from '../data/party';
 import { FACTIONS, has, built, applyEffect, pendingLevel, type Campaign } from '../state';
+import { RIVALS, RIVAL_IDS, FRAGS, currentFrag, raceActive, inRace, claimedBy, route, band, intelFresh, ensureRivals, INTEL_COST, spy } from '../world/rivals';
 
 export type HubAction = { t: 'quest'; id: string } | { t: 'oracle'; district: string } | { t: 'peek'; district: string } | { t: 'rest' } | { t: 'menu' } | { t: 'poi'; id: string } | { t: 'roamer'; id: string } | { t: 'reinforce'; district: string } | { t: 'leave' };
 const KIND_LABEL: Record<string, string> = { main: '★ Principal', side: 'Secundaria', personal: 'Personal', faction: 'Facción' };
@@ -47,6 +48,7 @@ export class HubUI {
         h('span', { class: 'ic' }, d.icon), h('span', { class: 'nm' }, d.name), avail.length ? h('span', { class: `dot ${hasMain ? 'm' : hasPers ? 'p' : ''}` }, String(avail.length)) : null, rm ? h('span', { class: 'dot', style: { background: '#a33', right: 'auto', left: '-4px' } }, '⚔') : null);
       map.append(el);
     }
+    this.drawRace(map, svg);
     const dist = DISTRICT_BY_ID[this.sel]; this.root.append(map, this.panel(dist), this.bottom(), this.nextStep());
     if (!hubGuideSeen() && !(window as any).__fast) setTimeout(() => { if (this.root.isConnected && !this.root.classList.contains('hidden')) openHubGuide(this.root); }, 400);
   }
@@ -79,6 +81,45 @@ export class HubUI {
     p.append(h('div', { class: 'qcard' }, h('div', { class: 'qk' }, 'Oráculo de las Mil Lenguas'), h('div', { class: 'small' }, `Recorrer el distrito: el Oráculo miente, pero el evento es real. Cuesta ${free ? 'ningún día (Alfombra Viviente)' : '1 día'}.`), h('button', { class: 'btn sm', onClick: () => this.pick({ t: 'oracle', district: d.id }) }, '🔮 Recorrer ' + d.name), c.rumors >= 2 && !(c.peek && c.peek.district === d.id) ? h('button', { class: 'btn sm ghost', onClick: () => this.pick({ t: 'peek', district: d.id }) }, '👁 Preguntar a los espías (−2 rumores)') : null, c.peek && c.peek.district === d.id ? h('div', { class: 'tag good' }, 'Los espías ya saben qué les espera aquí.') : null));
     return p;
   }
+  /** Carrera por los fragmentos sobre el mapa: dónde está cada rival, por dónde va y qué busca. */
+  drawRace(map: HTMLElement, svg: SVGSVGElement) {
+    const c = this.camp; if (!raceActive(c)) return; ensureRivals(c); const f = currentFrag(c); if (!f) return;
+    const T = DISTRICT_BY_ID[f.district]; const NS = 'http://www.w3.org/2000/svg'; const who = claimedBy(c, f);
+    // el fragmento en disputa
+    map.append(h('div', { class: `rv-target ${who ? 'claimed' : ''}`, style: { left: T.x + '%', top: T.y + '%', ...(who ? { borderColor: RIVALS[who].color } : {}) }, title: `En disputa: ${f.name}` }, '◆'));
+    const racing = RIVAL_IDS.filter(r => inRace(c, r, f));
+    racing.forEach((r, i) => {
+      const s = c.rivals[r]; const A = DISTRICT_BY_ID[s.at]; if (!A) return;
+      const p = route(s.at, f.district);
+      if (p.length > 1 && !who) { const pl = document.createElementNS(NS, 'polyline'); pl.setAttribute('points', p.map(d => `${DISTRICT_BY_ID[d].x},${DISTRICT_BY_ID[d].y}`).join(' ')); pl.setAttribute('fill', 'none'); pl.setAttribute('stroke', RIVALS[r].color); pl.setAttribute('stroke-width', '.45'); pl.setAttribute('stroke-dasharray', '1.2 1'); pl.setAttribute('opacity', '.85'); pl.setAttribute('vector-effect', 'non-scaling-stroke'); pl.classList.add('rv-route'); svg.append(pl); }
+      const ang = -Math.PI / 2 + (i - (racing.length - 1) / 2) * 0.9; // las fichas se reparten alrededor del barrio
+      map.append(h('button', { class: 'rv-tok', style: { left: `calc(${A.x}% + ${Math.round(Math.cos(ang) * 34)}px)`, top: `calc(${A.y}% + ${Math.round(Math.sin(ang) * 34)}px)`, background: RIVALS[r].color }, title: `${RIVALS[r].name} · ${band(c, r, f)}`, onClick: () => this.openRace() }, RIVALS[r].icon));
+    });
+    // franja con el estado de la carrera
+    const strip = h('button', { class: 'rv-strip', onClick: () => this.openRace(), title: 'Ver la carrera por los fragmentos' }, h('b', {}, `◆ Carrera: ${f.name}`));
+    for (const r of racing) { const s = c.rivals[r]; const pct = who === r ? 100 : intelFresh(c) ? s.prog : Math.round(s.prog / 34) * 34;
+      strip.append(h('div', { class: 'rv-row' }, h('span', { style: { color: RIVALS[r].color } }, `${RIVALS[r].icon} ${RIVALS[r].short}`), h('i', { class: 'rv-bar' }, h('i', { style: { width: (s.at === f.district ? Math.max(4, pct) : 0) + '%', background: RIVALS[r].color } })), h('span', { class: 'small' }, band(c, r, f)))); }
+    if (who) strip.append(h('div', { class: 'small', style: { color: RIVALS[who].color } }, `${RIVALS[who].short} llegó primero.`));
+    map.append(strip);
+  }
+  openRace() {
+    const c = this.camp; ensureRivals(c); const f = currentFrag(c); const b = h('div', { class: 'res' });
+    b.append(h('p', { class: 'small lore' }, 'Otros también buscan los fragmentos. Cada facción camina por los caminos de la ciudad hasta el lugar y, cuando ustedes ya pueden ir, se pone a cavar. Si termina antes, no se queda con el fragmento, pero gana fuerza en la ciudad y les cobra algo. Abatir a sus errantes y reforzar los barrios que dominan frena al Conclave y al Culto; espiar los frena a Thay, porque sus informantes le venden un mapa falso. La Alerta alta ayuda al Conclave y el desorden en los barrios, a Thay.'));
+    if (!f || !raceActive(c)) { b.append(h('div', { class: 'small' }, has(c, 'cap5_done') ? 'Ya no queda fragmento en disputa.' : 'La carrera empieza cuando caiga el Capitolio (Capítulo V).')); this.openModal('Carrera por los fragmentos', b); return; }
+    const who = claimedBy(c, f);
+    b.append(h('div', { class: 'sec' }, `En disputa: ${f.name} · ${DISTRICT_BY_ID[f.district].name}`));
+    if (who) b.append(h('div', { class: 'tag bad' }, `${RIVALS[who].name} llegó primero.`));
+    for (const r of RIVAL_IDS) {
+      const s = c.rivals[r]; const R = RIVALS[r];
+      b.append(h('div', { class: 'jq' }, h('b', { style: { color: R.color } }, `${R.icon} ${R.name}`), h('div', { class: 'small lore' }, R.why),
+        h('div', { class: 'small' }, `En ${DISTRICT_BY_ID[s.at]?.name ?? s.at} · ${band(c, r, f)}${s.power ? ` · fuerza +${s.power}` : ''}`),
+        s.wins.length ? h('div', { class: 'small', style: { color: 'var(--secondary)' } }, `Llegó primero a: ${s.wins.map(w => FRAGS.find(x => x.id === w)?.name ?? w).join(', ')}`) : null));
+    }
+    const fresh = intelFresh(c);
+    b.append(h('div', { style: { marginTop: '10px' } }, fresh ? h('div', { class: 'tag good' }, 'Información fresca: ven el avance exacto (vale hoy y mañana).') :
+      h('button', { class: 'btn sm', disabled: c.rumors < INTEL_COST, onClick: () => { c.journal.push(`Día ${c.day}: ${spy(c)}`); this.onChange?.(); this.render(); this.openRace(); } }, `👁 Espiar a los rivales (−${INTEL_COST} rumores · tienen ${c.rumors})`)));
+    this.openModal('Carrera por los fragmentos', b);
+  }
   /** Cartel con el próximo paso recomendado: la misión principal disponible, o una sugerencia si no hay. */
   nextStep(): HTMLElement {
     const c = this.camp; const main = QUESTS.find(q => q.kind === 'main' && this.questStatus(q) === 'available'); const pers = QUESTS.find(q => q.kind === 'personal' && this.questStatus(q) === 'available');
@@ -94,6 +135,7 @@ export class HubUI {
       h('button', { class: 'act', onClick: () => this.openInventory() }, '🎒 Inventario'),
       h('button', { class: 'act', onClick: () => this.openJournal() }, '📜 Diario de misiones'),
       h('button', { class: 'act', title: 'Códice: dioses, facciones, lugares y personas', onClick: () => { this.closeModal(); openCodex(this.root, c, { onRead: () => this.onChange?.(), onClose: () => this.render() }); } }, '📚 Códice', codexNew(c).length ? h('span', { class: 'cx-badge' }, String(codexNew(c).length)) : null),
+      raceActive(c) ? h('button', { class: 'act', title: 'La carrera por los fragmentos', onClick: () => this.openRace() }, '◆ Rivales') : null,
       h('button', { class: 'act', onClick: () => this.pick({ t: 'rest' }) }, '🌙 Descansar un día'),
       h('button', { class: 'act', title: 'Guía del mapa', onClick: () => openHubGuide(this.root) }, '?'),
       h('button', { class: 'act', onClick: () => this.pick({ t: 'menu' }) }, 'Guardar y salir'),
